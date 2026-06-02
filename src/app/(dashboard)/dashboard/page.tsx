@@ -78,6 +78,9 @@ export default async function DashboardPage() {
           <Button asChild variant="outline" size="sm">
             <Link href="/settings/staff">Staff</Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/settings/subscription">Subscription</Link>
+          </Button>
           <ThemeToggle />
           <SignOutButton />
         </div>

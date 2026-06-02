@@ -60,4 +60,5 @@ docs/modules/             one doc per module
 - [x] **Module 10 — Billing** (invoices/items/payments, Cash/Bank/KHQR, auto totals, invoice + receipt PDF)
 - [x] **Module 11 — Laboratory** (categories, lab requests + status lifecycle, result upload/history)
 - [x] **Module 12 — Reports** (revenue/patients/appointments/doctors/inventory/outstanding, CSV/Excel/PDF export)
-- [ ] Module 13 — Notifications, Subscriptions, Super Admin Portal
+- [x] **Module 13 — Subscriptions & Super Admin** (plans/limits/usage, plan switching, platform portal: clinics/users/audit/analytics)
+- [ ] Backlog — Notifications (email/Telegram reminders), real billing (Stripe/KHQR), per-feature plan gating
