@@ -58,4 +58,5 @@ docs/modules/             one doc per module
 - [x] **Module 8 — Prescription Management** (prescriptions + items, item repeater, printable PDF, history)
 - [x] **Module 9 — Pharmacy Inventory** (catalog, stock ledger, batches/expiry, low-stock + expiry alerts)
 - [x] **Module 10 — Billing** (invoices/items/payments, Cash/Bank/KHQR, auto totals, invoice + receipt PDF)
-- [ ] Modules 11–13 — Lab, Reports, Notifications, Subscriptions, Super Admin Portal
+- [x] **Module 11 — Laboratory** (categories, lab requests + status lifecycle, result upload/history)
+- [ ] Modules 12–13 — Reports, Notifications, Subscriptions, Super Admin Portal

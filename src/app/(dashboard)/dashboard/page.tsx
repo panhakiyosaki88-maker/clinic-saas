@@ -64,6 +64,9 @@ export default async function DashboardPage() {
             <Link href="/prescriptions">Prescriptions</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
+            <Link href="/lab">Lab</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href="/pharmacy">Pharmacy</Link>
           </Button>
           <Button asChild variant="outline" size="sm">

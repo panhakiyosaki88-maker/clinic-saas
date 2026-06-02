@@ -41,6 +41,7 @@ export type AppointmentStatus =
 export type InventoryReason = "purchase" | "dispense" | "adjustment" | "expiry" | "return";
 export type InvoiceStatus = "unpaid" | "partially_paid" | "paid" | "cancelled";
 export type PaymentMethod = "cash" | "bank_transfer" | "khqr";
+export type LabStatus = "requested" | "collected" | "processing" | "completed" | "cancelled";
 export type TimelineEvent =
   | "registered"
   | "note"
@@ -746,6 +747,100 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["payments"]["Insert"]>;
         Relationships: [];
       };
+      lab_categories: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          name: string;
+          description: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          name: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["lab_categories"]["Insert"]>;
+        Relationships: [];
+      };
+      lab_requests: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id: string | null;
+          category_id: string | null;
+          medical_record_id: string | null;
+          test_name: string;
+          status: LabStatus;
+          notes: string | null;
+          requested_at: string;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id?: string | null;
+          category_id?: string | null;
+          medical_record_id?: string | null;
+          test_name: string;
+          status?: LabStatus;
+          notes?: string | null;
+          requested_at?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["lab_requests"]["Insert"]>;
+        Relationships: [];
+      };
+      lab_results: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          lab_request_id: string;
+          result_value: string | null;
+          unit: string | null;
+          reference_range: string | null;
+          result_text: string | null;
+          file_path: string | null;
+          file_name: string | null;
+          result_at: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          lab_request_id: string;
+          result_value?: string | null;
+          unit?: string | null;
+          reference_range?: string | null;
+          result_text?: string | null;
+          file_path?: string | null;
+          file_name?: string | null;
+          result_at?: string;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["lab_results"]["Insert"]>;
+        Relationships: [];
+      };
       prescriptions: {
         Row: {
           id: string;
@@ -842,6 +937,7 @@ export interface Database {
       inventory_reason: InventoryReason;
       invoice_status: InvoiceStatus;
       payment_method: PaymentMethod;
+      lab_status: LabStatus;
     };
     CompositeTypes: Record<string, never>;
   };

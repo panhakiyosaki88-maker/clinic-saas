@@ -9,12 +9,14 @@ import {
 import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
 import { listPatientInvoices } from "@/lib/db/queries/billing";
+import { listPatientLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { DocumentUploader } from "@/components/patients/document-uploader";
 import { DocumentList } from "@/components/patients/document-list";
 import { AddNoteForm } from "@/components/patients/add-note-form";
 import { DeletePatientButton } from "@/components/patients/delete-patient-button";
+import { LabStatusBadge } from "@/components/lab/lab-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -42,23 +44,28 @@ export default async function PatientProfilePage({
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const [canWrite, canEmrRead, canEmrWrite, canBookAppt, canRxRead, canRxWrite, canBillRead, canBillWrite] =
-    await Promise.all([
-      hasPermission(PERMISSIONS.PATIENTS_WRITE),
-      hasPermission(PERMISSIONS.EMR_READ),
-      hasPermission(PERMISSIONS.EMR_WRITE),
-      hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
-      hasPermission(PERMISSIONS.PRESCRIPTIONS_READ),
-      hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE),
-      hasPermission(PERMISSIONS.BILLING_READ),
-      hasPermission(PERMISSIONS.BILLING_WRITE),
-    ]);
-  const [documents, timeline, visits, prescriptions, invoices] = await Promise.all([
+  const [
+    canWrite, canEmrRead, canEmrWrite, canBookAppt,
+    canRxRead, canRxWrite, canBillRead, canBillWrite, canLabRead, canLabWrite,
+  ] = await Promise.all([
+    hasPermission(PERMISSIONS.PATIENTS_WRITE),
+    hasPermission(PERMISSIONS.EMR_READ),
+    hasPermission(PERMISSIONS.EMR_WRITE),
+    hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
+    hasPermission(PERMISSIONS.PRESCRIPTIONS_READ),
+    hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE),
+    hasPermission(PERMISSIONS.BILLING_READ),
+    hasPermission(PERMISSIONS.BILLING_WRITE),
+    hasPermission(PERMISSIONS.LAB_READ),
+    hasPermission(PERMISSIONS.LAB_WRITE),
+  ]);
+  const [documents, timeline, visits, prescriptions, invoices, labRequests] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
     canEmrRead ? listMedicalRecords(id) : Promise.resolve([]),
     canRxRead ? listPatientPrescriptions(id) : Promise.resolve([]),
     canBillRead ? listPatientInvoices(id) : Promise.resolve([]),
+    canLabRead ? listPatientLabRequests(id) : Promise.resolve([]),
   ]);
 
   return (
@@ -212,6 +219,35 @@ export default async function PatientProfilePage({
                       {" · "}
                       <span className="tabular-nums">{Number(inv.balance).toFixed(2)} due</span>
                     </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {canLabRead && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>Lab requests ({labRequests.length})</CardTitle>
+            {canLabWrite && (
+              <Button asChild size="sm">
+                <Link href={`/lab/new?patientId=${patient.id}`}>New request</Link>
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {labRequests.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No lab requests yet.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {labRequests.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between py-2">
+                    <Link href={`/lab/${r.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                      {r.test_name}
+                    </Link>
+                    <LabStatusBadge status={r.status} />
                   </li>
                 ))}
               </ul>
