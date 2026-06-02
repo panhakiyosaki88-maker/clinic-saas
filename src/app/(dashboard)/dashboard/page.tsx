@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentClinic, getCurrentSubscription, listBranches } from "@/lib/db/queries/clinic";
 import { listAppointmentsInRange, listQueue } from "@/lib/db/queries/appointments";
 import { lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
+import { outstandingInvoices } from "@/lib/db/queries/billing";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { startOfDay, addDays } from "@/lib/date";
@@ -18,11 +19,12 @@ export default async function DashboardPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
 
-  const [subscription, branches, canSeeAppointments, canSeePharmacy] = await Promise.all([
+  const [subscription, branches, canSeeAppointments, canSeePharmacy, canSeeBilling] = await Promise.all([
     getCurrentSubscription(),
     listBranches(),
     hasPermission(PERMISSIONS.APPOINTMENTS_READ),
     hasPermission(PERMISSIONS.PHARMACY_READ),
+    hasPermission(PERMISSIONS.BILLING_READ),
   ]);
 
   const todayStart = startOfDay(new Date());
@@ -37,6 +39,9 @@ export default async function DashboardPage() {
   const [lowStock, expiring] = canSeePharmacy
     ? await Promise.all([lowStockMedicines(), expiringSoon()])
     : [[], []];
+
+  const outstanding = canSeeBilling ? await outstandingInvoices() : [];
+  const outstandingTotal = outstanding.reduce((sum, inv) => sum + Number(inv.balance), 0);
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
@@ -60,6 +65,9 @@ export default async function DashboardPage() {
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/pharmacy">Pharmacy</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/billing">Billing</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/settings/staff">Staff</Link>
@@ -90,6 +98,22 @@ export default async function DashboardPage() {
             <CardContent><p className="text-2xl font-semibold">{completedToday}</p></CardContent>
           </Card>
         </div>
+      )}
+
+      {canSeeBilling && outstanding.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-[var(--muted-foreground)]">Outstanding invoices</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link href="/billing" className="hover:underline">
+              <span className="text-2xl font-semibold">{outstanding.length}</span>{" "}
+              <span className="text-sm text-[var(--muted-foreground)]">
+                unpaid · {outstandingTotal.toFixed(2)} outstanding
+              </span>
+            </Link>
+          </CardContent>
+        </Card>
       )}
 
       {canSeePharmacy && (lowStock.length > 0 || expiring.length > 0) && (

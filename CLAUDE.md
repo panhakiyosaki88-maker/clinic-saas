@@ -57,4 +57,5 @@ docs/modules/             one doc per module
 - [x] **Module 7 — Appointment Management** (day/week/month calendar, status lifecycle, queue, walk-ins)
 - [x] **Module 8 — Prescription Management** (prescriptions + items, item repeater, printable PDF, history)
 - [x] **Module 9 — Pharmacy Inventory** (catalog, stock ledger, batches/expiry, low-stock + expiry alerts)
-- [ ] Modules 10–13 — Lab, Billing, Reports, Notifications, Subscriptions, Super Admin Portal
+- [x] **Module 10 — Billing** (invoices/items/payments, Cash/Bank/KHQR, auto totals, invoice + receipt PDF)
+- [ ] Modules 11–13 — Lab, Reports, Notifications, Subscriptions, Super Admin Portal

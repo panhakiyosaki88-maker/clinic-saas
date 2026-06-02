@@ -8,6 +8,7 @@ import {
 } from "@/lib/db/queries/patients";
 import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
+import { listPatientInvoices } from "@/lib/db/queries/billing";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { DocumentUploader } from "@/components/patients/document-uploader";
@@ -41,19 +42,23 @@ export default async function PatientProfilePage({
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const [canWrite, canEmrRead, canEmrWrite, canBookAppt, canRxRead, canRxWrite] = await Promise.all([
-    hasPermission(PERMISSIONS.PATIENTS_WRITE),
-    hasPermission(PERMISSIONS.EMR_READ),
-    hasPermission(PERMISSIONS.EMR_WRITE),
-    hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
-    hasPermission(PERMISSIONS.PRESCRIPTIONS_READ),
-    hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE),
-  ]);
-  const [documents, timeline, visits, prescriptions] = await Promise.all([
+  const [canWrite, canEmrRead, canEmrWrite, canBookAppt, canRxRead, canRxWrite, canBillRead, canBillWrite] =
+    await Promise.all([
+      hasPermission(PERMISSIONS.PATIENTS_WRITE),
+      hasPermission(PERMISSIONS.EMR_READ),
+      hasPermission(PERMISSIONS.EMR_WRITE),
+      hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
+      hasPermission(PERMISSIONS.PRESCRIPTIONS_READ),
+      hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE),
+      hasPermission(PERMISSIONS.BILLING_READ),
+      hasPermission(PERMISSIONS.BILLING_WRITE),
+    ]);
+  const [documents, timeline, visits, prescriptions, invoices] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
     canEmrRead ? listMedicalRecords(id) : Promise.resolve([]),
     canRxRead ? listPatientPrescriptions(id) : Promise.resolve([]),
+    canBillRead ? listPatientInvoices(id) : Promise.resolve([]),
   ]);
 
   return (
@@ -173,6 +178,39 @@ export default async function PatientProfilePage({
                     </Link>
                     <span className="text-sm text-[var(--muted-foreground)]">
                       {p.item_count} item{p.item_count === 1 ? "" : "s"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {canBillRead && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>Invoices ({invoices.length})</CardTitle>
+            {canBillWrite && (
+              <Button asChild size="sm">
+                <Link href={`/billing/new?patientId=${patient.id}`}>Create invoice</Link>
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {invoices.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No invoices yet.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {invoices.map((inv) => (
+                  <li key={inv.id} className="flex items-center justify-between py-2">
+                    <Link href={`/billing/${inv.id}`} className="font-mono text-xs text-[var(--primary)] hover:underline">
+                      {inv.invoice_number}
+                    </Link>
+                    <span className="text-sm">
+                      <span className="capitalize text-[var(--muted-foreground)]">{inv.status.replace("_", " ")}</span>
+                      {" · "}
+                      <span className="tabular-nums">{Number(inv.balance).toFixed(2)} due</span>
                     </span>
                   </li>
                 ))}
