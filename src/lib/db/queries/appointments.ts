@@ -73,6 +73,42 @@ export async function getAppointment(id: string): Promise<AppointmentWithNames |
   return map([data as unknown as Joined])[0];
 }
 
+export interface DayCount {
+  label: string;
+  date: string;
+  count: number;
+}
+
+/** Appointment counts for the last `days` days (oldest → newest), for the trend chart. */
+export async function getWeeklyAppointmentCounts(days = 7): Promise<DayCount[]> {
+  const supabase = await createClient();
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("scheduled_at")
+    .is("deleted_at", null)
+    .gte("scheduled_at", start.toISOString());
+  if (error) throw error;
+
+  const counts = new Map<string, number>();
+  const buckets: DayCount[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    counts.set(key, 0);
+    buckets.push({ label: d.toLocaleDateString(undefined, { weekday: "short" }), date: key, count: 0 });
+  }
+  for (const a of data ?? []) {
+    const key = new Date(a.scheduled_at).toISOString().slice(0, 10);
+    if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return buckets.map((b) => ({ ...b, count: counts.get(b.date) ?? 0 }));
+}
+
 export async function listPatientAppointments(patientId: string): Promise<AppointmentWithNames[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
