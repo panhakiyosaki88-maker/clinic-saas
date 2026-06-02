@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PatientSearch } from "@/components/patients/patient-search";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export const metadata = { title: "Patients" };
 
@@ -56,37 +57,37 @@ export default async function PatientsPage({
         </div>
       </header>
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {rows.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">
+            <p className="p-6 text-sm text-slate-400">
               {q ? "No patients match your search." : "No patients yet."}
             </p>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
+            <Table>
+              <THead>
                 <tr>
-                  <th className="p-3 font-medium">Number</th>
-                  <th className="p-3 font-medium">Name</th>
-                  <th className="p-3 font-medium">Gender</th>
-                  <th className="p-3 font-medium">Phone</th>
+                  <TH>Number</TH>
+                  <TH>Name</TH>
+                  <TH>Gender</TH>
+                  <TH>Phone</TH>
                 </tr>
-              </thead>
-              <tbody>
+              </THead>
+              <TBody>
                 {rows.map((p) => (
-                  <tr key={p.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--accent)]">
-                    <td className="p-3 font-mono text-xs">{p.patient_number}</td>
-                    <td className="p-3">
-                      <Link href={`/patients/${p.id}`} className="font-medium text-[var(--primary)] hover:underline">
+                  <TR key={p.id}>
+                    <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.patient_number}</TD>
+                    <TD>
+                      <Link href={`/patients/${p.id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
                         {p.full_name}
                       </Link>
-                    </td>
-                    <td className="p-3 capitalize text-[var(--muted-foreground)]">{p.gender ?? "—"}</td>
-                    <td className="p-3 text-[var(--muted-foreground)]">{p.phone ?? "—"}</td>
-                  </tr>
+                    </TD>
+                    <TD className="capitalize text-slate-500 dark:text-slate-400">{p.gender ?? "—"}</TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{p.phone ?? "—"}</TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           )}
         </CardContent>
       </Card>

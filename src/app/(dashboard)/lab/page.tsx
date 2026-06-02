@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { LabStatusBadge } from "@/components/lab/lab-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export const metadata = { title: "Laboratory" };
 
@@ -44,33 +45,33 @@ export default async function LabPage() {
         </div>
       </header>
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {requests.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">No lab requests yet.</p>
+            <p className="p-6 text-sm text-slate-400">No lab requests yet.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
+            <Table>
+              <THead>
                 <tr>
-                  <th className="p-3 font-medium">Test</th>
-                  <th className="p-3 font-medium">Patient</th>
-                  <th className="p-3 font-medium">Category</th>
-                  <th className="p-3 font-medium">Status</th>
+                  <TH>Test</TH>
+                  <TH>Patient</TH>
+                  <TH>Category</TH>
+                  <TH>Status</TH>
                 </tr>
-              </thead>
-              <tbody>
+              </THead>
+              <TBody>
                 {requests.map((r) => (
-                  <tr key={r.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--accent)]">
-                    <td className="p-3">
-                      <Link href={`/lab/${r.id}`} className="font-medium text-[var(--primary)] hover:underline">{r.test_name}</Link>
-                    </td>
-                    <td className="p-3">{r.patient_name}</td>
-                    <td className="p-3 text-[var(--muted-foreground)]">{r.category_name ?? "—"}</td>
-                    <td className="p-3"><LabStatusBadge status={r.status} /></td>
-                  </tr>
+                  <TR key={r.id}>
+                    <TD>
+                      <Link href={`/lab/${r.id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">{r.test_name}</Link>
+                    </TD>
+                    <TD>{r.patient_name}</TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{r.category_name ?? "—"}</TD>
+                    <TD><LabStatusBadge status={r.status} /></TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           )}
         </CardContent>
       </Card>

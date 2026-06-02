@@ -6,6 +6,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export const metadata = { title: "Billing" };
 
@@ -43,41 +44,41 @@ export default async function BillingPage() {
         )}
       </header>
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {invoices.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">No invoices yet.</p>
+            <p className="p-6 text-sm text-slate-400">No invoices yet.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
+            <Table>
+              <THead>
                 <tr>
-                  <th className="p-3 font-medium">Invoice</th>
-                  <th className="p-3 font-medium">Patient</th>
-                  <th className="p-3 font-medium text-right">Total</th>
-                  <th className="p-3 font-medium text-right">Balance</th>
-                  <th className="p-3 font-medium">Status</th>
+                  <TH>Invoice</TH>
+                  <TH>Patient</TH>
+                  <TH className="text-right">Total</TH>
+                  <TH className="text-right">Balance</TH>
+                  <TH>Status</TH>
                 </tr>
-              </thead>
-              <tbody>
+              </THead>
+              <TBody>
                 {invoices.map((inv) => (
-                  <tr key={inv.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--accent)]">
-                    <td className="p-3">
-                      <Link href={`/billing/${inv.id}`} className="font-mono text-xs text-[var(--primary)] hover:underline">
+                  <TR key={inv.id}>
+                    <TD>
+                      <Link href={`/billing/${inv.id}`} className="font-mono text-xs text-blue-600 hover:underline dark:text-blue-400">
                         {inv.invoice_number}
                       </Link>
-                    </td>
-                    <td className="p-3">{inv.patient_name ?? "—"}</td>
-                    <td className="p-3 text-right tabular-nums">{Number(inv.total).toFixed(2)}</td>
-                    <td className="p-3 text-right tabular-nums">{Number(inv.balance).toFixed(2)}</td>
-                    <td className="p-3">
+                    </TD>
+                    <TD>{inv.patient_name ?? "—"}</TD>
+                    <TD className="text-right tabular-nums">{Number(inv.total).toFixed(2)}</TD>
+                    <TD className="text-right tabular-nums">{Number(inv.balance).toFixed(2)}</TD>
+                    <TD>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_TONE[inv.status]}`}>
                         {inv.status.replace("_", " ")}
                       </span>
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           )}
         </CardContent>
       </Card>
