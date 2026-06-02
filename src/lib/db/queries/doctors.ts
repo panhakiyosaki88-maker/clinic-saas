@@ -52,6 +52,44 @@ export async function listTimeOff(doctorId: string): Promise<DoctorTimeOff[]> {
   return data ?? [];
 }
 
+export interface DoctorAvailabilityToday {
+  id: string;
+  name: string;
+  specialization: string | null;
+  slots: { start: string; end: string }[];
+  offToday: boolean;
+}
+
+/** Which doctors are working today (recurring schedule minus time-off). */
+export async function getDoctorAvailabilityToday(): Promise<DoctorAvailabilityToday[]> {
+  const supabase = await createClient();
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun..6=Sat, matches doctor_schedules
+  const ymd = today.toISOString().slice(0, 10);
+
+  const [{ data: docs }, { data: schedules }, { data: timeOff }] = await Promise.all([
+    supabase.from("doctors").select("id, full_name, specialization").is("deleted_at", null).eq("is_active", true),
+    supabase.from("doctor_schedules").select("doctor_id, start_time, end_time").eq("day_of_week", dow).eq("is_active", true),
+    supabase.from("doctor_time_off").select("doctor_id").lte("start_date", ymd).gte("end_date", ymd),
+  ]);
+
+  const slotsByDoctor = new Map<string, { start: string; end: string }[]>();
+  for (const s of schedules ?? []) {
+    const list = slotsByDoctor.get(s.doctor_id) ?? [];
+    list.push({ start: s.start_time.slice(0, 5), end: s.end_time.slice(0, 5) });
+    slotsByDoctor.set(s.doctor_id, list);
+  }
+  const offSet = new Set((timeOff ?? []).map((t) => t.doctor_id));
+
+  return (docs ?? []).map((d) => ({
+    id: d.id,
+    name: d.full_name,
+    specialization: d.specialization,
+    slots: (slotsByDoctor.get(d.id) ?? []).sort((a, b) => a.start.localeCompare(b.start)),
+    offToday: offSet.has(d.id),
+  }));
+}
+
 export interface DoctorPerformance {
   visits: number;
   patientsSeen: number;

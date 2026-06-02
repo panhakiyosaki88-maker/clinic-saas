@@ -37,6 +37,34 @@ export async function getRevenueReport(fromISO: string, toISO: string): Promise<
   };
 }
 
+export interface PatientStats {
+  total: number;
+  newThisWeek: number;
+  newThisMonth: number;
+}
+
+/** Patient counts for the dashboard stats widget. */
+export async function getPatientStats(): Promise<PatientStats> {
+  const supabase = await createClient();
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const base = () => supabase.from("patients").select("id", { count: "exact", head: true }).is("deleted_at", null);
+  const [total, week, month] = await Promise.all([
+    base(),
+    base().gte("created_at", weekStart.toISOString()),
+    base().gte("created_at", monthStart.toISOString()),
+  ]);
+  return {
+    total: total.count ?? 0,
+    newThisWeek: week.count ?? 0,
+    newThisMonth: month.count ?? 0,
+  };
+}
+
 export async function getNewPatientsCount(fromISO: string, toISO: string): Promise<number> {
   const supabase = await createClient();
   const { count } = await supabase

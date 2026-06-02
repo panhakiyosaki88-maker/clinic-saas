@@ -1,223 +1,185 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  Calendar,
-  Clock,
-  CheckCircle2,
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react";
-import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { Calendar, Clock, CheckCircle2, DollarSign, Users, TrendingUp, TrendingDown } from "lucide-react";
+import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
+import { getCurrentClinic, getCurrentSubscription } from "@/lib/db/queries/clinic";
+import { getRolePermissionKeys } from "@/lib/auth/guard";
+import { PERMISSIONS } from "@/lib/auth/permissions";
+import { startOfDay, addDays } from "@/lib/date";
 import {
   listAppointmentsInRange,
   listQueue,
   getWeeklyAppointmentCounts,
   type AppointmentWithNames,
 } from "@/lib/db/queries/appointments";
-import { getRevenueReport } from "@/lib/db/queries/reports";
-import { hasPermission } from "@/lib/auth/guard";
-import { PERMISSIONS } from "@/lib/auth/permissions";
-import { startOfDay, addDays, timeLabel } from "@/lib/date";
-import { WeeklyTrends } from "@/components/dashboard/weekly-trends";
+import { listDoctors, getDoctorAvailabilityToday } from "@/lib/db/queries/doctors";
+import { getRevenueReport, getOutstandingReport, getPatientStats } from "@/lib/db/queries/reports";
+import { lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
+import { getRecentActivity } from "@/lib/db/queries/activity";
+
+import { BrandingHeader } from "@/components/dashboard/widgets/branding-header";
+import { QuickActions } from "@/components/dashboard/widgets/quick-actions";
+import { StatCard } from "@/components/dashboard/widgets/stat-card";
+import { TodaySchedule } from "@/components/dashboard/widgets/today-schedule";
+import { DoctorAvailability } from "@/components/dashboard/widgets/doctor-availability";
+import { PatientStatsWidget } from "@/components/dashboard/widgets/patient-stats";
+import { RevenueAnalytics } from "@/components/dashboard/widgets/revenue-analytics";
+import { AppointmentTrends } from "@/components/dashboard/widgets/appointment-trends";
+import { InventoryAlerts } from "@/components/dashboard/widgets/inventory-alerts";
+import { OutstandingPayments } from "@/components/dashboard/widgets/outstanding-payments";
+import { ActivityFeed } from "@/components/dashboard/widgets/activity-feed";
+import { AiInsights } from "@/components/dashboard/widgets/ai-insights";
 
 export const metadata = { title: "Dashboard" };
 
-const STATUS_PILL: Record<string, { label: string; cls: string }> = {
-  scheduled: { label: "Scheduled", cls: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300" },
-  waiting: { label: "Waiting", cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
-  in_consultation: { label: "In Progress", cls: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400" },
-  completed: { label: "Checked Out", cls: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" },
-  cancelled: { label: "Cancelled", cls: "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500" },
-  no_show: { label: "No Show", cls: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400" },
-};
-
-function KpiCard({
-  title,
-  value,
-  icon,
-  iconCls,
-  children,
-}: {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  iconCls: string;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:scale-[1.01] hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
-          <p className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
-        </div>
-        <div className={`flex size-11 items-center justify-center rounded-xl ${iconCls}`}>{icon}</div>
-      </div>
-      {children && <div className="mt-3">{children}</div>}
-    </div>
-  );
-}
-
 export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const { role } = getClinicClaims(user);
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
 
-  const [canAppts, canBilling] = await Promise.all([
-    hasPermission(PERMISSIONS.APPOINTMENTS_READ),
-    hasPermission(PERMISSIONS.BILLING_READ),
-  ]);
+  const isSuperAdmin = role === "super_admin";
+  const allowed = isSuperAdmin ? new Set<string>() : await getRolePermissionKeys(role ?? "");
+  const has = (p: string) => isSuperAdmin || allowed.has(p);
+
+  const canAppts = has(PERMISSIONS.APPOINTMENTS_READ);
+  const canDoctors = has(PERMISSIONS.DOCTORS_READ);
+  const canPatients = has(PERMISSIONS.PATIENTS_READ);
+  const canBilling = has(PERMISSIONS.BILLING_READ);
+  const canPharmacy = has(PERMISSIONS.PHARMACY_READ);
 
   const todayStart = startOfDay(new Date());
   const tomorrow = addDays(todayStart, 1);
   const yesterday = addDays(todayStart, -1);
 
-  const [todays, queue, yesterdays, weekly] = canAppts
-    ? await Promise.all([
-        listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString()),
-        listQueue(),
-        listAppointmentsInRange(yesterday.toISOString(), todayStart.toISOString()),
-        getWeeklyAppointmentCounts(7),
-      ])
-    : [[] as AppointmentWithNames[], [], [] as AppointmentWithNames[], []];
+  // Fetch everything the role is allowed to see, in parallel.
+  const [
+    subscription,
+    todays,
+    queue,
+    yesterdays,
+    weekly,
+    availability,
+    patientStats,
+    revToday,
+    revMonth,
+    outstanding,
+    lowStock,
+    expiring,
+    activity,
+    myDoctors,
+  ] = await Promise.all([
+    getCurrentSubscription(),
+    canAppts ? listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString()) : Promise.resolve([] as AppointmentWithNames[]),
+    canAppts ? listQueue() : Promise.resolve([]),
+    canAppts ? listAppointmentsInRange(yesterday.toISOString(), todayStart.toISOString()) : Promise.resolve([] as AppointmentWithNames[]),
+    canAppts ? getWeeklyAppointmentCounts(7) : Promise.resolve([]),
+    canDoctors ? getDoctorAvailabilityToday() : Promise.resolve([]),
+    canPatients ? getPatientStats() : Promise.resolve(null),
+    canBilling ? getRevenueReport(todayStart.toISOString(), tomorrow.toISOString()) : Promise.resolve(null),
+    canBilling ? getRevenueReport(new Date(todayStart.getFullYear(), todayStart.getMonth(), 1).toISOString(), tomorrow.toISOString()) : Promise.resolve(null),
+    canBilling ? getOutstandingReport() : Promise.resolve(null),
+    canPharmacy ? lowStockMedicines() : Promise.resolve([]),
+    canPharmacy ? expiringSoon() : Promise.resolve([]),
+    getRecentActivity(8),
+    role === "doctor" && canDoctors ? listDoctors() : Promise.resolve([]),
+  ]);
+
+  // Doctor view: their own appointments ("My Day").
+  const myDoctorId = myDoctors.find((d) => d.user_id === user.id)?.id ?? null;
+  const scheduleItems = myDoctorId ? todays.filter((a) => a.doctor_id === myDoctorId) : todays;
+  const scheduleTitle = myDoctorId ? "My Day" : "Today's Schedule";
 
   const completed = todays.filter((a) => a.status === "completed").length;
   const capacityPct = todays.length > 0 ? Math.round((completed / todays.length) * 100) : 0;
   const trend = yesterdays.length > 0 ? Math.round(((todays.length - yesterdays.length) / yesterdays.length) * 100) : null;
 
-  const revenue = canBilling ? (await getRevenueReport(todayStart.toISOString(), tomorrow.toISOString())).total : null;
+  // Rule-based "AI" insights from live data.
+  const insights: string[] = [];
+  if (queue.length > 0) insights.push(`${queue.length} patient${queue.length > 1 ? "s are" : " is"} waiting in the queue — consider calling the next.`);
+  if (outstanding && outstanding.count > 0) insights.push(`${outstanding.count} unpaid invoice${outstanding.count > 1 ? "s" : ""} totaling ${outstanding.total.toFixed(2)} outstanding.`);
+  if (lowStock.length > 0) insights.push(`${lowStock.length} medicine${lowStock.length > 1 ? "s are" : " is"} at or below reorder level.`);
+  if (expiring.length > 0) insights.push(`${expiring.length} stock batch${expiring.length > 1 ? "es are" : " is"} expiring within 60 days.`);
+  if (canAppts && availability.length > 0 && availability.every((d) => d.offToday || d.slots.length === 0)) insights.push("No doctors have hours scheduled today.");
+  if (canAppts && todays.length > 0 && capacityPct === 100) insights.push("All of today's appointments are completed — great work!");
 
-  const today = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-  const liveList = todays.filter((a) => a.status !== "cancelled" && a.status !== "no_show").slice(0, 8);
+  const quickFlags = {
+    appointment: has(PERMISSIONS.APPOINTMENTS_WRITE),
+    patient: has(PERMISSIONS.PATIENTS_WRITE),
+    prescription: has(PERMISSIONS.PRESCRIPTIONS_WRITE),
+    invoice: has(PERMISSIONS.BILLING_WRITE),
+    lab: has(PERMISSIONS.LAB_WRITE),
+  };
+
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const userName = typeof meta.full_name === "string" ? meta.full_name : "";
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{clinic.name} · {today}</p>
-      </header>
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
+      <BrandingHeader clinicName={clinic.name} plan={subscription?.plan ?? null} userName={userName} role={role} />
 
-      {/* KPI cards */}
+      <QuickActions flags={quickFlags} />
+
+      {/* Stat row */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          title="Today's Appointments"
-          value={todays.length}
-          icon={<Calendar className="size-5 text-blue-600 dark:text-blue-400" />}
-          iconCls="bg-blue-100 dark:bg-blue-500/15"
-        >
+        <StatCard title="Today's Appointments" value={canAppts ? todays.length : "—"} icon={Calendar} tint="blue">
           {trend !== null ? (
-            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${trend >= 0 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400"}`}>
+            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${trend >= 0 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400" : "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400"}`}>
               {trend >= 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
               {trend >= 0 ? "+" : ""}{trend}% vs yesterday
             </span>
           ) : (
             <span className="text-xs text-slate-400">No data for yesterday</span>
           )}
-        </KpiCard>
+        </StatCard>
 
-        <KpiCard
-          title="Waiting Room"
-          value={queue.length}
-          icon={<Clock className="size-5 text-amber-600 dark:text-amber-400" />}
-          iconCls="bg-amber-100 dark:bg-amber-500/15"
-        >
+        <StatCard title="Waiting Room" value={canAppts ? queue.length : "—"} icon={Clock} tint="amber">
           {queue.length > 0 ? (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
               <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-red-500" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-rose-500" />
               </span>
               Action required
             </span>
           ) : (
             <span className="text-xs text-slate-400">Queue is empty</span>
           )}
-        </KpiCard>
+        </StatCard>
 
-        <KpiCard
-          title="Completed Today"
-          value={completed}
-          icon={<CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400" />}
-          iconCls="bg-emerald-100 dark:bg-emerald-500/15"
-        >
-          <div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-              <div className="h-full rounded-full bg-emerald-500" style={{ width: `${capacityPct}%` }} />
-            </div>
-            <p className="mt-1 text-xs text-slate-400">{capacityPct}% of today&apos;s capacity</p>
+        <StatCard title="Completed Today" value={canAppts ? completed : "—"} icon={CheckCircle2} tint="emerald">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <div className="h-full rounded-full bg-emerald-500" style={{ width: `${capacityPct}%` }} />
           </div>
-        </KpiCard>
+          <p className="mt-1 text-xs text-slate-400">{capacityPct}% of today&apos;s capacity</p>
+        </StatCard>
 
-        <KpiCard
-          title="Daily Revenue"
-          value={revenue !== null ? revenue.toFixed(2) : "—"}
-          icon={<DollarSign className="size-5 text-emerald-600 dark:text-emerald-400" />}
-          iconCls="bg-emerald-100 dark:bg-emerald-500/15"
-        >
-          <Link href="/billing" className="text-xs text-blue-600 hover:underline dark:text-blue-400">
-            View billing →
-          </Link>
-        </KpiCard>
+        {canBilling ? (
+          <StatCard title="Daily Revenue" value={revToday ? revToday.total.toFixed(2) : "0.00"} icon={DollarSign} tint="emerald" />
+        ) : (
+          <StatCard title="Total Patients" value={patientStats ? patientStats.total : "—"} icon={Users} tint="violet" />
+        )}
       </div>
 
-      {/* 60 / 40 section */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* Live Patient Queue (60%) */}
-        <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:col-span-3">
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-            <h2 className="font-semibold text-slate-900 dark:text-white">Live Patient Queue</h2>
-            <Link href="/appointments" className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">
-              View all
-            </Link>
-          </div>
-          {liveList.length === 0 ? (
-            <p className="px-5 py-10 text-center text-sm text-slate-400">No patients in the clinic right now.</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wide text-slate-400">
-                <tr>
-                  <th className="px-5 py-2 font-medium">Time</th>
-                  <th className="px-5 py-2 font-medium">Patient</th>
-                  <th className="px-5 py-2 font-medium">Doctor</th>
-                  <th className="px-5 py-2 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {liveList.map((a) => {
-                  const pill = STATUS_PILL[a.status] ?? STATUS_PILL.scheduled;
-                  return (
-                    <tr key={a.id} className="border-t border-slate-100 dark:border-slate-800">
-                      <td className="px-5 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">
-                        {a.is_walk_in ? "walk-in" : timeLabel(a.scheduled_at)}
-                      </td>
-                      <td className="px-5 py-3">
-                        <Link href={`/appointments/${a.id}`} className="font-medium text-slate-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">
-                          {a.patient_name}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-3 text-slate-500 dark:text-slate-400">{a.doctor_name ?? "Unassigned"}</td>
-                      <td className="px-5 py-3">
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${pill.cls}`}>{pill.label}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+      {/* Main grid: schedule + trends (left), AI + availability + activity (right) */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          {canAppts && <TodaySchedule items={scheduleItems} title={scheduleTitle} canBook={quickFlags.appointment} />}
+          {canAppts && <AppointmentTrends data={weekly} />}
         </div>
+        <div className="space-y-6">
+          <AiInsights insights={insights} />
+          {canDoctors && <DoctorAvailability doctors={availability} canManage={has(PERMISSIONS.DOCTORS_WRITE)} />}
+          <ActivityFeed items={activity} />
+        </div>
+      </div>
 
-        {/* Clinic Analytics (40%) */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
-          <h2 className="font-semibold text-slate-900 dark:text-white">Weekly Appointment Trends</h2>
-          {canAppts ? (
-            <div className="mt-2">
-              <WeeklyTrends data={weekly} />
-            </div>
-          ) : (
-            <p className="mt-4 text-sm text-slate-400">No access to appointment analytics.</p>
-          )}
-        </div>
+      {/* Operations row: revenue, outstanding, inventory, patients */}
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {canBilling && revMonth && <RevenueAnalytics todayTotal={revToday?.total ?? 0} month={revMonth} />}
+        {canBilling && outstanding && <OutstandingPayments report={outstanding} />}
+        {canPharmacy && <InventoryAlerts lowStock={lowStock} expiring={expiring} />}
+        {canPatients && patientStats && <PatientStatsWidget stats={patientStats} canRegister={quickFlags.patient} />}
       </div>
     </div>
   );
