@@ -7,7 +7,7 @@ import type { MemberRow, AssignableRole } from "@/lib/db/queries/members";
 import { Button } from "@/components/ui/button";
 
 const selectClass =
-  "h-8 rounded-md border border-[var(--input)] bg-transparent px-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ring)] disabled:opacity-50";
+  "h-8 rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 disabled:opacity-50";
 
 function StatusBadge({ status }: { status: MemberRow["status"] }) {
   const label = status[0].toUpperCase() + status.slice(1);
