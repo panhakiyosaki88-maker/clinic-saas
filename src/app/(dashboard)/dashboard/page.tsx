@@ -33,6 +33,9 @@ export default async function DashboardPage() {
             <Link href="/patients">Patients</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
+            <Link href="/doctors">Doctors</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href="/settings/staff">Staff</Link>
           </Button>
           <ThemeToggle />

@@ -426,6 +426,98 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["patient_timeline"]["Insert"]>;
         Relationships: [];
       };
+      doctors: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          user_id: string | null;
+          branch_id: string | null;
+          full_name: string;
+          specialization: string | null;
+          license_number: string | null;
+          phone: string | null;
+          email: string | null;
+          bio: string | null;
+          consultation_fee: number | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          user_id?: string | null;
+          branch_id?: string | null;
+          full_name: string;
+          specialization?: string | null;
+          license_number?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          bio?: string | null;
+          consultation_fee?: number | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["doctors"]["Insert"]>;
+        Relationships: [];
+      };
+      doctor_schedules: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          doctor_id: string;
+          branch_id: string | null;
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          doctor_id: string;
+          branch_id?: string | null;
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["doctor_schedules"]["Insert"]>;
+        Relationships: [];
+      };
+      doctor_time_off: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          doctor_id: string;
+          start_date: string;
+          end_date: string;
+          reason: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          doctor_id: string;
+          start_date: string;
+          end_date: string;
+          reason?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["doctor_time_off"]["Insert"]>;
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;

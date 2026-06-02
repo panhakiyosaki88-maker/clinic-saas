@@ -19,6 +19,8 @@ export const PERMISSIONS = {
   BILLING_READ: "billing.read",
   BILLING_WRITE: "billing.write",
   REPORTS_VIEW: "reports.view",
+  DOCTORS_READ: "doctors.read",
+  DOCTORS_WRITE: "doctors.write",
   STAFF_MANAGE: "staff.manage",
   CLINIC_MANAGE: "clinic.manage",
   SUBSCRIPTION_MANAGE: "subscription.manage",
