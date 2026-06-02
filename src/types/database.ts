@@ -31,6 +31,13 @@ export type ClinicStatus = "active" | "suspended" | "pending";
 export type MembershipStatus = "active" | "invited" | "disabled";
 export type Gender = "male" | "female" | "other";
 export type RecordStatus = "draft" | "finalized";
+export type AppointmentStatus =
+  | "scheduled"
+  | "waiting"
+  | "in_consultation"
+  | "completed"
+  | "cancelled"
+  | "no_show";
 export type TimelineEvent =
   | "registered"
   | "note"
@@ -518,6 +525,50 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["doctor_time_off"]["Insert"]>;
         Relationships: [];
       };
+      appointments: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          branch_id: string | null;
+          patient_id: string;
+          doctor_id: string | null;
+          scheduled_at: string;
+          duration_minutes: number;
+          status: AppointmentStatus;
+          is_walk_in: boolean;
+          reason: string | null;
+          notes: string | null;
+          checked_in_at: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          branch_id?: string | null;
+          patient_id: string;
+          doctor_id?: string | null;
+          scheduled_at: string;
+          duration_minutes?: number;
+          status?: AppointmentStatus;
+          is_walk_in?: boolean;
+          reason?: string | null;
+          notes?: string | null;
+          checked_in_at?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["appointments"]["Insert"]>;
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -550,6 +601,7 @@ export interface Database {
       gender: Gender;
       timeline_event: TimelineEvent;
       record_status: RecordStatus;
+      appointment_status: AppointmentStatus;
     };
     CompositeTypes: Record<string, never>;
   };

@@ -40,10 +40,11 @@ export default async function PatientProfilePage({
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const [canWrite, canEmrRead, canEmrWrite] = await Promise.all([
+  const [canWrite, canEmrRead, canEmrWrite, canBookAppt] = await Promise.all([
     hasPermission(PERMISSIONS.PATIENTS_WRITE),
     hasPermission(PERMISSIONS.EMR_READ),
     hasPermission(PERMISSIONS.EMR_WRITE),
+    hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
   ]);
   const [documents, timeline, visits] = await Promise.all([
     listPatientDocuments(id),
@@ -61,14 +62,21 @@ export default async function PatientProfilePage({
           <h1 className="mt-1 text-2xl font-bold">{patient.full_name}</h1>
           <p className="font-mono text-xs text-[var(--muted-foreground)]">{patient.patient_number}</p>
         </div>
-        {canWrite && (
-          <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/patients/${patient.id}/edit`}>Edit</Link>
+        <div className="flex items-center gap-2">
+          {canBookAppt && (
+            <Button asChild size="sm">
+              <Link href={`/appointments/new?patientId=${patient.id}`}>Book appointment</Link>
             </Button>
-            <DeletePatientButton patientId={patient.id} />
-          </div>
-        )}
+          )}
+          {canWrite && (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/patients/${patient.id}/edit`}>Edit</Link>
+              </Button>
+              <DeletePatientButton patientId={patient.id} />
+            </>
+          )}
+        </div>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-2">

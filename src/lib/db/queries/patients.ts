@@ -52,6 +52,19 @@ export async function listPatients(opts: {
   };
 }
 
+/** Compact patient list for select inputs (e.g. booking an appointment). */
+export async function listPatientOptions(limit = 500): Promise<{ id: string; label: string }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("patients")
+    .select("id, full_name, patient_number")
+    .is("deleted_at", null)
+    .order("full_name", { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((p) => ({ id: p.id, label: `${p.full_name} · ${p.patient_number}` }));
+}
+
 export async function getPatient(id: string): Promise<Patient | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

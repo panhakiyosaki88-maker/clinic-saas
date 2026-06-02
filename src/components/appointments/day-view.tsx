@@ -1,0 +1,45 @@
+import Link from "next/link";
+import type { AppointmentWithNames } from "@/lib/db/queries/appointments";
+import { timeLabel } from "@/lib/date";
+import { StatusBadge } from "./status-badge";
+import { StatusControl } from "./status-control";
+import { Card, CardContent } from "@/components/ui/card";
+
+export function DayView({
+  appointments,
+  canWrite,
+}: {
+  appointments: AppointmentWithNames[];
+  canWrite: boolean;
+}) {
+  if (appointments.length === 0) {
+    return <p className="px-1 py-8 text-center text-sm text-[var(--muted-foreground)]">No appointments.</p>;
+  }
+  return (
+    <Card>
+      <CardContent className="divide-y divide-[var(--border)] p-0">
+        {appointments.map((a) => (
+          <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
+            <div className="flex items-center gap-3">
+              <span className="w-14 font-mono text-sm text-[var(--muted-foreground)]">
+                {a.is_walk_in ? "walk-in" : timeLabel(a.scheduled_at)}
+              </span>
+              <div>
+                <Link href={`/appointments/${a.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                  {a.patient_name}
+                </Link>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  {a.doctor_name ?? "Unassigned"}{a.reason ? ` · ${a.reason}` : ""}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <StatusBadge status={a.status} />
+              {canWrite && <StatusControl appointmentId={a.id} status={a.status} />}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
