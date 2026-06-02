@@ -1,0 +1,172 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireUser, requireClinic } from "@/lib/auth/session";
+import {
+  createClinicSchema,
+  updateClinicSchema,
+  createBranchSchema,
+  slugify,
+  type CreateClinicInput,
+  type UpdateClinicInput,
+  type CreateBranchInput,
+} from "@/lib/validations/clinic";
+import { ok, fail, type ActionResult } from "./types";
+
+/**
+ * Onboards the authenticated user as the owner of a NEW clinic:
+ *   1. creates the clinic, a trial subscription, and a primary branch
+ *   2. stamps clinic_id + role='clinic_owner' into the user's app_metadata,
+ *      so the next JWT carries the claims that RLS reads.
+ *
+ * Uses the service-role admin client because no clinic_id claim exists yet,
+ * so RLS would otherwise block every write.
+ */
+export async function createClinic(
+  input: CreateClinicInput
+): Promise<ActionResult<{ clinicId: string }>> {
+  const user = await requireUser();
+
+  // A user can only own one clinic via onboarding (idempotency guard).
+  const claims = (user.app_metadata ?? {}) as Record<string, unknown>;
+  if (typeof claims.clinic_id === "string" && claims.clinic_id) {
+    return fail("This account already belongs to a clinic.");
+  }
+
+  const parsed = createClinicSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  }
+  const v = parsed.data;
+  const slug = (v.slug && v.slug.length > 0 ? v.slug : slugify(v.name)) || slugify(v.name);
+
+  const admin = createAdminClient();
+
+  const { data: clinic, error: clinicErr } = await admin
+    .from("clinics")
+    .insert({
+      name: v.name,
+      slug,
+      owner_user_id: user.id,
+      created_by: user.id,
+      contact_email: v.contactEmail || user.email || null,
+      contact_phone: v.contactPhone || null,
+      country: v.country,
+      timezone: v.timezone,
+      currency: v.currency,
+    })
+    .select("id")
+    .single();
+
+  if (clinicErr || !clinic) {
+    if (clinicErr?.code === "23505") {
+      return fail("That clinic URL is taken. Try a different name or slug.", {
+        slug: ["Already in use"],
+      });
+    }
+    return fail(clinicErr?.message ?? "Could not create clinic.");
+  }
+
+  // Trial subscription (Starter). The billing system of record updates this later.
+  const { error: subErr } = await admin.from("subscriptions").insert({
+    clinic_id: clinic.id,
+    plan: "starter",
+    status: "trialing",
+  });
+  if (subErr) {
+    // Roll back the clinic so onboarding can be retried cleanly.
+    await admin.from("clinics").delete().eq("id", clinic.id);
+    return fail("Could not start subscription. Please try again.");
+  }
+
+  // Primary branch.
+  const { error: branchErr } = await admin.from("branches").insert({
+    clinic_id: clinic.id,
+    name: "Main Branch",
+    code: "MAIN",
+    is_primary: true,
+    created_by: user.id,
+  });
+  if (branchErr) {
+    await admin.from("clinics").delete().eq("id", clinic.id);
+    return fail("Could not create the primary branch. Please try again.");
+  }
+
+  // Stamp the JWT claims RLS depends on. Merge to avoid clobbering other metadata.
+  const { error: claimErr } = await admin.auth.admin.updateUserById(user.id, {
+    app_metadata: { ...claims, clinic_id: clinic.id, role: "clinic_owner" },
+  });
+  if (claimErr) {
+    await admin.from("clinics").delete().eq("id", clinic.id);
+    return fail("Could not finalize your account. Please try again.");
+  }
+
+  revalidatePath("/", "layout");
+  return ok({ clinicId: clinic.id });
+}
+
+/** Clinic owner updates their clinic profile (RLS enforces ownership). */
+export async function updateClinic(
+  input: UpdateClinicInput
+): Promise<ActionResult> {
+  const { clinicId } = await requireClinic();
+  const parsed = updateClinicSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  }
+  const v = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clinics")
+    .update({
+      ...(v.name !== undefined ? { name: v.name } : {}),
+      ...(v.contactEmail !== undefined ? { contact_email: v.contactEmail || null } : {}),
+      ...(v.contactPhone !== undefined ? { contact_phone: v.contactPhone || null } : {}),
+      ...(v.timezone !== undefined ? { timezone: v.timezone } : {}),
+      ...(v.currency !== undefined ? { currency: v.currency } : {}),
+    })
+    .eq("id", clinicId);
+
+  if (error) return fail(error.message);
+  revalidatePath("/settings/clinic");
+  return ok(undefined);
+}
+
+/** Clinic owner adds a branch (RLS + insert policy enforce clinic + role). */
+export async function createBranch(
+  input: CreateBranchInput
+): Promise<ActionResult<{ branchId: string }>> {
+  const { clinicId } = await requireClinic();
+  const parsed = createBranchSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  }
+  const v = parsed.data;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("branches")
+    .insert({
+      clinic_id: clinicId,
+      name: v.name,
+      code: v.code || null,
+      address: v.address || null,
+      phone: v.phone || null,
+      is_primary: v.isPrimary,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    if (error?.code === "23505") {
+      return fail("A branch with that code already exists.", { code: ["Already in use"] });
+    }
+    return fail(error?.message ?? "Could not create branch.");
+  }
+
+  revalidatePath("/settings/branches");
+  return ok({ branchId: data.id });
+}
