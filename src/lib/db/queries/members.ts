@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireClinic } from "@/lib/auth/session";
 import type { MembershipStatus } from "@/types/database";
 
 export interface MemberRow {
@@ -15,18 +17,19 @@ export interface MemberRow {
 }
 
 /**
- * The clinic's staff roster (RLS scopes to the caller's clinic). Joins the
- * membership to its role and, for accepted members, the user's profile.
+ * The clinic's staff roster. Uses the service-role client (scoped to the
+ * caller's own clinic) because: (a) there is no FK from memberships.user_id to
+ * profiles for PostgREST to embed, and (b) profiles RLS only exposes a user's
+ * own row — so co-workers' names/emails are fetched server-side here instead.
  */
 export async function listMembers(): Promise<MemberRow[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { clinicId } = await requireClinic();
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
     .from("memberships")
-    .select(
-      `id, status, invited_email, user_id, created_at,
-       roles ( key, name ),
-       profiles ( full_name, email )`
-    )
+    .select(`id, status, invited_email, user_id, created_at, roles ( key, name )`)
+    .eq("clinic_id", clinicId)
     .is("deleted_at", null)
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -38,20 +41,34 @@ export async function listMembers(): Promise<MemberRow[]> {
     user_id: string | null;
     created_at: string;
     roles: { key: string; name: string } | null;
-    profiles: { full_name: string | null; email: string | null } | null;
   };
+  const rows = (data ?? []) as unknown as Joined[];
 
-  return ((data ?? []) as unknown as Joined[]).map((m) => ({
-    id: m.id,
-    status: m.status,
-    invited_email: m.invited_email,
-    user_id: m.user_id,
-    full_name: m.profiles?.full_name ?? null,
-    email: m.profiles?.email ?? m.invited_email ?? null,
-    role_key: m.roles?.key ?? "",
-    role_name: m.roles?.name ?? "",
-    created_at: m.created_at,
-  }));
+  // Look up profiles for accepted members in one query.
+  const userIds = rows.map((r) => r.user_id).filter((id): id is string => !!id);
+  const profiles = new Map<string, { full_name: string | null; email: string | null }>();
+  if (userIds.length > 0) {
+    const { data: profs } = await admin
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", userIds);
+    for (const p of profs ?? []) profiles.set(p.id, { full_name: p.full_name, email: p.email });
+  }
+
+  return rows.map((m) => {
+    const prof = m.user_id ? profiles.get(m.user_id) : null;
+    return {
+      id: m.id,
+      status: m.status,
+      invited_email: m.invited_email,
+      user_id: m.user_id,
+      full_name: prof?.full_name ?? null,
+      email: prof?.email ?? m.invited_email ?? null,
+      role_key: m.roles?.key ?? "",
+      role_name: m.roles?.name ?? "",
+      created_at: m.created_at,
+    };
+  });
 }
 
 export interface AssignableRole {
