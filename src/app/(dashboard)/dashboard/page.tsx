@@ -73,6 +73,9 @@ export default async function DashboardPage() {
             <Link href="/billing">Billing</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
+            <Link href="/reports">Reports</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href="/settings/staff">Staff</Link>
           </Button>
           <ThemeToggle />
