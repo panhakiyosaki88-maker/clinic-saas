@@ -17,6 +17,7 @@ import { DocumentList } from "@/components/patients/document-list";
 import { AddNoteForm } from "@/components/patients/add-note-form";
 import { DeletePatientButton } from "@/components/patients/delete-patient-button";
 import { LabStatusBadge } from "@/components/lab/lab-status-badge";
+import { FollowUpForm } from "@/components/notifications/follow-up-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -46,7 +47,7 @@ export default async function PatientProfilePage({
 
   const [
     canWrite, canEmrRead, canEmrWrite, canBookAppt,
-    canRxRead, canRxWrite, canBillRead, canBillWrite, canLabRead, canLabWrite,
+    canRxRead, canRxWrite, canBillRead, canBillWrite, canLabRead, canLabWrite, canNotify,
   ] = await Promise.all([
     hasPermission(PERMISSIONS.PATIENTS_WRITE),
     hasPermission(PERMISSIONS.EMR_READ),
@@ -58,6 +59,7 @@ export default async function PatientProfilePage({
     hasPermission(PERMISSIONS.BILLING_WRITE),
     hasPermission(PERMISSIONS.LAB_READ),
     hasPermission(PERMISSIONS.LAB_WRITE),
+    hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
   ]);
   const [documents, timeline, visits, prescriptions, invoices, labRequests] = await Promise.all([
     listPatientDocuments(id),
@@ -253,6 +255,13 @@ export default async function PatientProfilePage({
               </ul>
             )}
           </CardContent>
+        </Card>
+      )}
+
+      {canNotify && patient.email && (
+        <Card>
+          <CardHeader><CardTitle>Send follow-up</CardTitle></CardHeader>
+          <CardContent><FollowUpForm patientId={patient.id} /></CardContent>
         </Card>
       )}
 

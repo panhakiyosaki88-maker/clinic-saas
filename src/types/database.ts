@@ -42,6 +42,9 @@ export type InventoryReason = "purchase" | "dispense" | "adjustment" | "expiry" 
 export type InvoiceStatus = "unpaid" | "partially_paid" | "paid" | "cancelled";
 export type PaymentMethod = "cash" | "bank_transfer" | "khqr";
 export type LabStatus = "requested" | "collected" | "processing" | "completed" | "cancelled";
+export type NotificationChannel = "email" | "telegram";
+export type NotificationStatus = "pending" | "sent" | "failed" | "skipped";
+export type NotificationType = "appointment_reminder" | "payment_reminder" | "follow_up" | "custom";
 export type TimelineEvent =
   | "registered"
   | "note"
@@ -841,6 +844,44 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["lab_results"]["Insert"]>;
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          channel: NotificationChannel;
+          type: NotificationType;
+          recipient: string;
+          subject: string | null;
+          body: string;
+          status: NotificationStatus;
+          error: string | null;
+          patient_id: string | null;
+          appointment_id: string | null;
+          invoice_id: string | null;
+          sent_at: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          channel: NotificationChannel;
+          type?: NotificationType;
+          recipient: string;
+          subject?: string | null;
+          body: string;
+          status?: NotificationStatus;
+          error?: string | null;
+          patient_id?: string | null;
+          appointment_id?: string | null;
+          invoice_id?: string | null;
+          sent_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>;
+        Relationships: [];
+      };
       prescriptions: {
         Row: {
           id: string;
@@ -938,6 +979,9 @@ export interface Database {
       invoice_status: InvoiceStatus;
       payment_method: PaymentMethod;
       lab_status: LabStatus;
+      notification_channel: NotificationChannel;
+      notification_status: NotificationStatus;
+      notification_type: NotificationType;
     };
     CompositeTypes: Record<string, never>;
   };

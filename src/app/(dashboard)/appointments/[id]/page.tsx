@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { StatusBadge } from "@/components/appointments/status-badge";
 import { StatusControl } from "@/components/appointments/status-control";
 import { DeleteAppointmentButton } from "@/components/appointments/delete-appointment-button";
+import { ReminderButton } from "@/components/notifications/reminder-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -34,7 +35,10 @@ export default async function AppointmentDetailPage({
   const a = await getAppointment(id);
   if (!a) notFound();
 
-  const canWrite = await hasPermission(PERMISSIONS.APPOINTMENTS_WRITE);
+  const [canWrite, canNotify] = await Promise.all([
+    hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
+    hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
+  ]);
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
@@ -46,14 +50,17 @@ export default async function AppointmentDetailPage({
           <h1 className="mt-1 text-2xl font-bold">{a.patient_name}</h1>
           <StatusBadge status={a.status} />
         </div>
-        {canWrite && (
-          <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/appointments/${a.id}/edit`}>Edit</Link>
-            </Button>
-            <DeleteAppointmentButton appointmentId={a.id} />
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {canNotify && <ReminderButton kind="appointment" id={a.id} />}
+          {canWrite && (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/appointments/${a.id}/edit`}>Edit</Link>
+              </Button>
+              <DeleteAppointmentButton appointmentId={a.id} />
+            </>
+          )}
+        </div>
       </header>
 
       {canWrite && (

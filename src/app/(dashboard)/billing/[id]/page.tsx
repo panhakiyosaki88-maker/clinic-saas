@@ -8,6 +8,7 @@ import { PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
 import { PrintButton } from "@/components/print-button";
 import { PaymentForm } from "@/components/billing/payment-form";
 import { CancelInvoiceButton } from "@/components/billing/cancel-invoice-button";
+import { ReminderButton } from "@/components/notifications/reminder-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -26,7 +27,10 @@ export default async function InvoiceDetailPage({
   const inv = await getInvoice(id);
   if (!inv) notFound();
 
-  const canWrite = await hasPermission(PERMISSIONS.BILLING_WRITE);
+  const [canWrite, canNotify] = await Promise.all([
+    hasPermission(PERMISSIONS.BILLING_WRITE),
+    hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
+  ]);
   const fmt = (n: number) => Number(n).toFixed(2);
   const active = inv.status !== "cancelled";
 
@@ -38,6 +42,9 @@ export default async function InvoiceDetailPage({
           <PrintButton label="Invoice PDF" />
           {inv.payments.length > 0 && (
             <Button asChild variant="outline" size="sm"><Link href={`/billing/${inv.id}/receipt`}>Receipt</Link></Button>
+          )}
+          {canNotify && active && Number(inv.balance) > 0 && (
+            <ReminderButton kind="payment" id={inv.id} label="Payment reminder" />
           )}
           {canWrite && active && <CancelInvoiceButton invoiceId={inv.id} />}
         </div>

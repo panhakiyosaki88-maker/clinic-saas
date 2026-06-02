@@ -21,6 +21,8 @@ export const PERMISSIONS = {
   REPORTS_VIEW: "reports.view",
   DOCTORS_READ: "doctors.read",
   DOCTORS_WRITE: "doctors.write",
+  NOTIFICATIONS_READ: "notifications.read",
+  NOTIFICATIONS_SEND: "notifications.send",
   STAFF_MANAGE: "staff.manage",
   CLINIC_MANAGE: "clinic.manage",
   SUBSCRIPTION_MANAGE: "subscription.manage",
