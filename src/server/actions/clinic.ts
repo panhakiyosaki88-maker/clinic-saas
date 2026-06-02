@@ -94,6 +94,27 @@ export async function createClinic(
     return fail("Could not create the primary branch. Please try again.");
   }
 
+  // Owner membership (RBAC, Module 3): the creator is the clinic_owner.
+  const { data: ownerRole } = await admin
+    .from("roles")
+    .select("id")
+    .eq("key", "clinic_owner")
+    .is("clinic_id", null)
+    .maybeSingle();
+  if (ownerRole) {
+    const { error: memErr } = await admin.from("memberships").insert({
+      clinic_id: clinic.id,
+      user_id: user.id,
+      role_id: ownerRole.id,
+      status: "active",
+      created_by: user.id,
+    });
+    if (memErr) {
+      await admin.from("clinics").delete().eq("id", clinic.id);
+      return fail("Could not set up clinic ownership. Please try again.");
+    }
+  }
+
   // Stamp the JWT claims RLS depends on. Merge to avoid clobbering other metadata.
   const { error: claimErr } = await admin.auth.admin.updateUserById(user.id, {
     app_metadata: { ...claims, clinic_id: clinic.id, role: "clinic_owner" },

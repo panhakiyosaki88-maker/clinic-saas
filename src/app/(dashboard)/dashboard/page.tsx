@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic, getCurrentSubscription, listBranches } from "@/lib/db/queries/clinic";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Dashboard" };
@@ -27,6 +29,9 @@ export default async function DashboardPage() {
           <p className="text-sm text-[var(--muted-foreground)]">/{clinic.slug}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/settings/staff">Staff</Link>
+          </Button>
           <ThemeToggle />
           <SignOutButton />
         </div>

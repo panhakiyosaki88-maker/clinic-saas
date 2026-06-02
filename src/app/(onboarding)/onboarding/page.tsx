@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
+import { getPendingInvitationByEmail } from "@/lib/db/invitations";
 import { OnboardingForm } from "@/components/clinic/onboarding-form";
+import { AcceptInvite } from "@/components/members/accept-invite";
 import {
   Card,
   CardContent,
@@ -15,24 +17,42 @@ export default async function OnboardingPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // Already onboarded → straight to the app. (Login route arrives in Module 2;
-  // until then this page is reachable with a service-role-seeded session.)
+  // Already onboarded → straight to the app.
   const { clinic_id } = getClinicClaims(user);
   if (clinic_id) redirect("/dashboard");
+
+  // Invited by an existing clinic? Offer to accept instead of creating one.
+  const invitation = user.email ? await getPendingInvitationByEmail(user.email) : null;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
       <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle className="text-xl">Set up your clinic</CardTitle>
-          <CardDescription>
-            Create your clinic workspace. You can add branches, doctors and staff
-            once you&apos;re in. You start on a 14-day Starter trial.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <OnboardingForm />
-        </CardContent>
+        {invitation ? (
+          <>
+            <CardHeader>
+              <CardTitle className="text-xl">You&apos;ve been invited</CardTitle>
+              <CardDescription>
+                Join <strong>{invitation.clinicName}</strong> as {invitation.roleName}.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AcceptInvite />
+            </CardContent>
+          </>
+        ) : (
+          <>
+            <CardHeader>
+              <CardTitle className="text-xl">Set up your clinic</CardTitle>
+              <CardDescription>
+                Create your clinic workspace. You can add branches, doctors and staff
+                once you&apos;re in. You start on a 14-day Starter trial.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OnboardingForm />
+            </CardContent>
+          </>
+        )}
       </Card>
     </main>
   );

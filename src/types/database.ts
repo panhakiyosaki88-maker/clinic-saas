@@ -28,6 +28,7 @@ export type SubscriptionStatus =
   | "canceled"
   | "expired";
 export type ClinicStatus = "active" | "suspended" | "pending";
+export type MembershipStatus = "active" | "invited" | "disabled";
 
 export interface Database {
   public: {
@@ -150,6 +151,80 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["branches"]["Insert"]>;
         Relationships: [];
       };
+      roles: {
+        Row: {
+          id: string;
+          clinic_id: string | null;
+          key: string;
+          name: string;
+          description: string | null;
+          is_system: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          clinic_id?: string | null;
+          key: string;
+          name: string;
+          description?: string | null;
+          is_system?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["roles"]["Insert"]>;
+        Relationships: [];
+      };
+      permissions: {
+        Row: {
+          id: string;
+          key: string;
+          category: string;
+          description: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          category: string;
+          description: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["permissions"]["Insert"]>;
+        Relationships: [];
+      };
+      role_permissions: {
+        Row: { role_id: string; permission_id: string };
+        Insert: { role_id: string; permission_id: string };
+        Update: Partial<{ role_id: string; permission_id: string }>;
+        Relationships: [];
+      };
+      memberships: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          user_id: string | null;
+          role_id: string;
+          invited_email: string | null;
+          status: MembershipStatus;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          user_id?: string | null;
+          role_id: string;
+          invited_email?: string | null;
+          status?: MembershipStatus;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["memberships"]["Insert"]>;
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -172,11 +247,13 @@ export interface Database {
       current_clinic_id: { Args: Record<string, never>; Returns: string };
       current_user_role: { Args: Record<string, never>; Returns: string };
       is_super_admin: { Args: Record<string, never>; Returns: boolean };
+      has_permission: { Args: { p_permission: string }; Returns: boolean };
     };
     Enums: {
       subscription_plan: SubscriptionPlan;
       subscription_status: SubscriptionStatus;
       clinic_status: ClinicStatus;
+      membership_status: MembershipStatus;
     };
     CompositeTypes: Record<string, never>;
   };
