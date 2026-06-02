@@ -6,6 +6,7 @@ import {
   listPatientDocuments,
   listPatientTimeline,
 } from "@/lib/db/queries/patients";
+import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { DocumentUploader } from "@/components/patients/document-uploader";
@@ -39,10 +40,15 @@ export default async function PatientProfilePage({
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const canWrite = await hasPermission(PERMISSIONS.PATIENTS_WRITE);
-  const [documents, timeline] = await Promise.all([
+  const [canWrite, canEmrRead, canEmrWrite] = await Promise.all([
+    hasPermission(PERMISSIONS.PATIENTS_WRITE),
+    hasPermission(PERMISSIONS.EMR_READ),
+    hasPermission(PERMISSIONS.EMR_WRITE),
+  ]);
+  const [documents, timeline, visits] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
+    canEmrRead ? listMedicalRecords(id) : Promise.resolve([]),
   ]);
 
   return (
@@ -98,6 +104,40 @@ export default async function PatientProfilePage({
           </CardContent>
         </Card>
       </div>
+
+      {canEmrRead && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>Visit history ({visits.length})</CardTitle>
+            {canEmrWrite && (
+              <Button asChild size="sm">
+                <Link href={`/patients/${patient.id}/records/new`}>New visit</Link>
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {visits.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No visits recorded.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {visits.map((v) => (
+                  <li key={v.id} className="flex items-center justify-between py-2">
+                    <Link
+                      href={`/patients/${patient.id}/records/${v.id}`}
+                      className="text-sm font-medium text-[var(--primary)] hover:underline"
+                    >
+                      {new Date(v.visit_date).toLocaleDateString()}
+                    </Link>
+                    <span className="truncate pl-3 text-sm text-[var(--muted-foreground)]">
+                      {v.diagnosis || v.chief_complaint || "—"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">

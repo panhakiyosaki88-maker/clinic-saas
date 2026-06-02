@@ -148,7 +148,7 @@ export async function recordPatientDocument(
   const { clinicId, user } = await requirePermission(PERMISSIONS.PATIENTS_WRITE);
   const parsed = recordDocumentSchema.safeParse(input);
   if (!parsed.success) return fail("Invalid document data.");
-  const { patientId, filePath, fileName, mimeType, sizeBytes } = parsed.data;
+  const { patientId, medicalRecordId, filePath, fileName, mimeType, sizeBytes } = parsed.data;
 
   // The file path must live under this clinic's namespace.
   if (!filePath.startsWith(`${clinicId}/`)) return fail("Invalid file path.");
@@ -157,6 +157,7 @@ export async function recordPatientDocument(
   const { error } = await supabase.from("patient_documents").insert({
     clinic_id: clinicId,
     patient_id: patientId,
+    medical_record_id: medicalRecordId ?? null,
     file_path: filePath,
     file_name: fileName,
     mime_type: mimeType ?? null,

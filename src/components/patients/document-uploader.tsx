@@ -14,9 +14,11 @@ function safeName(name: string): string {
 export function DocumentUploader({
   clinicId,
   patientId,
+  medicalRecordId,
 }: {
   clinicId: string;
   patientId: string;
+  medicalRecordId?: string;
 }) {
   const router = useRouter();
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -42,6 +44,7 @@ export function DocumentUploader({
 
       const result = await recordPatientDocument({
         patientId,
+        medicalRecordId,
         filePath: path,
         fileName: file.name,
         mimeType: file.type || undefined,

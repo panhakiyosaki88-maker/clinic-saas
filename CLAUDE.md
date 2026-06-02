@@ -52,5 +52,6 @@ docs/modules/             one doc per module
 - [x] **Module 2 — Authentication** (profiles, signup/login/logout, email confirm + callback routes)
 - [x] **Module 3 — RBAC** (roles/permissions/memberships, has_permission engine, staff mgmt, invitations)
 - [x] **Module 4 — Patient Management** (patients, documents/Storage, timeline, search, plan limits)
-- [ ] Modules 5–13 — EMR, Appointments, Doctors, Prescriptions, Lab, Pharmacy, Billing,
+- [x] **Module 5 — EMR** (visits/SOAP, vital signs + generated BMI, attachments, visit history)
+- [ ] Modules 6–13 — Appointments, Doctors, Prescriptions, Lab, Pharmacy, Billing,
       Reports, Notifications, Subscriptions, Super Admin Portal

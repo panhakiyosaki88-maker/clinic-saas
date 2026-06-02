@@ -39,6 +39,7 @@ export type AddTimelineNoteInput = z.infer<typeof addTimelineNoteSchema>;
 
 export const recordDocumentSchema = z.object({
   patientId: z.string().uuid(),
+  medicalRecordId: z.string().uuid().optional(),
   filePath: z.string().min(1),
   fileName: z.string().min(1).max(255),
   mimeType: z.string().max(255).optional(),
