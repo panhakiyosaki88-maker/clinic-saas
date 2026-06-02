@@ -38,6 +38,7 @@ export type AppointmentStatus =
   | "completed"
   | "cancelled"
   | "no_show";
+export type InventoryReason = "purchase" | "dispense" | "adjustment" | "expiry" | "return";
 export type TimelineEvent =
   | "registered"
   | "note"
@@ -569,6 +570,76 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["appointments"]["Insert"]>;
         Relationships: [];
       };
+      medicines: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          name: string;
+          generic_name: string | null;
+          sku: string | null;
+          category: string | null;
+          unit: string;
+          reorder_level: number;
+          purchase_price: number | null;
+          selling_price: number | null;
+          stock_quantity: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          name: string;
+          generic_name?: string | null;
+          sku?: string | null;
+          category?: string | null;
+          unit?: string;
+          reorder_level?: number;
+          purchase_price?: number | null;
+          selling_price?: number | null;
+          stock_quantity?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["medicines"]["Insert"]>;
+        Relationships: [];
+      };
+      inventory_transactions: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          medicine_id: string;
+          change: number;
+          reason: InventoryReason;
+          batch_number: string | null;
+          expiry_date: string | null;
+          unit_cost: number | null;
+          note: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          medicine_id: string;
+          change: number;
+          reason: InventoryReason;
+          batch_number?: string | null;
+          expiry_date?: string | null;
+          unit_cost?: number | null;
+          note?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["inventory_transactions"]["Insert"]>;
+        Relationships: [];
+      };
       prescriptions: {
         Row: {
           id: string;
@@ -662,6 +733,7 @@ export interface Database {
       timeline_event: TimelineEvent;
       record_status: RecordStatus;
       appointment_status: AppointmentStatus;
+      inventory_reason: InventoryReason;
     };
     CompositeTypes: Record<string, never>;
   };

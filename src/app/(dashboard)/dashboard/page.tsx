@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic, getCurrentSubscription, listBranches } from "@/lib/db/queries/clinic";
 import { listAppointmentsInRange, listQueue } from "@/lib/db/queries/appointments";
+import { lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { startOfDay, addDays } from "@/lib/date";
@@ -17,10 +18,11 @@ export default async function DashboardPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
 
-  const [subscription, branches, canSeeAppointments] = await Promise.all([
+  const [subscription, branches, canSeeAppointments, canSeePharmacy] = await Promise.all([
     getCurrentSubscription(),
     listBranches(),
     hasPermission(PERMISSIONS.APPOINTMENTS_READ),
+    hasPermission(PERMISSIONS.PHARMACY_READ),
   ]);
 
   const todayStart = startOfDay(new Date());
@@ -31,6 +33,10 @@ export default async function DashboardPage() {
       ])
     : [[], []];
   const completedToday = todays.filter((a) => a.status === "completed").length;
+
+  const [lowStock, expiring] = canSeePharmacy
+    ? await Promise.all([lowStockMedicines(), expiringSoon()])
+    : [[], []];
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
@@ -51,6 +57,9 @@ export default async function DashboardPage() {
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/prescriptions">Prescriptions</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/pharmacy">Pharmacy</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/settings/staff">Staff</Link>
@@ -81,6 +90,24 @@ export default async function DashboardPage() {
             <CardContent><p className="text-2xl font-semibold">{completedToday}</p></CardContent>
           </Card>
         </div>
+      )}
+
+      {canSeePharmacy && (lowStock.length > 0 || expiring.length > 0) && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-[var(--muted-foreground)]">Inventory alerts</CardTitle>
+          </CardHeader>
+          <CardContent className="flex gap-6">
+            <Link href="/pharmacy" className="text-sm hover:underline">
+              <span className="text-2xl font-semibold text-[var(--destructive)]">{lowStock.length}</span>{" "}
+              low stock
+            </Link>
+            <Link href="/pharmacy" className="text-sm hover:underline">
+              <span className="text-2xl font-semibold text-amber-600 dark:text-amber-400">{expiring.length}</span>{" "}
+              expiring soon
+            </Link>
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
