@@ -1,0 +1,174 @@
+-- ============================================================================
+-- DEMO DATA — populates your clinic with realistic sample data across EVERY
+-- module so you can try the whole app. Paste into the Supabase SQL Editor and
+-- run. Safe to run once; re-running is a no-op (it detects existing demo data).
+--
+-- It targets your most-recently-created clinic and uses that clinic's owner as
+-- the actor. Fixed UUIDs (prefixed dddd…/aaaa… etc.) make it idempotent.
+-- To remove later, see the cleanup block at the bottom (commented out).
+-- ============================================================================
+do $$
+declare
+  v_clinic uuid;
+  v_owner  uuid;
+  v_branch uuid;
+  -- fixed demo ids
+  d1 uuid := 'd0000000-0000-0000-0000-000000000001';
+  d2 uuid := 'd0000000-0000-0000-0000-000000000002';
+  d3 uuid := 'd0000000-0000-0000-0000-000000000003';
+  p1 uuid := 'b0000000-0000-0000-0000-000000000001';
+  p2 uuid := 'b0000000-0000-0000-0000-000000000002';
+  p3 uuid := 'b0000000-0000-0000-0000-000000000003';
+  p4 uuid := 'b0000000-0000-0000-0000-000000000004';
+  p5 uuid := 'b0000000-0000-0000-0000-000000000005';
+  p6 uuid := 'b0000000-0000-0000-0000-000000000006';
+  m1 uuid := 'c0000000-0000-0000-0000-000000000001';
+  m2 uuid := 'c0000000-0000-0000-0000-000000000002';
+  m3 uuid := 'c0000000-0000-0000-0000-000000000003';
+  m4 uuid := 'c0000000-0000-0000-0000-000000000004';
+  rec1 uuid := 'e0000000-0000-0000-0000-000000000001';
+  rec2 uuid := 'e0000000-0000-0000-0000-000000000002';
+  inv1 uuid := 'f0000000-0000-0000-0000-000000000001';
+  inv2 uuid := 'f0000000-0000-0000-0000-000000000002';
+  inv3 uuid := 'f0000000-0000-0000-0000-000000000003';
+  cat1 uuid := 'a0000000-0000-0000-0000-000000000001';
+  cat2 uuid := 'a0000000-0000-0000-0000-000000000002';
+  lr1 uuid := 'a1000000-0000-0000-0000-000000000001';
+  lr2 uuid := 'a1000000-0000-0000-0000-000000000002';
+  base timestamptz := date_trunc('day', now());
+  dow int;
+begin
+  select id, owner_user_id into v_clinic, v_owner
+  from public.clinics order by created_at desc limit 1;
+  if v_clinic is null then
+    raise notice 'No clinic found — sign up & create a clinic first.'; return;
+  end if;
+  select id into v_branch from public.branches where clinic_id = v_clinic order by created_at asc limit 1;
+
+  if exists (select 1 from public.patients where id = p1) then
+    raise notice 'Demo data already present — skipping.'; return;
+  end if;
+
+  -- ===== Doctors + weekly schedules + time off ============================
+  insert into public.doctors (id, clinic_id, full_name, specialization, license_number, consultation_fee, phone, email, is_active, created_by) values
+    (d1, v_clinic, 'Dr. Sophea Chan', 'General Practitioner', 'KH-GP-1024', 20, '012 345 678', 'sophea@demo.clinic', true, v_owner),
+    (d2, v_clinic, 'Dr. Rithy Pich', 'Pediatrics', 'KH-PED-2048', 25, '012 987 654', 'rithy@demo.clinic', true, v_owner),
+    (d3, v_clinic, 'Dr. Maly Sok', 'Dermatology', 'KH-DERM-3072', 30, '012 555 333', 'maly@demo.clinic', true, v_owner)
+  on conflict (id) do nothing;
+
+  for dow in 1..5 loop
+    insert into public.doctor_schedules (clinic_id, doctor_id, day_of_week, start_time, end_time) values
+      (v_clinic, d1, dow, '08:00', '16:00'),
+      (v_clinic, d2, dow, '09:00', '17:00');
+  end loop;
+  insert into public.doctor_schedules (clinic_id, doctor_id, day_of_week, start_time, end_time) values
+    (v_clinic, d3, 6, '09:00', '13:00');
+  insert into public.doctor_time_off (clinic_id, doctor_id, start_date, end_date, reason, created_by) values
+    (v_clinic, d3, (now() + interval '7 days')::date, (now() + interval '10 days')::date, 'Conference', v_owner);
+
+  -- ===== Patients ==========================================================
+  insert into public.patients (id, clinic_id, branch_id, patient_seq, patient_number, full_name, gender, date_of_birth, phone, email, address, occupation, allergies, chronic_diseases, created_by) values
+    (p1, v_clinic, v_branch, 9001, 'P009001', 'Dara Kim', 'male', '1989-04-12', '011 222 333', 'dara@example.com', 'Phnom Penh', 'Teacher', 'Penicillin', 'Hypertension', v_owner),
+    (p2, v_clinic, v_branch, 9002, 'P009002', 'Sreyna Pov', 'female', '1995-09-30', '011 444 555', 'sreyna@example.com', 'Siem Reap', 'Engineer', null, null, v_owner),
+    (p3, v_clinic, v_branch, 9003, 'P009003', 'Vannak Chea', 'male', '1978-01-05', '011 666 777', 'vannak@example.com', 'Battambang', 'Farmer', 'None', 'Diabetes type 2', v_owner),
+    (p4, v_clinic, v_branch, 9004, 'P009004', 'Channary Lim', 'female', '2001-12-18', '011 888 999', 'channary@example.com', 'Phnom Penh', 'Student', null, null, v_owner),
+    (p5, v_clinic, v_branch, 9005, 'P009005', 'Pisach Ngov', 'male', '1965-07-22', '012 101 202', null, 'Kampot', 'Retired', 'Aspirin', 'Asthma', v_owner),
+    (p6, v_clinic, v_branch, 9006, 'P009006', 'Bopha Sao', 'female', '1990-03-03', '012 303 404', 'bopha@example.com', 'Phnom Penh', 'Nurse', null, null, v_owner)
+  on conflict (id) do nothing;
+
+  -- ===== Appointments (today + upcoming, varied statuses + walk-in) ========
+  insert into public.appointments (clinic_id, branch_id, patient_id, doctor_id, scheduled_at, duration_minutes, status, is_walk_in, reason, checked_in_at, started_at, completed_at, created_by) values
+    (v_clinic, v_branch, p1, d1, base + interval '9 hours', 30, 'completed', false, 'Follow-up: blood pressure', base + interval '8 hours 50 min', base + interval '9 hours', base + interval '9 hours 20 min', v_owner),
+    (v_clinic, v_branch, p2, d2, base + interval '10 hours', 30, 'in_consultation', false, 'Fever and cough', base + interval '9 hours 55 min', base + interval '10 hours', null, v_owner),
+    (v_clinic, v_branch, p3, d1, base + interval '10 hours 30 min', 20, 'waiting', true, 'Walk-in: wound dressing', base + interval '10 hours 25 min', null, null, v_owner),
+    (v_clinic, v_branch, p4, d2, base + interval '11 hours', 30, 'scheduled', false, 'Vaccination', null, null, null, v_owner),
+    (v_clinic, v_branch, p5, d1, base + interval '14 hours', 30, 'scheduled', false, 'Asthma review', null, null, null, v_owner),
+    (v_clinic, v_branch, p6, d3, base + interval '1 day 9 hours', 30, 'scheduled', false, 'Skin rash', null, null, null, v_owner),
+    (v_clinic, v_branch, p1, d1, base - interval '1 day' + interval '10 hours', 30, 'completed', false, 'BP check', base - interval '1 day' + interval '9 hours 55 min', base - interval '1 day' + interval '10 hours', base - interval '1 day' + interval '10 hours 25 min', v_owner),
+    (v_clinic, v_branch, p2, d2, base - interval '2 days' + interval '11 hours', 30, 'completed', false, 'Consultation', null, null, base - interval '2 days' + interval '11 hours 30 min', v_owner);
+
+  -- ===== EMR: visits + vitals =============================================
+  insert into public.medical_records (id, clinic_id, patient_id, branch_id, provider_user_id, visit_date, status, chief_complaint, subjective, objective, assessment, plan, diagnosis, treatment_plan, created_by) values
+    (rec1, v_clinic, p1, v_branch, v_owner, base + interval '9 hours', 'finalized', 'High blood pressure follow-up', 'Occasional headaches, compliant with medication.', 'BP 140/90, alert and oriented.', 'Hypertension, fairly controlled.', 'Continue current medication, review in 4 weeks.', 'Essential hypertension', 'Amlodipine 5mg once daily', v_owner),
+    (rec2, v_clinic, p2, v_branch, v_owner, base - interval '2 days' + interval '11 hours', 'finalized', 'Fever and cough 3 days', 'Productive cough, mild fever, no shortness of breath.', 'Temp 38.1, throat mildly inflamed.', 'Upper respiratory tract infection.', 'Symptomatic treatment, fluids, rest.', 'Acute URTI', 'Paracetamol + rest', v_owner)
+  on conflict (id) do nothing;
+
+  insert into public.vital_signs (clinic_id, patient_id, medical_record_id, systolic, diastolic, pulse, temperature, height_cm, weight_kg, oxygen_saturation, created_by) values
+    (v_clinic, p1, rec1, 140, 90, 78, 36.6, 170, 78, 98, v_owner),
+    (v_clinic, p2, rec2, 118, 76, 88, 38.1, 162, 60, 97, v_owner);
+
+  -- ===== Prescriptions =====================================================
+  insert into public.prescriptions (id, clinic_id, patient_id, doctor_id, medical_record_id, notes, created_by) values
+    ('aa000000-0000-0000-0000-000000000001', v_clinic, p1, d1, rec1, 'Take with food.', v_owner),
+    ('aa000000-0000-0000-0000-000000000002', v_clinic, p2, d2, rec2, null, v_owner)
+  on conflict (id) do nothing;
+  insert into public.prescription_items (clinic_id, prescription_id, medicine_name, dosage, frequency, duration, quantity, sort_order) values
+    (v_clinic, 'aa000000-0000-0000-0000-000000000001', 'Amlodipine', '5mg', 'Once daily', '30 days', 30, 0),
+    (v_clinic, 'aa000000-0000-0000-0000-000000000002', 'Paracetamol', '500mg', '3x daily', '5 days', 15, 0),
+    (v_clinic, 'aa000000-0000-0000-0000-000000000002', 'Amoxicillin', '500mg', '2x daily', '7 days', 14, 1);
+
+  -- ===== Pharmacy: medicines + stock ledger ===============================
+  insert into public.medicines (id, clinic_id, name, generic_name, sku, category, unit, reorder_level, purchase_price, selling_price, created_by) values
+    (m1, v_clinic, 'Amlodipine 5mg', 'Amlodipine', 'AML-5', 'Cardiovascular', 'tablet', 50, 0.05, 0.20, v_owner),
+    (m2, v_clinic, 'Paracetamol 500mg', 'Paracetamol', 'PARA-500', 'Analgesic', 'tablet', 100, 0.02, 0.10, v_owner),
+    (m3, v_clinic, 'Amoxicillin 500mg', 'Amoxicillin', 'AMOX-500', 'Antibiotic', 'capsule', 40, 0.08, 0.30, v_owner),
+    (m4, v_clinic, 'Salbutamol Inhaler', 'Salbutamol', 'SALB-INH', 'Respiratory', 'inhaler', 10, 2.50, 5.00, v_owner)
+  on conflict (id) do nothing;
+
+  insert into public.inventory_transactions (clinic_id, medicine_id, change, reason, batch_number, expiry_date, unit_cost, created_by) values
+    (v_clinic, m1, 500, 'purchase', 'B-AML-2401', (now() + interval '300 days')::date, 0.05, v_owner),
+    (v_clinic, m2, 1000, 'purchase', 'B-PARA-2402', (now() + interval '200 days')::date, 0.02, v_owner),
+    (v_clinic, m3, 30, 'purchase', 'B-AMOX-2403', (now() + interval '40 days')::date, 0.08, v_owner),  -- expiring soon
+    (v_clinic, m4, 8, 'purchase', 'B-SALB-2404', (now() + interval '180 days')::date, 2.50, v_owner),    -- below reorder (10)
+    (v_clinic, m1, -30, 'dispense', null, null, null, v_owner),
+    (v_clinic, m2, -15, 'dispense', null, null, null, v_owner);
+
+  -- ===== Billing: invoices + items + payments =============================
+  insert into public.invoices (id, clinic_id, patient_id, branch_id, invoice_seq, invoice_number, discount, tax, notes, created_by) values
+    (inv1, v_clinic, p1, v_branch, 9001, 'INV009001', 0, 0, 'Consultation + medication', v_owner),
+    (inv2, v_clinic, p2, v_branch, 9002, 'INV009002', 2, 0, 'Consultation', v_owner),
+    (inv3, v_clinic, p3, v_branch, 9003, 'INV009003', 0, 0, 'Wound dressing', v_owner)
+  on conflict (id) do nothing;
+  insert into public.invoice_items (clinic_id, invoice_id, description, quantity, unit_price, sort_order) values
+    (v_clinic, inv1, 'GP consultation', 1, 20, 0),
+    (v_clinic, inv1, 'Amlodipine 5mg x30', 30, 0.20, 1),
+    (v_clinic, inv2, 'Pediatric consultation', 1, 25, 0),
+    (v_clinic, inv3, 'Wound dressing', 1, 8, 0);
+  -- inv1 fully paid, inv2 partially paid, inv3 left unpaid
+  insert into public.payments (clinic_id, invoice_id, receipt_seq, receipt_number, amount, method, reference, paid_at, created_by) values
+    (v_clinic, inv1, 9001, 'RCP009001', 26, 'cash', null, now() - interval '20 hours', v_owner),
+    (v_clinic, inv2, 9002, 'RCP009002', 10, 'khqr', 'KHQR-DEMO-01', now() - interval '2 hours', v_owner);
+
+  -- ===== Laboratory ========================================================
+  insert into public.lab_categories (id, clinic_id, name, description, created_by) values
+    (cat1, v_clinic, 'Hematology', 'Blood counts and related tests', v_owner),
+    (cat2, v_clinic, 'Biochemistry', 'Metabolic panels', v_owner)
+  on conflict (id) do nothing;
+  insert into public.lab_requests (id, clinic_id, patient_id, doctor_id, category_id, test_name, status, notes, completed_at, created_by) values
+    (lr1, v_clinic, p1, d1, cat1, 'Complete Blood Count', 'completed', 'Routine', now() - interval '1 hour', v_owner),
+    (lr2, v_clinic, p3, d1, cat2, 'Fasting Blood Glucose', 'processing', 'Diabetes monitoring', null, v_owner)
+  on conflict (id) do nothing;
+  insert into public.lab_results (clinic_id, lab_request_id, result_value, unit, reference_range, result_text, created_by) values
+    (v_clinic, lr1, '13.5', 'g/dL', '13.0–17.0', 'Hemoglobin within normal range.', v_owner);
+
+  -- ===== Notifications (log) ==============================================
+  insert into public.notifications (clinic_id, channel, type, recipient, subject, body, status, patient_id, created_by) values
+    (v_clinic, 'email', 'appointment_reminder', 'dara@example.com', 'Appointment reminder', 'Reminder of your appointment.', 'sent', p1, v_owner),
+    (v_clinic, 'email', 'payment_reminder', 'vannak@example.com', 'Payment reminder', 'Invoice INV009003 is outstanding.', 'skipped', p3, v_owner);
+
+  raise notice 'Demo data loaded for clinic %', v_clinic;
+end $$;
+
+-- ============================================================================
+-- CLEANUP (optional) — removes the demo rows. Uncomment & run to undo.
+-- ----------------------------------------------------------------------------
+-- delete from public.patients where id in (
+--   'b0000000-0000-0000-0000-000000000001','b0000000-0000-0000-0000-000000000002',
+--   'b0000000-0000-0000-0000-000000000003','b0000000-0000-0000-0000-000000000004',
+--   'b0000000-0000-0000-0000-000000000005','b0000000-0000-0000-0000-000000000006');
+-- delete from public.doctors where id in (
+--   'd0000000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000002','d0000000-0000-0000-0000-000000000003');
+-- delete from public.medicines where id in (
+--   'c0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000002',
+--   'c0000000-0000-0000-0000-000000000003','c0000000-0000-0000-0000-000000000004');
+-- (invoices, lab, prescriptions, appointments cascade from patients/doctors.)
