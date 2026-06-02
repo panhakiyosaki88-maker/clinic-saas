@@ -7,6 +7,7 @@ import {
   listPatientTimeline,
 } from "@/lib/db/queries/patients";
 import { listMedicalRecords } from "@/lib/db/queries/medical-records";
+import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { DocumentUploader } from "@/components/patients/document-uploader";
@@ -40,16 +41,19 @@ export default async function PatientProfilePage({
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const [canWrite, canEmrRead, canEmrWrite, canBookAppt] = await Promise.all([
+  const [canWrite, canEmrRead, canEmrWrite, canBookAppt, canRxRead, canRxWrite] = await Promise.all([
     hasPermission(PERMISSIONS.PATIENTS_WRITE),
     hasPermission(PERMISSIONS.EMR_READ),
     hasPermission(PERMISSIONS.EMR_WRITE),
     hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
+    hasPermission(PERMISSIONS.PRESCRIPTIONS_READ),
+    hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE),
   ]);
-  const [documents, timeline, visits] = await Promise.all([
+  const [documents, timeline, visits, prescriptions] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
     canEmrRead ? listMedicalRecords(id) : Promise.resolve([]),
+    canRxRead ? listPatientPrescriptions(id) : Promise.resolve([]),
   ]);
 
   return (
@@ -138,6 +142,37 @@ export default async function PatientProfilePage({
                     </Link>
                     <span className="truncate pl-3 text-sm text-[var(--muted-foreground)]">
                       {v.diagnosis || v.chief_complaint || "—"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {canRxRead && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>Prescriptions ({prescriptions.length})</CardTitle>
+            {canRxWrite && (
+              <Button asChild size="sm">
+                <Link href={`/prescriptions/new?patientId=${patient.id}`}>New prescription</Link>
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {prescriptions.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No prescriptions yet.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {prescriptions.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between py-2">
+                    <Link href={`/prescriptions/${p.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                      {new Date(p.prescribed_at).toLocaleDateString()}
+                    </Link>
+                    <span className="text-sm text-[var(--muted-foreground)]">
+                      {p.item_count} item{p.item_count === 1 ? "" : "s"}
                     </span>
                   </li>
                 ))}

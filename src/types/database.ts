@@ -569,6 +569,66 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["appointments"]["Insert"]>;
         Relationships: [];
       };
+      prescriptions: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id: string | null;
+          medical_record_id: string | null;
+          prescribed_at: string;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id?: string | null;
+          medical_record_id?: string | null;
+          prescribed_at?: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["prescriptions"]["Insert"]>;
+        Relationships: [];
+      };
+      prescription_items: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          prescription_id: string;
+          medicine_name: string;
+          dosage: string | null;
+          frequency: string | null;
+          duration: string | null;
+          instructions: string | null;
+          quantity: number | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          prescription_id: string;
+          medicine_name: string;
+          dosage?: string | null;
+          frequency?: string | null;
+          duration?: string | null;
+          instructions?: string | null;
+          quantity?: number | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["prescription_items"]["Insert"]>;
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;

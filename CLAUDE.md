@@ -55,5 +55,6 @@ docs/modules/             one doc per module
 - [x] **Module 5 — EMR** (visits/SOAP, vital signs + generated BMI, attachments, visit history)
 - [x] **Module 6 — Doctor Management** (profiles, specialization/license, schedules, time off, performance)
 - [x] **Module 7 — Appointment Management** (day/week/month calendar, status lifecycle, queue, walk-ins)
-- [ ] Modules 8–13 — Prescriptions, Lab, Pharmacy, Billing,
+- [x] **Module 8 — Prescription Management** (prescriptions + items, item repeater, printable PDF, history)
+- [ ] Modules 9–13 — Lab, Pharmacy, Billing,
       Reports, Notifications, Subscriptions, Super Admin Portal
