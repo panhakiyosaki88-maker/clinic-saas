@@ -49,7 +49,7 @@ docs/modules/             one doc per module
 
 ## Module status
 - [x] **Module 1 — Multi-Clinic Foundation** (clinics, subscriptions, branches, audit_logs, RLS)
-- [ ] Module 2 — Authentication
+- [x] **Module 2 — Authentication** (profiles, signup/login/logout, email confirm + callback routes)
 - [ ] Module 3 — RBAC
 - [ ] Module 4 — Patient Management
 - [ ] Modules 5–13 — EMR, Appointments, Doctors, Prescriptions, Lab, Pharmacy, Billing,

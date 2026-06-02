@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createClinic } from "@/server/actions/clinic";
+import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/validations/clinic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,10 @@ export function OnboardingForm() {
         setFieldErrors(result.fieldErrors ?? {});
         return;
       }
-      // Refresh so the new JWT claims (clinic_id) are picked up, then enter the app.
+      // createClinic stamped clinic_id into app_metadata via the admin API, but
+      // the current JWT predates that. Force a token refresh so the new claim is
+      // present (RLS reads clinic_id from the JWT), then enter the app.
+      await createClient().auth.refreshSession();
       router.refresh();
       router.push("/dashboard");
     });

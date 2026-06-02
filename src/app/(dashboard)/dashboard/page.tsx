@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentClinic, getCurrentSubscription, listBranches } from "@/lib/db/queries/clinic";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Dashboard" };
@@ -25,7 +26,10 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold">{clinic.name}</h1>
           <p className="text-sm text-[var(--muted-foreground)]">/{clinic.slug}</p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <SignOutButton />
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
