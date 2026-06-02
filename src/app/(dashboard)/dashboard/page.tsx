@@ -30,6 +30,9 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
+            <Link href="/patients">Patients</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href="/settings/staff">Staff</Link>
           </Button>
           <ThemeToggle />

@@ -29,6 +29,16 @@ export type SubscriptionStatus =
   | "expired";
 export type ClinicStatus = "active" | "suspended" | "pending";
 export type MembershipStatus = "active" | "invited" | "disabled";
+export type Gender = "male" | "female" | "other";
+export type TimelineEvent =
+  | "registered"
+  | "note"
+  | "appointment"
+  | "visit"
+  | "document"
+  | "prescription"
+  | "lab"
+  | "invoice";
 
 export interface Database {
   public: {
@@ -225,6 +235,110 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["memberships"]["Insert"]>;
         Relationships: [];
       };
+      patients: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          branch_id: string | null;
+          patient_seq: number;
+          patient_number: string;
+          full_name: string;
+          gender: Gender | null;
+          date_of_birth: string | null;
+          phone: string | null;
+          email: string | null;
+          address: string | null;
+          occupation: string | null;
+          emergency_contact_name: string | null;
+          emergency_contact_phone: string | null;
+          allergies: string | null;
+          medical_history: string | null;
+          chronic_diseases: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          branch_id?: string | null;
+          patient_seq?: number;
+          patient_number?: string;
+          full_name: string;
+          gender?: Gender | null;
+          date_of_birth?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          address?: string | null;
+          occupation?: string | null;
+          emergency_contact_name?: string | null;
+          emergency_contact_phone?: string | null;
+          allergies?: string | null;
+          medical_history?: string | null;
+          chronic_diseases?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patients"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_documents: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          file_path: string;
+          file_name: string;
+          mime_type: string | null;
+          size_bytes: number | null;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          file_path: string;
+          file_name: string;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_documents"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_timeline: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          event_type: TimelineEvent;
+          title: string;
+          description: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          event_type?: TimelineEvent;
+          title: string;
+          description?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_timeline"]["Insert"]>;
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -254,6 +368,8 @@ export interface Database {
       subscription_status: SubscriptionStatus;
       clinic_status: ClinicStatus;
       membership_status: MembershipStatus;
+      gender: Gender;
+      timeline_event: TimelineEvent;
     };
     CompositeTypes: Record<string, never>;
   };
