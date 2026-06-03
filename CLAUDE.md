@@ -55,7 +55,10 @@ docs/modules/             one doc per module
   enriched 0014–0016: blood type/marital/ID/next-of-kin + insurance; structured allergies/meds/
   immunizations/problem list; consents/communication log/tags; tabbed profile; age + filters)
 - [x] **Module 5 — EMR** (visits/SOAP, vital signs + generated BMI, attachments, visit history)
-- [x] **Module 6 — Doctor Management** (profiles, specialization/license, schedules, time off, performance)
+- [x] **Module 6 — Doctor Management** (profiles, specialization/license, schedules, time off, performance;
+  enriched 0017–0019: profile depth + employment/license fields, avatar + credential documents/
+  qualifications/licenses, analytics tab (completion/no-show/est. revenue/trend), schedule breaks +
+  slot capacity, tabbed profile, list search/filters)
 - [x] **Module 7 — Appointment Management** (day/week/month calendar, status lifecycle, queue, walk-ins)
 - [x] **Module 8 — Prescription Management** (prescriptions + items, item repeater, printable PDF, history)
 - [x] **Module 9 — Pharmacy Inventory** (catalog, stock ledger, batches/expiry, low-stock + expiry alerts)

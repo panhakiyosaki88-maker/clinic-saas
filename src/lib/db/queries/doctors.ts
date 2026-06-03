@@ -1,18 +1,36 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/types/database";
+import { sanitizeSearch } from "@/lib/validations/patient";
+import type { Database, EmploymentType } from "@/types/database";
 
 export type Doctor = Database["public"]["Tables"]["doctors"]["Row"];
 export type DoctorSchedule = Database["public"]["Tables"]["doctor_schedules"]["Row"];
 export type DoctorTimeOff = Database["public"]["Tables"]["doctor_time_off"]["Row"];
+export type DoctorDocument = Database["public"]["Tables"]["doctor_documents"]["Row"];
+export type DoctorQualification = Database["public"]["Tables"]["doctor_qualifications"]["Row"];
+export type DoctorLicense = Database["public"]["Tables"]["doctor_licenses"]["Row"];
 
-export async function listDoctors(): Promise<Doctor[]> {
+const EMPLOYMENT_TYPES = ["full_time", "part_time", "contract", "visiting", "locum"];
+
+export async function listDoctors(opts: {
+  search?: string;
+  active?: "active" | "inactive";
+  employmentType?: string;
+} = {}): Promise<Doctor[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("doctors")
-    .select("*")
-    .is("deleted_at", null)
-    .order("full_name", { ascending: true });
+  let query = supabase.from("doctors").select("*").is("deleted_at", null);
+
+  const search = sanitizeSearch(opts.search);
+  if (search) {
+    query = query.or(`full_name.ilike.%${search}%,specialization.ilike.%${search}%`);
+  }
+  if (opts.active === "active") query = query.eq("is_active", true);
+  if (opts.active === "inactive") query = query.eq("is_active", false);
+  if (opts.employmentType && EMPLOYMENT_TYPES.includes(opts.employmentType)) {
+    query = query.eq("employment_type", opts.employmentType as EmploymentType);
+  }
+
+  const { data, error } = await query.order("full_name", { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
@@ -48,6 +66,67 @@ export async function listTimeOff(doctorId: string): Promise<DoctorTimeOff[]> {
     .select("*")
     .eq("doctor_id", doctorId)
     .order("start_date", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export interface DoctorDocumentWithUrl extends DoctorDocument {
+  signedUrl: string | null;
+}
+
+/** Credential documents with short-lived signed download URLs from Storage. */
+export async function listDoctorDocuments(doctorId: string): Promise<DoctorDocumentWithUrl[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("doctor_documents")
+    .select("*")
+    .eq("doctor_id", doctorId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  const docs = data ?? [];
+  if (docs.length === 0) return [];
+
+  const { data: signed } = await supabase.storage
+    .from("doctor-documents")
+    .createSignedUrls(docs.map((d) => d.file_path), 60 * 10);
+
+  return docs.map((d, i) => ({ ...d, signedUrl: signed?.[i]?.signedUrl ?? null }));
+}
+
+/** A single short-lived signed URL for a doctor's avatar (or null). */
+export async function doctorAvatarUrl(avatarPath: string | null): Promise<string | null> {
+  if (!avatarPath) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.storage
+    .from("doctor-documents")
+    .createSignedUrl(avatarPath, 60 * 10);
+  return data?.signedUrl ?? null;
+}
+
+export async function listDoctorQualifications(doctorId: string): Promise<DoctorQualification[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("doctor_qualifications")
+    .select("*")
+    .eq("doctor_id", doctorId)
+    .is("deleted_at", null)
+    .order("year", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listDoctorLicenses(doctorId: string): Promise<DoctorLicense[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("doctor_licenses")
+    .select("*")
+    .eq("doctor_id", doctorId)
+    .is("deleted_at", null)
+    .order("expiry_on", { ascending: true })
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -113,6 +192,85 @@ export async function getDoctorAvailabilityToday(): Promise<DoctorAvailabilityTo
     seenToday: seenByDoctor.get(d.id)?.size ?? 0,
     busy: busySet.has(d.id),
   }));
+}
+
+export interface DoctorAnalytics {
+  total: number;
+  completed: number;
+  cancelled: number;
+  noShow: number;
+  upcoming: number;
+  completionRate: number; // 0–100
+  noShowRate: number; // 0–100
+  patientsSeen: number;
+  estimatedRevenue: number;
+  trend: { label: string; value: number }[]; // completed per month, last 6 months
+}
+
+/**
+ * Appointment-derived analytics for a doctor over the last `rangeDays`. Revenue
+ * is an ESTIMATE (completed appointments × consultation_fee): invoices carry no
+ * doctor link today, so true attribution isn't available.
+ */
+export async function getDoctorAnalytics(
+  doctor: Doctor,
+  rangeDays = 180
+): Promise<DoctorAnalytics> {
+  const supabase = await createClient();
+  const since = new Date(Date.now() - rangeDays * 86_400_000);
+  const sinceISO = since.toISOString();
+
+  const { data } = await supabase
+    .from("appointments")
+    .select("scheduled_at, status, patient_id")
+    .eq("doctor_id", doctor.id)
+    .is("deleted_at", null)
+    .gte("scheduled_at", sinceISO);
+
+  const rows = data ?? [];
+  const total = rows.length;
+  let completed = 0, cancelled = 0, noShow = 0, upcoming = 0;
+  const seen = new Set<string>();
+
+  // Month buckets (last 6 months, oldest → newest).
+  const months: { key: string; label: string; value: number }[] = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      key: `${d.getFullYear()}-${d.getMonth()}`,
+      label: d.toLocaleString(undefined, { month: "short" }),
+      value: 0,
+    });
+  }
+  const monthIndex = new Map(months.map((m, i) => [m.key, i]));
+
+  for (const a of rows) {
+    if (a.status === "completed") {
+      completed++;
+      if (a.patient_id) seen.add(a.patient_id);
+      const d = new Date(a.scheduled_at);
+      const idx = monthIndex.get(`${d.getFullYear()}-${d.getMonth()}`);
+      if (idx !== undefined) months[idx].value++;
+    } else if (a.status === "cancelled") cancelled++;
+    else if (a.status === "no_show") noShow++;
+    else if (a.status === "scheduled" || a.status === "waiting") upcoming++;
+    if (a.status === "in_consultation" && a.patient_id) seen.add(a.patient_id);
+  }
+
+  const fee = Number(doctor.consultation_fee ?? 0);
+  return {
+    total,
+    completed,
+    cancelled,
+    noShow,
+    upcoming,
+    completionRate: total ? Math.round((completed / total) * 100) : 0,
+    noShowRate: total ? Math.round((noShow / total) * 100) : 0,
+    patientsSeen: seen.size,
+    estimatedRevenue: Math.round(completed * fee * 100) / 100,
+    trend: months.map((m) => ({ label: m.label, value: m.value })),
+  };
 }
 
 export interface DoctorPerformance {

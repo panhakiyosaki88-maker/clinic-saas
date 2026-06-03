@@ -35,6 +35,7 @@ export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" 
 export type MaritalStatus = "single" | "married" | "divorced" | "widowed" | "other";
 export type IdDocType = "national_id" | "passport" | "driver_license" | "other";
 export type ContactMethod = "phone" | "sms" | "email" | "telegram" | "none";
+export type EmploymentType = "full_time" | "part_time" | "contract" | "visiting" | "locum";
 export type RecordStatus = "draft" | "finalized";
 export type AppointmentStatus =
   | "scheduled"
@@ -763,6 +764,19 @@ export interface Database {
           bio: string | null;
           consultation_fee: number | null;
           is_active: boolean;
+          title: string | null;
+          gender: Gender | null;
+          languages: string | null;
+          employment_type: EmploymentType | null;
+          sub_specialty: string | null;
+          years_experience: number | null;
+          joined_on: string | null;
+          room: string | null;
+          calendar_color: string | null;
+          license_expiry: string | null;
+          license_verified: boolean;
+          license_verified_on: string | null;
+          avatar_path: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -781,12 +795,121 @@ export interface Database {
           bio?: string | null;
           consultation_fee?: number | null;
           is_active?: boolean;
+          title?: string | null;
+          gender?: Gender | null;
+          languages?: string | null;
+          employment_type?: EmploymentType | null;
+          sub_specialty?: string | null;
+          years_experience?: number | null;
+          joined_on?: string | null;
+          room?: string | null;
+          calendar_color?: string | null;
+          license_expiry?: string | null;
+          license_verified?: boolean;
+          license_verified_on?: string | null;
+          avatar_path?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["doctors"]["Insert"]>;
+        Relationships: [];
+      };
+      doctor_documents: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          doctor_id: string;
+          file_path: string;
+          file_name: string;
+          mime_type: string | null;
+          size_bytes: number | null;
+          category: string | null;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          doctor_id: string;
+          file_path: string;
+          file_name: string;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          category?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["doctor_documents"]["Insert"]>;
+        Relationships: [];
+      };
+      doctor_qualifications: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          doctor_id: string;
+          degree: string;
+          institution: string | null;
+          field: string | null;
+          year: number | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          doctor_id: string;
+          degree: string;
+          institution?: string | null;
+          field?: string | null;
+          year?: number | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["doctor_qualifications"]["Insert"]>;
+        Relationships: [];
+      };
+      doctor_licenses: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          doctor_id: string;
+          license_number: string;
+          authority: string | null;
+          jurisdiction: string | null;
+          issued_on: string | null;
+          expiry_on: string | null;
+          verified: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          doctor_id: string;
+          license_number: string;
+          authority?: string | null;
+          jurisdiction?: string | null;
+          issued_on?: string | null;
+          expiry_on?: string | null;
+          verified?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["doctor_licenses"]["Insert"]>;
         Relationships: [];
       };
       doctor_schedules: {
@@ -799,6 +922,10 @@ export interface Database {
           start_time: string;
           end_time: string;
           is_active: boolean;
+          break_start: string | null;
+          break_end: string | null;
+          slot_minutes: number | null;
+          max_patients: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -811,6 +938,10 @@ export interface Database {
           start_time: string;
           end_time: string;
           is_active?: boolean;
+          break_start?: string | null;
+          break_end?: string | null;
+          slot_minutes?: number | null;
+          max_patients?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1285,6 +1416,7 @@ export interface Database {
       marital_status: MaritalStatus;
       id_doc_type: IdDocType;
       contact_method: ContactMethod;
+      employment_type: EmploymentType;
       timeline_event: TimelineEvent;
       record_status: RecordStatus;
       appointment_status: AppointmentStatus;

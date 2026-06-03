@@ -37,7 +37,37 @@ as those modules land.
 3. On the profile, add weekly availability (e.g. Mon 09:00–17:00) and a vacation range.
 4. A receptionist (`doctors.read`) sees the roster read-only; a role without it is blocked.
 
+## Enrichment (migrations 0017–0019)
+
+Additive upgrades that make the doctor record "feature rich" (mirrors the Patients enrichment).
+Base tables from 0006 are untouched; everything below is new columns / new tables, gated by the
+same `doctors.read` / `doctors.write` policies.
+
+- **0017 — profile depth**: new `doctors` columns (`title`, `gender`, `languages`,
+  `employment_type` enum, `sub_specialty`, `years_experience`, `joined_on`, `room`,
+  `calendar_color`, `license_expiry`, `license_verified`, `license_verified_on`). The detail
+  page becomes a **tabbed profile** (Overview · Schedule · Performance · Credentials) with a
+  **summary header** (avatar, status/employment/experience/license-expiry badges), reusing the
+  generic `ProfileTabs` (`src/components/patients/profile-tabs.tsx`). The list page gains search
+  + active/employment filters (`listDoctors({ search, active, employmentType })`).
+- **0018 — credentials & documents**: `doctors.avatar_path` + a private **`doctor-documents`**
+  Storage bucket (per-clinic path isolation, copied from `0004_patients.sql`), plus
+  `doctor_documents`, `doctor_qualifications`, and `doctor_licenses` tables. Uploads/lists live
+  under the **Credentials** tab; the avatar shows in the header.
+- **0019 — scheduling depth**: `doctor_schedules` gains `break_start`, `break_end`,
+  `slot_minutes`, `max_patients`, surfaced in `schedule-editor.tsx`.
+
+The **Performance** tab is computed (no schema) from `appointments` + `medical_records` via
+`getDoctorAnalytics` — completion/no-show rates, patients seen, a 6-month completed-visit trend
+(`BarSeriesChart`), and **estimated** revenue (completed × `consultation_fee`; invoices carry no
+doctor link yet).
+
+Reads in `src/lib/db/queries/doctors.ts`, writes in `src/server/actions/doctors.ts`; UI under
+`src/components/doctors/` (`credentials-section`, `doctor-document-uploader/list`,
+`avatar-uploader`, enriched `doctor-form` / `schedule-editor`).
+
 ## Follow-ups
-- Link `medical_records.provider_user_id` / a future `appointments.doctor_id` to `doctors` for
-  attending-clinician display and scheduling.
-- Use `doctor_schedules` + `doctor_time_off` to compute bookable slots in the Appointments module.
+- Attribute revenue to a doctor for real by adding `invoices.doctor_id` (additive) instead of the
+  current estimate.
+- Use `doctor_schedules` (incl. breaks + slot length + capacity) to compute bookable slots in the
+  Appointments module.
