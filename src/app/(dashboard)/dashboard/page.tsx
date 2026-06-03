@@ -4,15 +4,26 @@ import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getCurrentClinic, getCurrentSubscription } from "@/lib/db/queries/clinic";
 import { getRolePermissionKeys } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { startOfDay, addDays } from "@/lib/date";
+import { startOfDay, startOfWeek, addDays } from "@/lib/date";
 import {
   listAppointmentsInRange,
   listQueue,
   getWeeklyAppointmentCounts,
+  getUpcomingFollowUps,
   type AppointmentWithNames,
 } from "@/lib/db/queries/appointments";
 import { listDoctors, getDoctorAvailabilityToday } from "@/lib/db/queries/doctors";
-import { getRevenueReport, getOutstandingReport, getPatientStats } from "@/lib/db/queries/reports";
+import {
+  getRevenueReport,
+  getOutstandingReport,
+  getPatientStats,
+  getNewPatientsCount,
+  getPatientGrowthDaily,
+  getMonthlyRevenue,
+  getBillingTotals,
+  getHighRiskPatients,
+  getDoctorActivity,
+} from "@/lib/db/queries/reports";
 import { lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
 import { getRecentActivity } from "@/lib/db/queries/activity";
 
@@ -22,12 +33,17 @@ import { StatCard } from "@/components/dashboard/widgets/stat-card";
 import { TodaySchedule } from "@/components/dashboard/widgets/today-schedule";
 import { DoctorAvailability } from "@/components/dashboard/widgets/doctor-availability";
 import { PatientStatsWidget } from "@/components/dashboard/widgets/patient-stats";
+import { PatientIntelligence } from "@/components/dashboard/widgets/patient-intelligence";
 import { RevenueAnalytics } from "@/components/dashboard/widgets/revenue-analytics";
+import { RevenueTrend } from "@/components/dashboard/widgets/revenue-trend";
+import { PatientGrowth } from "@/components/dashboard/widgets/patient-growth";
+import { DoctorPerformance } from "@/components/dashboard/widgets/doctor-performance";
 import { AppointmentTrends } from "@/components/dashboard/widgets/appointment-trends";
 import { InventoryAlerts } from "@/components/dashboard/widgets/inventory-alerts";
 import { OutstandingPayments } from "@/components/dashboard/widgets/outstanding-payments";
 import { ActivityFeed } from "@/components/dashboard/widgets/activity-feed";
-import { AiInsights } from "@/components/dashboard/widgets/ai-insights";
+import { AiInsights, type Insight } from "@/components/dashboard/widgets/ai-insights";
+import { QueueBoard } from "@/components/dashboard/widgets/queue-board";
 
 export const metadata = { title: "Dashboard" };
 
@@ -51,6 +67,8 @@ export default async function DashboardPage() {
   const todayStart = startOfDay(new Date());
   const tomorrow = addDays(todayStart, 1);
   const yesterday = addDays(todayStart, -1);
+  const weekStart = startOfWeek(todayStart);
+  const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
 
   // Fetch everything the role is allowed to see, in parallel.
   const [
@@ -62,12 +80,20 @@ export default async function DashboardPage() {
     availability,
     patientStats,
     revToday,
+    revWeek,
     revMonth,
+    monthlyRev,
+    billing,
     outstanding,
     lowStock,
     expiring,
     activity,
     myDoctors,
+    newToday,
+    patientGrowth,
+    highRisk,
+    followUps,
+    doctorActivity,
   ] = await Promise.all([
     getCurrentSubscription(),
     canAppts ? listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString()) : Promise.resolve([] as AppointmentWithNames[]),
@@ -77,12 +103,20 @@ export default async function DashboardPage() {
     canDoctors ? getDoctorAvailabilityToday() : Promise.resolve([]),
     canPatients ? getPatientStats() : Promise.resolve(null),
     canBilling ? getRevenueReport(todayStart.toISOString(), tomorrow.toISOString()) : Promise.resolve(null),
-    canBilling ? getRevenueReport(new Date(todayStart.getFullYear(), todayStart.getMonth(), 1).toISOString(), tomorrow.toISOString()) : Promise.resolve(null),
+    canBilling ? getRevenueReport(weekStart.toISOString(), tomorrow.toISOString()) : Promise.resolve(null),
+    canBilling ? getRevenueReport(monthStart.toISOString(), tomorrow.toISOString()) : Promise.resolve(null),
+    canBilling ? getMonthlyRevenue(6) : Promise.resolve([]),
+    canBilling ? getBillingTotals() : Promise.resolve(null),
     canBilling ? getOutstandingReport() : Promise.resolve(null),
     canPharmacy ? lowStockMedicines() : Promise.resolve([]),
     canPharmacy ? expiringSoon() : Promise.resolve([]),
     getRecentActivity(8),
     role === "doctor" && canDoctors ? listDoctors() : Promise.resolve([]),
+    canPatients ? getNewPatientsCount(todayStart.toISOString(), tomorrow.toISOString()) : Promise.resolve(0),
+    canPatients ? getPatientGrowthDaily(30) : Promise.resolve([]),
+    canPatients ? getHighRiskPatients() : Promise.resolve({ count: 0, rows: [] }),
+    canAppts ? getUpcomingFollowUps(7) : Promise.resolve([]),
+    canDoctors ? getDoctorActivity(monthStart.toISOString(), tomorrow.toISOString()) : Promise.resolve([]),
   ]);
 
   // Doctor view: their own appointments ("My Day").
@@ -94,14 +128,21 @@ export default async function DashboardPage() {
   const capacityPct = todays.length > 0 ? Math.round((completed / todays.length) * 100) : 0;
   const trend = yesterdays.length > 0 ? Math.round(((todays.length - yesterdays.length) / yesterdays.length) * 100) : null;
 
-  // Rule-based "AI" insights from live data.
-  const insights: string[] = [];
-  if (queue.length > 0) insights.push(`${queue.length} patient${queue.length > 1 ? "s are" : " is"} waiting in the queue — consider calling the next.`);
-  if (outstanding && outstanding.count > 0) insights.push(`${outstanding.count} unpaid invoice${outstanding.count > 1 ? "s" : ""} totaling ${outstanding.total.toFixed(2)} outstanding.`);
-  if (lowStock.length > 0) insights.push(`${lowStock.length} medicine${lowStock.length > 1 ? "s are" : " is"} at or below reorder level.`);
-  if (expiring.length > 0) insights.push(`${expiring.length} stock batch${expiring.length > 1 ? "es are" : " is"} expiring within 60 days.`);
-  if (canAppts && availability.length > 0 && availability.every((d) => d.offToday || d.slots.length === 0)) insights.push("No doctors have hours scheduled today.");
-  if (canAppts && todays.length > 0 && capacityPct === 100) insights.push("All of today's appointments are completed — great work!");
+  // Rule-based "AI" insights from live data, tagged by severity.
+  const nowMs = Date.now();
+  const longestWait = queue.reduce((max, q) => {
+    if (!q.checked_in_at) return max;
+    return Math.max(max, Math.floor((nowMs - new Date(q.checked_in_at).getTime()) / 60000));
+  }, 0);
+
+  const insights: Insight[] = [];
+  if (longestWait > 20) insights.push({ severity: "critical", text: `A patient has been waiting ${longestWait} minutes — call them in to avoid a longer delay.` });
+  if (queue.length > 0) insights.push({ severity: "operational", text: `${queue.length} patient${queue.length > 1 ? "s are" : " is"} waiting in the queue — consider calling the next.` });
+  if (canAppts && availability.length > 0 && availability.every((d) => d.offToday || d.slots.length === 0)) insights.push({ severity: "operational", text: "No doctors have hours scheduled today." });
+  if (outstanding && outstanding.count > 0) insights.push({ severity: "financial", text: `${outstanding.count} unpaid invoice${outstanding.count > 1 ? "s" : ""} totaling ${outstanding.total.toFixed(2)} outstanding.` });
+  if (lowStock.length > 0) insights.push({ severity: "inventory", text: `${lowStock.length} medicine${lowStock.length > 1 ? "s are" : " is"} at or below reorder level.` });
+  if (expiring.length > 0) insights.push({ severity: "inventory", text: `${expiring.length} stock batch${expiring.length > 1 ? "es are" : " is"} expiring within 60 days.` });
+  if (canAppts && todays.length > 0 && capacityPct === 100) insights.push({ severity: "positive", text: "All of today's appointments are completed — great work!" });
 
   const quickFlags = {
     appointment: has(PERMISSIONS.APPOINTMENTS_WRITE),
@@ -116,7 +157,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
-      <BrandingHeader clinicName={clinic.name} plan={subscription?.plan ?? null} userName={userName} role={role} />
+      <BrandingHeader
+        clinicName={clinic.name}
+        plan={subscription?.plan ?? null}
+        userName={userName}
+        role={role}
+        kpis={{
+          appointmentsToday: canAppts ? todays.length : null,
+          patientsWaiting: canAppts ? queue.length : null,
+          revenueToday: canBilling ? (revToday?.total ?? 0) : null,
+        }}
+      />
 
       <QuickActions flags={quickFlags} />
 
@@ -161,11 +212,17 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Main grid: schedule + trends (left), AI + availability + activity (right) */}
+      {/* ============ Clinic Operations ============ */}
+      {canAppts && (
+        <section className="space-y-4">
+          <SectionLabel>Clinic Operations</SectionLabel>
+          <QueueBoard items={todays} nowMs={nowMs} canBook={quickFlags.appointment} />
+        </section>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {canAppts && <TodaySchedule items={scheduleItems} title={scheduleTitle} canBook={quickFlags.appointment} />}
-          {canAppts && <AppointmentTrends data={weekly} />}
         </div>
         <div className="space-y-6">
           <AiInsights insights={insights} />
@@ -174,13 +231,45 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Operations row: revenue, outstanding, inventory, patients */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {canBilling && revMonth && <RevenueAnalytics todayTotal={revToday?.total ?? 0} month={revMonth} />}
-        {canBilling && outstanding && <OutstandingPayments report={outstanding} />}
-        {canPharmacy && <InventoryAlerts lowStock={lowStock} expiring={expiring} />}
-        {canPatients && patientStats && <PatientStatsWidget stats={patientStats} canRegister={quickFlags.patient} />}
-      </div>
+      {/* ============ Analytics Center ============ */}
+      {(canAppts || canBilling || canPatients || canDoctors) && (
+        <section className="space-y-4">
+          <SectionLabel>Analytics Center</SectionLabel>
+          <div className="grid gap-6 md:grid-cols-2">
+            {canAppts && <AppointmentTrends data={weekly} />}
+            {canBilling && <RevenueTrend data={monthlyRev} />}
+            {canPatients && <PatientGrowth data={patientGrowth} />}
+            {canDoctors && <DoctorPerformance data={doctorActivity} />}
+          </div>
+        </section>
+      )}
+
+      {/* ============ Financial · Patients · Inventory ============ */}
+      <section className="space-y-4">
+        <SectionLabel>Financial &amp; Care Insights</SectionLabel>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {canBilling && revMonth && billing && (
+            <RevenueAnalytics todayTotal={revToday?.total ?? 0} weekTotal={revWeek?.total ?? 0} month={revMonth} billing={billing} />
+          )}
+          {canBilling && outstanding && <OutstandingPayments report={outstanding} />}
+          {canPharmacy && <InventoryAlerts lowStock={lowStock} expiring={expiring} />}
+          {canPatients && (
+            <PatientIntelligence
+              newToday={newToday}
+              newThisMonth={patientStats?.newThisMonth ?? 0}
+              highRisk={highRisk}
+              followUps={followUps}
+            />
+          )}
+          {canPatients && patientStats && <PatientStatsWidget stats={patientStats} canRegister={quickFlags.patient} />}
+        </div>
+      </section>
     </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{children}</h2>
   );
 }

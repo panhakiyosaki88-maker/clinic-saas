@@ -58,19 +58,31 @@ export interface DoctorAvailabilityToday {
   specialization: string | null;
   slots: { start: string; end: string }[];
   offToday: boolean;
+  /** Distinct patients seen today (from finalized/any EMR visits + completed appts). */
+  seenToday: number;
+  /** Currently in a consultation right now. */
+  busy: boolean;
 }
 
-/** Which doctors are working today (recurring schedule minus time-off). */
+/** Which doctors are working today (recurring schedule minus time-off), plus
+ *  their live workload: patients seen today and whether they're mid-consult. */
 export async function getDoctorAvailabilityToday(): Promise<DoctorAvailabilityToday[]> {
   const supabase = await createClient();
   const today = new Date();
   const dow = today.getDay(); // 0=Sun..6=Sat, matches doctor_schedules
   const ymd = today.toISOString().slice(0, 10);
+  const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
 
-  const [{ data: docs }, { data: schedules }, { data: timeOff }] = await Promise.all([
-    supabase.from("doctors").select("id, full_name, specialization").is("deleted_at", null).eq("is_active", true),
+  const [{ data: docs }, { data: schedules }, { data: timeOff }, { data: todaysAppts }] = await Promise.all([
+    supabase.from("doctors").select("id, full_name, specialization, user_id").is("deleted_at", null).eq("is_active", true),
     supabase.from("doctor_schedules").select("doctor_id, start_time, end_time").eq("day_of_week", dow).eq("is_active", true),
     supabase.from("doctor_time_off").select("doctor_id").lte("start_date", ymd).gte("end_date", ymd),
+    supabase
+      .from("appointments")
+      .select("doctor_id, patient_id, status")
+      .is("deleted_at", null)
+      .gte("scheduled_at", dayStart)
+      .in("status", ["in_consultation", "completed"]),
   ]);
 
   const slotsByDoctor = new Map<string, { start: string; end: string }[]>();
@@ -81,12 +93,25 @@ export async function getDoctorAvailabilityToday(): Promise<DoctorAvailabilityTo
   }
   const offSet = new Set((timeOff ?? []).map((t) => t.doctor_id));
 
+  // Patients seen today + busy flag, derived from today's appointments per doctor.
+  const seenByDoctor = new Map<string, Set<string>>();
+  const busySet = new Set<string>();
+  for (const a of todaysAppts ?? []) {
+    if (!a.doctor_id) continue;
+    if (a.status === "in_consultation") busySet.add(a.doctor_id);
+    const set = seenByDoctor.get(a.doctor_id) ?? new Set<string>();
+    if (a.patient_id) set.add(a.patient_id);
+    seenByDoctor.set(a.doctor_id, set);
+  }
+
   return (docs ?? []).map((d) => ({
     id: d.id,
     name: d.full_name,
     specialization: d.specialization,
     slots: (slotsByDoctor.get(d.id) ?? []).sort((a, b) => a.start.localeCompare(b.start)),
     offToday: offSet.has(d.id),
+    seenToday: seenByDoctor.get(d.id)?.size ?? 0,
+    busy: busySet.has(d.id),
   }));
 }
 

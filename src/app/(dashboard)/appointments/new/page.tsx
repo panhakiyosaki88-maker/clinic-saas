@@ -12,7 +12,7 @@ export const metadata = { title: "New appointment" };
 export default async function NewAppointmentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ patientId?: string; date?: string }>;
+  searchParams: Promise<{ patientId?: string; date?: string; walkin?: string }>;
 }) {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
@@ -34,6 +34,7 @@ export default async function NewAppointmentPage({
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
         defaultPatientId={sp.patientId}
         defaultDate={sp.date}
+        defaultWalkIn={sp.walkin === "1"}
       />
     </main>
   );

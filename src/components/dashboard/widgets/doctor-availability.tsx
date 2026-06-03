@@ -3,6 +3,21 @@ import type { DoctorAvailabilityToday } from "@/lib/db/queries/doctors";
 import { WidgetCard } from "./widget-card";
 import { EmptyState } from "./empty-state";
 
+type Status = "busy" | "available" | "off";
+
+function statusOf(d: DoctorAvailabilityToday): Status {
+  if (d.offToday || d.slots.length === 0) return "off";
+  if (d.busy) return "busy";
+  return "available";
+}
+
+const STATUS_META: Record<Status, { dot: string; label: string; text: string }> = {
+  available: { dot: "bg-emerald-500", label: "Available", text: "text-emerald-600 dark:text-emerald-400" },
+  busy: { dot: "bg-blue-500", label: "Busy", text: "text-blue-600 dark:text-blue-400" },
+  off: { dot: "bg-slate-300 dark:bg-slate-600", label: "Off", text: "text-slate-400" },
+};
+
+/** Doctor workload: live status (available / busy / on-leave) + patients seen today. */
 export function DoctorAvailability({
   doctors,
   canManage,
@@ -11,7 +26,7 @@ export function DoctorAvailability({
   canManage: boolean;
 }) {
   return (
-    <WidgetCard title="Doctor Availability" action={{ href: "/doctors", label: "Manage" }} bodyClassName="">
+    <WidgetCard title="Doctor Workload" action={{ href: "/doctors", label: "Manage" }} bodyClassName="">
       {doctors.length === 0 ? (
         <EmptyState
           icon={Stethoscope}
@@ -21,32 +36,28 @@ export function DoctorAvailability({
         />
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-          {doctors.map((d) => (
-            <li key={d.id} className="flex items-center justify-between gap-3 px-5 py-3">
-              <div className="flex items-center gap-3">
-                <span
-                  className={`size-2.5 shrink-0 rounded-full ${
-                    d.offToday ? "bg-slate-300 dark:bg-slate-600" : d.slots.length > 0 ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-600"
-                  }`}
-                />
-                <div>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{d.name}</p>
-                  <p className="text-xs text-slate-400">{d.specialization ?? "General"}</p>
+          {doctors.map((d) => {
+            const status = statusOf(d);
+            const meta = STATUS_META[status];
+            const label = d.offToday ? "On leave" : status === "off" ? "No hours today" : meta.label;
+            return (
+              <li key={d.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                <div className="flex items-center gap-3">
+                  <span className={`size-2.5 shrink-0 rounded-full ${meta.dot}`} />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{d.name}</p>
+                    <p className="text-xs text-slate-400">{d.specialization ?? "General"}</p>
+                  </div>
                 </div>
-              </div>
-              <span className="text-xs font-medium">
-                {d.offToday ? (
-                  <span className="text-slate-400">On leave</span>
-                ) : d.slots.length > 0 ? (
-                  <span className="text-emerald-600 dark:text-emerald-400">
-                    {d.slots.map((s) => `${s.start}–${s.end}`).join(", ")}
-                  </span>
-                ) : (
-                  <span className="text-slate-400">No hours today</span>
-                )}
-              </span>
-            </li>
-          ))}
+                <div className="text-right">
+                  <p className={`text-xs font-medium ${meta.text}`}>{label}</p>
+                  <p className="text-xs text-slate-400">
+                    {d.seenToday} seen{d.slots.length > 0 && !d.offToday ? ` · ${d.slots.map((s) => `${s.start}–${s.end}`).join(", ")}` : ""}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </WidgetCard>

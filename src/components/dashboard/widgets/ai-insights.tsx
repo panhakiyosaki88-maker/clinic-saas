@@ -1,12 +1,61 @@
 import { Sparkles } from "lucide-react";
 import { EmptyState } from "./empty-state";
 
+export type InsightSeverity = "critical" | "operational" | "financial" | "inventory" | "positive";
+
+export interface Insight {
+  severity: InsightSeverity;
+  text: string;
+}
+
+const SEVERITY_META: Record<
+  InsightSeverity,
+  { order: number; emoji: string; label: string; row: string; chip: string }
+> = {
+  critical: {
+    order: 0,
+    emoji: "🔴",
+    label: "Critical",
+    row: "bg-rose-50 dark:bg-rose-500/10",
+    chip: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300",
+  },
+  operational: {
+    order: 1,
+    emoji: "🟠",
+    label: "Operational",
+    row: "bg-amber-50 dark:bg-amber-500/10",
+    chip: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+  },
+  financial: {
+    order: 2,
+    emoji: "🔵",
+    label: "Financial",
+    row: "bg-blue-50 dark:bg-blue-500/10",
+    chip: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
+  },
+  inventory: {
+    order: 3,
+    emoji: "🟡",
+    label: "Inventory",
+    row: "bg-yellow-50 dark:bg-yellow-500/10",
+    chip: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300",
+  },
+  positive: {
+    order: 4,
+    emoji: "🟢",
+    label: "All clear",
+    row: "bg-emerald-50 dark:bg-emerald-500/10",
+    chip: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+  },
+};
+
 /**
- * AI-ready insights widget. For now it surfaces rule-based highlights derived
- * from live clinic data; the container is structured so an LLM-generated
- * summary can be dropped in later without changing the layout.
+ * AI Clinic Assistant — rule-based, severity-tiered highlights from live clinic
+ * data. The container is structured so an LLM-generated summary can drop in later.
  */
-export function AiInsights({ insights }: { insights: string[] }) {
+export function AiInsights({ insights }: { insights: Insight[] }) {
+  const sorted = [...insights].sort((a, b) => SEVERITY_META[a.severity].order - SEVERITY_META[b.severity].order);
+
   return (
     <section className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5 dark:border-violet-500/20 dark:from-violet-500/10 dark:to-slate-900">
       <div className="mb-3 flex items-center gap-2">
@@ -14,20 +63,26 @@ export function AiInsights({ insights }: { insights: string[] }) {
           <Sparkles className="size-4" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">AI Insights</h2>
-          <p className="text-xs text-slate-400">Smart highlights from today&apos;s data</p>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">AI Clinic Assistant</h2>
+          <p className="text-xs text-slate-400">Prioritized highlights from today&apos;s data</p>
         </div>
       </div>
-      {insights.length === 0 ? (
-        <EmptyState icon={Sparkles} title="Nothing needs attention" hint="Insights appear as activity builds up." tone="positive" />
+      {sorted.length === 0 ? (
+        <EmptyState icon={Sparkles} title="Nothing needs attention" hint="Alerts appear here as activity builds up." tone="positive" />
       ) : (
         <ul className="space-y-2">
-          {insights.map((text, i) => (
-            <li key={i} className="flex items-start gap-2 rounded-lg bg-white/70 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
-              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-violet-500" />
-              <span>{text}</span>
-            </li>
-          ))}
+          {sorted.map((it, i) => {
+            const meta = SEVERITY_META[it.severity];
+            return (
+              <li key={i} className={`flex items-start gap-2.5 rounded-lg px-3 py-2 text-sm ${meta.row}`}>
+                <span className="mt-0.5 text-xs leading-5" aria-hidden>{meta.emoji}</span>
+                <span className="flex-1 text-slate-700 dark:text-slate-200">{it.text}</span>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${meta.chip}`}>
+                  {meta.label}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

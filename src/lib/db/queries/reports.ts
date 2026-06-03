@@ -65,6 +65,130 @@ export async function getPatientStats(): Promise<PatientStats> {
   };
 }
 
+export interface DaySeries {
+  label: string;
+  date: string;
+  value: number;
+}
+
+/** New patients per day for the last `days` days (oldest → newest). */
+export async function getPatientGrowthDaily(days = 30): Promise<DaySeries[]> {
+  const supabase = await createClient();
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  const { data } = await supabase
+    .from("patients")
+    .select("created_at")
+    .is("deleted_at", null)
+    .gte("created_at", start.toISOString());
+
+  const counts = new Map<string, number>();
+  const buckets: DaySeries[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    counts.set(key, 0);
+    buckets.push({ label: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }), date: key, value: 0 });
+  }
+  for (const p of data ?? []) {
+    const key = new Date(p.created_at).toISOString().slice(0, 10);
+    if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return buckets.map((b) => ({ ...b, value: counts.get(b.date) ?? 0 }));
+}
+
+/** Collected revenue per calendar month for the last `months` months. */
+export async function getMonthlyRevenue(months = 6): Promise<DaySeries[]> {
+  const supabase = await createClient();
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+
+  const { data } = await supabase.from("payments").select("amount, paid_at").gte("paid_at", start.toISOString());
+
+  const sums = new Map<string, number>();
+  const buckets: DaySeries[] = [];
+  for (let i = 0; i < months; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    sums.set(key, 0);
+    buckets.push({ label: d.toLocaleDateString(undefined, { month: "short" }), date: key, value: 0 });
+  }
+  for (const p of data ?? []) {
+    const d = new Date(p.paid_at);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    if (sums.has(key)) sums.set(key, (sums.get(key) ?? 0) + Number(p.amount));
+  }
+  return buckets.map((b) => ({ ...b, value: Math.round((sums.get(b.date) ?? 0) * 100) / 100 }));
+}
+
+export interface BillingTotals {
+  invoicedTotal: number;
+  collectedTotal: number;
+  collectionRate: number; // 0..100
+  avgRevenuePerPatient: number;
+}
+
+/** Lifetime collection metrics across all (non-deleted) invoices. */
+export async function getBillingTotals(): Promise<BillingTotals> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("invoices")
+    .select("total, balance, patient_id")
+    .is("deleted_at", null)
+    .neq("status", "cancelled");
+
+  const rows = data ?? [];
+  let invoicedTotal = 0;
+  let collectedTotal = 0;
+  const patients = new Set<string>();
+  for (const r of rows) {
+    const total = Number(r.total ?? 0);
+    const balance = Number(r.balance ?? 0);
+    invoicedTotal += total;
+    collectedTotal += total - balance;
+    if (r.patient_id) patients.add(r.patient_id);
+  }
+  return {
+    invoicedTotal,
+    collectedTotal,
+    collectionRate: invoicedTotal > 0 ? Math.round((collectedTotal / invoicedTotal) * 100) : 0,
+    avgRevenuePerPatient: patients.size > 0 ? collectedTotal / patients.size : 0,
+  };
+}
+
+const RISK_RULES: { flag: string; tone: "rose" | "amber" | "violet"; test: RegExp }[] = [
+  { flag: "Diabetes", tone: "amber", test: /diabet/i },
+  { flag: "Hypertension", tone: "rose", test: /hypertens|high blood pressure|\bhbp\b/i },
+  { flag: "Pregnancy", tone: "violet", test: /pregnan/i },
+  { flag: "Severe allergy", tone: "rose", test: /penicillin|anaphyla|severe|nut|peanut/i },
+];
+
+export interface HighRiskPatient {
+  id: string;
+  name: string;
+  flags: { flag: string; tone: "rose" | "amber" | "violet" }[];
+}
+
+/** Patients flagged high-risk from chronic conditions / allergies. */
+export async function getHighRiskPatients(limit = 6): Promise<{ count: number; rows: HighRiskPatient[] }> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("patients")
+    .select("id, full_name, chronic_diseases, allergies")
+    .is("deleted_at", null);
+
+  const flagged: HighRiskPatient[] = [];
+  for (const p of data ?? []) {
+    const haystack = `${p.chronic_diseases ?? ""} ${p.allergies ?? ""}`;
+    const flags = RISK_RULES.filter((r) => r.test.test(haystack)).map((r) => ({ flag: r.flag, tone: r.tone }));
+    if (flags.length > 0) flagged.push({ id: p.id, name: p.full_name, flags });
+  }
+  return { count: flagged.length, rows: flagged.slice(0, limit) };
+}
+
 export async function getNewPatientsCount(fromISO: string, toISO: string): Promise<number> {
   const supabase = await createClient();
   const { count } = await supabase

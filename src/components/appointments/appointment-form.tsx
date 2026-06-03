@@ -21,17 +21,19 @@ export function AppointmentForm({
   appointment,
   defaultPatientId,
   defaultDate,
+  defaultWalkIn,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
   appointment?: AppointmentWithNames;
   defaultPatientId?: string;
   defaultDate?: string;
+  defaultWalkIn?: boolean;
 }) {
   const router = useRouter();
   const isEdit = !!appointment;
   const [pending, startTransition] = React.useTransition();
-  const [walkIn, setWalkIn] = React.useState(false);
+  const [walkIn, setWalkIn] = React.useState(defaultWalkIn ?? false);
   const [error, setError] = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
 
