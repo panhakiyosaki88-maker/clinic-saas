@@ -26,12 +26,11 @@ export default async function DashboardLayout({
   }
   const clinic = await getCurrentClinic();
 
-  // One query for the role's permissions (super admins implicitly hold all).
-  const allowed = isSuperAdmin
-    ? new Set(NAV.map((n) => n.permission).filter(Boolean) as string[])
-    : await getRolePermissionKeys(role ?? "");
+  // One query for the role's permissions. Super admins implicitly hold every
+  // permission, so `can` short-circuits for them (matches the dashboard page).
+  const allowed = isSuperAdmin ? new Set<string>() : await getRolePermissionKeys(role ?? "");
 
-  const can = (perm: string | null) => perm === null || allowed.has(perm);
+  const can = (perm: string | null) => perm === null || isSuperAdmin || allowed.has(perm);
   const navKeys = NAV.filter((n) => can(n.permission)).map((n) => n.key);
 
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
