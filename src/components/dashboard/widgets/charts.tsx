@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -16,6 +17,18 @@ import {
 export interface ChartPoint {
   label: string;
   value: number;
+}
+
+/** Recharts v3 is client-only; render a placeholder during SSR / first paint to
+ *  avoid a server-side render throw, then mount the chart on the client. */
+function useMounted() {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
+function ChartSkeleton({ height }: { height: number }) {
+  return <div style={{ height }} className="w-full animate-pulse rounded-lg bg-slate-50 dark:bg-slate-800/40" />;
 }
 
 const tooltipStyle = {
@@ -46,7 +59,9 @@ export function AreaTrendChart({
   prefix?: string;
   height?: number;
 }) {
+  const mounted = useMounted();
   const id = `grad-${color.replace("#", "")}`;
+  if (!mounted) return <ChartSkeleton height={height} />;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -84,7 +99,9 @@ export function BarSeriesChart({
   height?: number;
   highlightMax?: boolean;
 }) {
+  const mounted = useMounted();
   const max = Math.max(...data.map((d) => d.value), 0);
+  if (!mounted) return <ChartSkeleton height={height} />;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
