@@ -3,50 +3,83 @@
 -- module so you can try the whole app. Paste into the Supabase SQL Editor and
 -- run. Safe to run once; re-running is a no-op (it detects existing demo data).
 --
--- It targets your most-recently-created clinic and uses that clinic's owner as
--- the actor. Fixed UUIDs (prefixed dddd…/aaaa… etc.) make it idempotent.
+-- It targets the clinic owned by v_email (set below) and uses that clinic's
+-- owner as the actor. Re-running on an already-seeded clinic is a no-op; the
+-- demo can be loaded into multiple clinics independently (fresh ids each run).
 -- To remove later, see the cleanup block at the bottom (commented out).
 -- ============================================================================
 do $$
 declare
+  -- 👇 set this to the email you LOG IN with. The demo seeds that account's clinic.
+  --    Leave as '' to fall back to the most-recently-created clinic.
+  v_email  text := 'panhakiyosaki88@gmail.com';
   v_clinic uuid;
   v_owner  uuid;
   v_branch uuid;
-  -- fixed demo ids
-  d1 uuid := 'd0000000-0000-0000-0000-000000000001';
-  d2 uuid := 'd0000000-0000-0000-0000-000000000002';
-  d3 uuid := 'd0000000-0000-0000-0000-000000000003';
-  p1 uuid := 'b0000000-0000-0000-0000-000000000001';
-  p2 uuid := 'b0000000-0000-0000-0000-000000000002';
-  p3 uuid := 'b0000000-0000-0000-0000-000000000003';
-  p4 uuid := 'b0000000-0000-0000-0000-000000000004';
-  p5 uuid := 'b0000000-0000-0000-0000-000000000005';
-  p6 uuid := 'b0000000-0000-0000-0000-000000000006';
-  m1 uuid := 'c0000000-0000-0000-0000-000000000001';
-  m2 uuid := 'c0000000-0000-0000-0000-000000000002';
-  m3 uuid := 'c0000000-0000-0000-0000-000000000003';
-  m4 uuid := 'c0000000-0000-0000-0000-000000000004';
-  rec1 uuid := 'e0000000-0000-0000-0000-000000000001';
-  rec2 uuid := 'e0000000-0000-0000-0000-000000000002';
-  inv1 uuid := 'f0000000-0000-0000-0000-000000000001';
-  inv2 uuid := 'f0000000-0000-0000-0000-000000000002';
-  inv3 uuid := 'f0000000-0000-0000-0000-000000000003';
-  cat1 uuid := 'a0000000-0000-0000-0000-000000000001';
-  cat2 uuid := 'a0000000-0000-0000-0000-000000000002';
-  lr1 uuid := 'a1000000-0000-0000-0000-000000000001';
-  lr2 uuid := 'a1000000-0000-0000-0000-000000000002';
+  -- fresh random ids each run, so the demo can be loaded into ANY clinic
+  -- independently (re-running on the same clinic is still a no-op, see guard).
+  d1 uuid := gen_random_uuid();
+  d2 uuid := gen_random_uuid();
+  d3 uuid := gen_random_uuid();
+  p1 uuid := gen_random_uuid();
+  p2 uuid := gen_random_uuid();
+  p3 uuid := gen_random_uuid();
+  p4 uuid := gen_random_uuid();
+  p5 uuid := gen_random_uuid();
+  p6 uuid := gen_random_uuid();
+  m1 uuid := gen_random_uuid();
+  m2 uuid := gen_random_uuid();
+  m3 uuid := gen_random_uuid();
+  m4 uuid := gen_random_uuid();
+  rec1 uuid := gen_random_uuid();
+  rec2 uuid := gen_random_uuid();
+  pr1 uuid := gen_random_uuid();
+  pr2 uuid := gen_random_uuid();
+  inv1 uuid := gen_random_uuid();
+  inv2 uuid := gen_random_uuid();
+  inv3 uuid := gen_random_uuid();
+  cat1 uuid := gen_random_uuid();
+  cat2 uuid := gen_random_uuid();
+  lr1 uuid := gen_random_uuid();
+  lr2 uuid := gen_random_uuid();
   base timestamptz := date_trunc('day', now());
   dow int;
 begin
-  select id, owner_user_id into v_clinic, v_owner
-  from public.clinics order by created_at desc limit 1;
+  -- Prefer the clinic owned by v_email; if that user is a member (not owner) of a
+  -- clinic, use that; otherwise fall back to the most-recently-created clinic.
+  if v_email <> '' then
+    select c.id, c.owner_user_id into v_clinic, v_owner
+    from public.clinics c
+    join auth.users u on u.id = c.owner_user_id
+    where lower(u.email) = lower(v_email)
+    order by c.created_at desc limit 1;
+
+    if v_clinic is null then
+      select m.clinic_id, c.owner_user_id into v_clinic, v_owner
+      from public.memberships m
+      join auth.users u on u.id = m.user_id
+      join public.clinics c on c.id = m.clinic_id
+      where lower(u.email) = lower(v_email)
+      order by m.created_at asc limit 1;
+    end if;
+  end if;
+
+  if v_clinic is null then
+    select id, owner_user_id into v_clinic, v_owner
+    from public.clinics order by created_at desc limit 1;
+  end if;
+
   if v_clinic is null then
     raise notice 'No clinic found — sign up & create a clinic first.'; return;
   end if;
+  raise notice 'Seeding demo into clinic %', v_clinic;
   select id into v_branch from public.branches where clinic_id = v_clinic order by created_at asc limit 1;
 
-  if exists (select 1 from public.patients where id = p1) then
-    raise notice 'Demo data already present — skipping.'; return;
+  if exists (
+    select 1 from public.patients
+    where clinic_id = v_clinic and patient_number = 'P009001'
+  ) then
+    raise notice 'Demo data already present in clinic % — skipping.', v_clinic; return;
   end if;
 
   -- ===== Doctors + weekly schedules + time off ============================
@@ -99,13 +132,13 @@ begin
 
   -- ===== Prescriptions =====================================================
   insert into public.prescriptions (id, clinic_id, patient_id, doctor_id, medical_record_id, notes, created_by) values
-    ('aa000000-0000-0000-0000-000000000001', v_clinic, p1, d1, rec1, 'Take with food.', v_owner),
-    ('aa000000-0000-0000-0000-000000000002', v_clinic, p2, d2, rec2, null, v_owner)
+    (pr1, v_clinic, p1, d1, rec1, 'Take with food.', v_owner),
+    (pr2, v_clinic, p2, d2, rec2, null, v_owner)
   on conflict (id) do nothing;
   insert into public.prescription_items (clinic_id, prescription_id, medicine_name, dosage, frequency, duration, quantity, sort_order) values
-    (v_clinic, 'aa000000-0000-0000-0000-000000000001', 'Amlodipine', '5mg', 'Once daily', '30 days', 30, 0),
-    (v_clinic, 'aa000000-0000-0000-0000-000000000002', 'Paracetamol', '500mg', '3x daily', '5 days', 15, 0),
-    (v_clinic, 'aa000000-0000-0000-0000-000000000002', 'Amoxicillin', '500mg', '2x daily', '7 days', 14, 1);
+    (v_clinic, pr1, 'Amlodipine', '5mg', 'Once daily', '30 days', 30, 0),
+    (v_clinic, pr2, 'Paracetamol', '500mg', '3x daily', '5 days', 15, 0),
+    (v_clinic, pr2, 'Amoxicillin', '500mg', '2x daily', '7 days', 14, 1);
 
   -- ===== Pharmacy: medicines + stock ledger ===============================
   insert into public.medicines (id, clinic_id, name, generic_name, sku, category, unit, reorder_level, purchase_price, selling_price, created_by) values
@@ -160,15 +193,23 @@ begin
 end $$;
 
 -- ============================================================================
--- CLEANUP (optional) — removes the demo rows. Uncomment & run to undo.
+-- CLEANUP (optional) — removes the demo rows from a clinic. Uncomment & run.
+-- Set v_email to the same account you seeded; deletes only that clinic's demo.
 -- ----------------------------------------------------------------------------
--- delete from public.patients where id in (
---   'b0000000-0000-0000-0000-000000000001','b0000000-0000-0000-0000-000000000002',
---   'b0000000-0000-0000-0000-000000000003','b0000000-0000-0000-0000-000000000004',
---   'b0000000-0000-0000-0000-000000000005','b0000000-0000-0000-0000-000000000006');
--- delete from public.doctors where id in (
---   'd0000000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000002','d0000000-0000-0000-0000-000000000003');
--- delete from public.medicines where id in (
---   'c0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000002',
---   'c0000000-0000-0000-0000-000000000003','c0000000-0000-0000-0000-000000000004');
--- (invoices, lab, prescriptions, appointments cascade from patients/doctors.)
+-- do $$
+-- declare
+--   v_email  text := 'panhakiyosaki88@gmail.com';
+--   v_clinic uuid;
+-- begin
+--   select c.id into v_clinic from public.clinics c
+--   join auth.users u on u.id = c.owner_user_id
+--   where lower(u.email) = lower(v_email) order by c.created_at desc limit 1;
+--   if v_clinic is null then raise notice 'No clinic for %', v_email; return; end if;
+--   -- invoices, lab, prescriptions, appointments, vitals cascade from patients/doctors.
+--   delete from public.patients  where clinic_id = v_clinic and patient_number like 'P0090%';
+--   delete from public.doctors   where clinic_id = v_clinic and license_number in ('KH-GP-1024','KH-PED-2048','KH-DERM-3072');
+--   delete from public.medicines where clinic_id = v_clinic and sku in ('AML-5','PARA-500','AMOX-500','SALB-INH');
+--   delete from public.lab_categories where clinic_id = v_clinic and name in ('Hematology','Biochemistry');
+--   delete from public.notifications  where clinic_id = v_clinic and recipient in ('dara@example.com','vannak@example.com');
+--   raise notice 'Demo data removed from clinic %', v_clinic;
+-- end $$;
