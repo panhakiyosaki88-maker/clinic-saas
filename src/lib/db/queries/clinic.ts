@@ -42,10 +42,16 @@ export async function getCurrentSubscription(): Promise<Subscription | null> {
 }
 
 export async function listBranches(): Promise<Branch[]> {
+  // Scope to the caller's clinic explicitly: RLS lets a super admin read EVERY
+  // clinic's branches, so relying on the policy alone would list other clinics'
+  // locations too (mirrors getCurrentClinic above).
+  const { clinic_id } = getClinicClaims(await getCurrentUser());
+  if (!clinic_id) return [];
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("branches")
     .select("*")
+    .eq("clinic_id", clinic_id)
     .is("deleted_at", null)
     .order("is_primary", { ascending: false })
     .order("name", { ascending: true });
