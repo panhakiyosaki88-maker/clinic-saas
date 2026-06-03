@@ -30,7 +30,10 @@ export default async function DashboardLayout({
   // permission, so `can` short-circuits for them (matches the dashboard page).
   const allowed = isSuperAdmin ? new Set<string>() : await getRolePermissionKeys(role ?? "");
 
-  const can = (perm: string | null) => perm === null || isSuperAdmin || allowed.has(perm);
+  const can = (perm: string | string[] | null) =>
+    perm === null ||
+    isSuperAdmin ||
+    (Array.isArray(perm) ? perm.some((p) => allowed.has(p)) : allowed.has(perm));
   const navKeys = NAV.filter((n) => can(n.permission)).map((n) => n.key);
 
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;

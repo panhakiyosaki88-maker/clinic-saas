@@ -9,8 +9,7 @@ import {
   Receipt,
   BarChart3,
   Bell,
-  UserCog,
-  CreditCard,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { PERMISSIONS, type Permission } from "@/lib/auth/permissions";
@@ -20,8 +19,11 @@ export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
-  /** Permission required to see this item; null = always visible. */
-  permission: Permission | null;
+  /**
+   * Permission(s) required to see this item; null = always visible. An array
+   * means "visible if the user holds ANY of these" (e.g. the Settings hub).
+   */
+  permission: Permission | Permission[] | null;
 }
 
 /** Primary sidebar navigation. Order matters. */
@@ -36,6 +38,11 @@ export const NAV: NavItem[] = [
   { key: "billing", label: "Billing", href: "/billing", icon: Receipt, permission: PERMISSIONS.BILLING_READ },
   { key: "reports", label: "Reports", href: "/reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
   { key: "notifications", label: "Notifications", href: "/notifications", icon: Bell, permission: PERMISSIONS.NOTIFICATIONS_READ },
-  { key: "staff", label: "Staff", href: "/settings/staff", icon: UserCog, permission: PERMISSIONS.STAFF_MANAGE },
-  { key: "subscription", label: "Subscription", href: "/settings/subscription", icon: CreditCard, permission: null },
+  {
+    key: "settings",
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    permission: [PERMISSIONS.CLINIC_MANAGE, PERMISSIONS.STAFF_MANAGE, PERMISSIONS.SUBSCRIPTION_MANAGE],
+  },
 ];
