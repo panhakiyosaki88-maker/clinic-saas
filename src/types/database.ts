@@ -31,6 +31,10 @@ export type ClinicStatus = "active" | "suspended" | "pending";
 export type AccountStatus = "pending" | "approved" | "rejected";
 export type MembershipStatus = "active" | "invited" | "disabled";
 export type Gender = "male" | "female" | "other";
+export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | "unknown";
+export type MaritalStatus = "single" | "married" | "divorced" | "widowed" | "other";
+export type IdDocType = "national_id" | "passport" | "driver_license" | "other";
+export type ContactMethod = "phone" | "sms" | "email" | "telegram" | "none";
 export type RecordStatus = "draft" | "finalized";
 export type AppointmentStatus =
   | "scheduled"
@@ -54,7 +58,9 @@ export type TimelineEvent =
   | "document"
   | "prescription"
   | "lab"
-  | "invoice";
+  | "invoice"
+  | "medication"
+  | "immunization";
 
 export interface Database {
   public: {
@@ -273,6 +279,16 @@ export interface Database {
           occupation: string | null;
           emergency_contact_name: string | null;
           emergency_contact_phone: string | null;
+          blood_type: BloodType | null;
+          marital_status: MaritalStatus | null;
+          national_id_type: IdDocType | null;
+          national_id_number: string | null;
+          preferred_language: string | null;
+          preferred_contact_method: ContactMethod | null;
+          do_not_contact: boolean;
+          next_of_kin_name: string | null;
+          next_of_kin_phone: string | null;
+          next_of_kin_relationship: string | null;
           allergies: string | null;
           medical_history: string | null;
           chronic_diseases: string | null;
@@ -297,6 +313,16 @@ export interface Database {
           occupation?: string | null;
           emergency_contact_name?: string | null;
           emergency_contact_phone?: string | null;
+          blood_type?: BloodType | null;
+          marital_status?: MaritalStatus | null;
+          national_id_type?: IdDocType | null;
+          national_id_number?: string | null;
+          preferred_language?: string | null;
+          preferred_contact_method?: ContactMethod | null;
+          do_not_contact?: boolean;
+          next_of_kin_name?: string | null;
+          next_of_kin_phone?: string | null;
+          next_of_kin_relationship?: string | null;
           allergies?: string | null;
           medical_history?: string | null;
           chronic_diseases?: string | null;
@@ -309,6 +335,280 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["patients"]["Insert"]>;
         Relationships: [];
       };
+      patient_insurance: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          provider: string;
+          policy_number: string | null;
+          group_number: string | null;
+          coverage_start: string | null;
+          coverage_end: string | null;
+          is_primary: boolean;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          provider: string;
+          policy_number?: string | null;
+          group_number?: string | null;
+          coverage_start?: string | null;
+          coverage_end?: string | null;
+          is_primary?: boolean;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_insurance"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_allergies: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          substance: string;
+          reaction: string | null;
+          severity: string | null;
+          noted_at: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          substance: string;
+          reaction?: string | null;
+          severity?: string | null;
+          noted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_allergies"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_medications: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          name: string;
+          dose: string | null;
+          frequency: string | null;
+          route: string | null;
+          started_on: string | null;
+          ended_on: string | null;
+          status: string;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          name: string;
+          dose?: string | null;
+          frequency?: string | null;
+          route?: string | null;
+          started_on?: string | null;
+          ended_on?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_medications"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_immunizations: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          vaccine: string;
+          dose_label: string | null;
+          given_on: string | null;
+          next_due_on: string | null;
+          provider: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          vaccine: string;
+          dose_label?: string | null;
+          given_on?: string | null;
+          next_due_on?: string | null;
+          provider?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_immunizations"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_conditions: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          condition: string;
+          status: string;
+          diagnosed_on: string | null;
+          resolved_on: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          condition: string;
+          status?: string;
+          diagnosed_on?: string | null;
+          resolved_on?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_conditions"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_consents: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          consent_type: string;
+          granted: boolean;
+          signed_on: string | null;
+          document_id: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          consent_type: string;
+          granted: boolean;
+          signed_on?: string | null;
+          document_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_consents"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_communications: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          channel: ContactMethod | null;
+          direction: string;
+          subject: string | null;
+          body: string | null;
+          status: string | null;
+          sent_at: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          channel?: ContactMethod | null;
+          direction?: string;
+          subject?: string | null;
+          body?: string | null;
+          status?: string | null;
+          sent_at?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_communications"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_tags: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          name: string;
+          color: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          name: string;
+          color?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_tags"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_tag_links: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          tag_id: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          tag_id: string;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_tag_links"]["Insert"]>;
+        Relationships: [];
+      };
       patient_documents: {
         Row: {
           id: string;
@@ -319,6 +619,7 @@ export interface Database {
           mime_type: string | null;
           size_bytes: number | null;
           medical_record_id: string | null;
+          category: string | null;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
@@ -332,6 +633,7 @@ export interface Database {
           mime_type?: string | null;
           size_bytes?: number | null;
           medical_record_id?: string | null;
+          category?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
@@ -979,6 +1281,10 @@ export interface Database {
       clinic_status: ClinicStatus;
       membership_status: MembershipStatus;
       gender: Gender;
+      blood_type: BloodType;
+      marital_status: MaritalStatus;
+      id_doc_type: IdDocType;
+      contact_method: ContactMethod;
       timeline_event: TimelineEvent;
       record_status: RecordStatus;
       appointment_status: AppointmentStatus;

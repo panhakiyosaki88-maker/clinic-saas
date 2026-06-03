@@ -144,6 +144,19 @@ export async function sendFollowUp(input: { patientId: string; message: string }
     recipient: to, subject, body: html, result, patientId: patient.id,
   });
 
+  // Mirror the send into the patient's communication log (Module 4, Phase 3).
+  await supabase.from("patient_communications").insert({
+    clinic_id: clinicId,
+    patient_id: patient.id,
+    channel: "email",
+    direction: "outbound",
+    subject,
+    body: parsed.data.message,
+    status: result.status,
+    created_by: user.id,
+  });
+
   revalidatePath("/notifications");
+  revalidatePath(`/patients/${patient.id}`);
   return ok({ status: result.status });
 }

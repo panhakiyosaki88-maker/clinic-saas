@@ -5,6 +5,16 @@ import {
   getPatient,
   listPatientDocuments,
   listPatientTimeline,
+  listPatientInsurance,
+  listPatientAllergies,
+  listPatientMedications,
+  listPatientImmunizations,
+  listPatientConditions,
+  listPatientConsents,
+  listPatientCommunications,
+  listPatientTags,
+  listClinicTags,
+  patientAge,
 } from "@/lib/db/queries/patients";
 import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
@@ -16,6 +26,11 @@ import { DocumentUploader } from "@/components/patients/document-uploader";
 import { DocumentList } from "@/components/patients/document-list";
 import { AddNoteForm } from "@/components/patients/add-note-form";
 import { DeletePatientButton } from "@/components/patients/delete-patient-button";
+import { InsuranceSection } from "@/components/patients/insurance-section";
+import { ClinicalLists } from "@/components/patients/clinical-lists";
+import { EngagementSection } from "@/components/patients/engagement-section";
+import { PatientTags } from "@/components/patients/patient-tags";
+import { ProfileTabs, type ProfileTab } from "@/components/patients/profile-tabs";
 import { LabStatusBadge } from "@/components/lab/lab-status-badge";
 import { FollowUpForm } from "@/components/notifications/follow-up-form";
 import { Button } from "@/components/ui/button";
@@ -29,6 +44,23 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
       <dt className="text-xs text-[var(--muted-foreground)]">{label}</dt>
       <dd className="text-sm">{value && value.length > 0 ? value : "—"}</dd>
     </div>
+  );
+}
+
+function Pill({
+  children,
+  tone = "default",
+}: {
+  children: React.ReactNode;
+  tone?: "default" | "alert" | "muted";
+}) {
+  const tones = {
+    default: "bg-[var(--muted)] text-[var(--foreground)]",
+    alert: "bg-[var(--destructive)]/10 text-[var(--destructive)]",
+    muted: "bg-[var(--muted)] text-[var(--muted-foreground)]",
+  };
+  return (
+    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}>{children}</span>
   );
 }
 
@@ -61,75 +93,104 @@ export default async function PatientProfilePage({
     hasPermission(PERMISSIONS.LAB_WRITE),
     hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
   ]);
-  const [documents, timeline, visits, prescriptions, invoices, labRequests] = await Promise.all([
+  const [
+    documents, timeline, insurance,
+    allergies, medications, immunizations, conditions,
+    consents, communications, patientTags, clinicTags,
+    visits, prescriptions, invoices, labRequests,
+  ] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
+    listPatientInsurance(id),
+    listPatientAllergies(id),
+    listPatientMedications(id),
+    listPatientImmunizations(id),
+    listPatientConditions(id),
+    listPatientConsents(id),
+    listPatientCommunications(id),
+    listPatientTags(id),
+    listClinicTags(),
     canEmrRead ? listMedicalRecords(id) : Promise.resolve([]),
     canRxRead ? listPatientPrescriptions(id) : Promise.resolve([]),
     canBillRead ? listPatientInvoices(id) : Promise.resolve([]),
     canLabRead ? listPatientLabRequests(id) : Promise.resolve([]),
   ]);
 
-  return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link href="/patients" className="text-sm text-[var(--muted-foreground)] hover:underline">
-            ← Patients
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold">{patient.full_name}</h1>
-          <p className="font-mono text-xs text-[var(--muted-foreground)]">{patient.patient_number}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {canBookAppt && (
-            <Button asChild size="sm">
-              <Link href={`/appointments/new?patientId=${patient.id}`}>Book appointment</Link>
-            </Button>
-          )}
-          {canWrite && (
-            <>
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/patients/${patient.id}/edit`}>Edit</Link>
-              </Button>
-              <DeletePatientButton patientId={patient.id} />
-            </>
-          )}
-        </div>
-      </header>
+  const age = patientAge(patient.date_of_birth);
+  const activeMeds = medications.filter((m) => m.status === "active").length;
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Demographics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid grid-cols-2 gap-4">
-              <Detail label="Gender" value={patient.gender} />
-              <Detail label="Date of birth" value={patient.date_of_birth} />
-              <Detail label="Phone" value={patient.phone} />
-              <Detail label="Email" value={patient.email} />
-              <Detail label="Occupation" value={patient.occupation} />
-              <Detail label="Address" value={patient.address} />
-              <Detail label="Emergency contact" value={patient.emergency_contact_name} />
-              <Detail label="Emergency phone" value={patient.emergency_contact_phone} />
-            </dl>
-          </CardContent>
-        </Card>
+  // -- Panels -----------------------------------------------------------------
+  const overviewPanel = (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Demographics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid grid-cols-2 gap-4">
+            <Detail label="Gender" value={patient.gender} />
+            <Detail label="Date of birth" value={patient.date_of_birth} />
+            <Detail label="Blood type" value={patient.blood_type} />
+            <Detail label="Marital status" value={patient.marital_status} />
+            <Detail label="Phone" value={patient.phone} />
+            <Detail label="Email" value={patient.email} />
+            <Detail label="Occupation" value={patient.occupation} />
+            <Detail
+              label="ID document"
+              value={
+                patient.national_id_number
+                  ? `${patient.national_id_type ?? ""} ${patient.national_id_number}`.trim()
+                  : null
+              }
+            />
+            <Detail label="Address" value={patient.address} />
+          </dl>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Medical profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="space-y-4">
-              <Detail label="Allergies" value={patient.allergies} />
-              <Detail label="Medical history" value={patient.medical_history} />
-              <Detail label="Chronic diseases" value={patient.chronic_diseases} />
-              <Detail label="Notes" value={patient.notes} />
-            </dl>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Contact &amp; next of kin</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid grid-cols-2 gap-4">
+            <Detail label="Preferred language" value={patient.preferred_language} />
+            <Detail label="Preferred contact" value={patient.preferred_contact_method} />
+            <Detail label="Emergency contact" value={patient.emergency_contact_name} />
+            <Detail label="Emergency phone" value={patient.emergency_contact_phone} />
+            <Detail label="Next of kin" value={patient.next_of_kin_name} />
+            <Detail label="Next of kin phone" value={patient.next_of_kin_phone} />
+            <Detail label="Relationship" value={patient.next_of_kin_relationship} />
+          </dl>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Medical profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid gap-4 sm:grid-cols-2">
+            <Detail label="Allergies" value={patient.allergies} />
+            <Detail label="Chronic diseases" value={patient.chronic_diseases} />
+            <Detail label="Medical history" value={patient.medical_history} />
+            <Detail label="Notes" value={patient.notes} />
+          </dl>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const clinicalPanel = (
+    <div className="space-y-6">
+      <ClinicalLists
+        patientId={patient.id}
+        canWrite={canWrite}
+        allergies={allergies}
+        medications={medications}
+        immunizations={immunizations}
+        conditions={conditions}
+      />
 
       {canEmrRead && (
         <Card>
@@ -196,6 +257,40 @@ export default async function PatientProfilePage({
         </Card>
       )}
 
+      {canLabRead && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>Lab requests ({labRequests.length})</CardTitle>
+            {canLabWrite && (
+              <Button asChild size="sm">
+                <Link href={`/lab/new?patientId=${patient.id}`}>New request</Link>
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {labRequests.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No lab requests yet.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {labRequests.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between py-2">
+                    <Link href={`/lab/${r.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                      {r.test_name}
+                    </Link>
+                    <LabStatusBadge status={r.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+    </div>
+  );
+
+  const financialPanel = (
+    <div className="space-y-6">
       {canBillRead && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
@@ -229,52 +324,48 @@ export default async function PatientProfilePage({
         </Card>
       )}
 
-      {canLabRead && (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Lab requests ({labRequests.length})</CardTitle>
-            {canLabWrite && (
-              <Button asChild size="sm">
-                <Link href={`/lab/new?patientId=${patient.id}`}>New request</Link>
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {labRequests.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">No lab requests yet.</p>
-            ) : (
-              <ul className="divide-y divide-[var(--border)]">
-                {labRequests.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between py-2">
-                    <Link href={`/lab/${r.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
-                      {r.test_name}
-                    </Link>
-                    <LabStatusBadge status={r.status} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Insurance ({insurance.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <InsuranceSection patientId={patient.id} policies={insurance} canWrite={canWrite} />
+        </CardContent>
+      </Card>
+    </div>
+  );
 
+  const documentsPanel = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardTitle>Documents ({documents.length})</CardTitle>
+        {canWrite && <DocumentUploader clinicId={clinic.id} patientId={patient.id} />}
+      </CardHeader>
+      <CardContent>
+        <DocumentList documents={documents} patientId={patient.id} canWrite={canWrite} />
+      </CardContent>
+    </Card>
+  );
+
+  const communicationPanel = (
+    <div className="space-y-6">
       {canNotify && patient.email && (
         <Card>
           <CardHeader><CardTitle>Send follow-up</CardTitle></CardHeader>
           <CardContent><FollowUpForm patientId={patient.id} /></CardContent>
         </Card>
       )}
+      <EngagementSection
+        patientId={patient.id}
+        consents={consents}
+        communications={communications}
+        canWrite={canWrite}
+      />
+    </div>
+  );
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle>Documents</CardTitle>
-          {canWrite && <DocumentUploader clinicId={clinic.id} patientId={patient.id} />}
-        </CardHeader>
-        <CardContent>
-          <DocumentList documents={documents} patientId={patient.id} canWrite={canWrite} />
-        </CardContent>
-      </Card>
-
+  const timelinePanel = (
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Timeline</CardTitle>
@@ -296,6 +387,68 @@ export default async function PatientProfilePage({
           </ol>
         </CardContent>
       </Card>
+    </div>
+  );
+
+  const tabs: ProfileTab[] = [
+    { id: "overview", label: "Overview", content: overviewPanel },
+    { id: "clinical", label: "Clinical", count: conditions.length + medications.length + allergies.length + immunizations.length + visits.length + prescriptions.length + labRequests.length, content: clinicalPanel },
+    { id: "financial", label: "Financial", count: invoices.length + insurance.length, content: financialPanel },
+    { id: "communication", label: "Communication", count: consents.length + communications.length, content: communicationPanel },
+    { id: "documents", label: "Documents", count: documents.length, content: documentsPanel },
+    { id: "timeline", label: "Timeline", count: timeline.length, content: timelinePanel },
+  ];
+
+  return (
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Link href="/patients" className="text-sm text-[var(--muted-foreground)] hover:underline">
+            ← Patients
+          </Link>
+          <h1 className="mt-1 text-2xl font-bold">{patient.full_name}</h1>
+          <p className="font-mono text-xs text-[var(--muted-foreground)]">{patient.patient_number}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {canBookAppt && (
+            <Button asChild size="sm">
+              <Link href={`/appointments/new?patientId=${patient.id}`}>Book appointment</Link>
+            </Button>
+          )}
+          {canWrite && (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/patients/${patient.id}/edit`}>Edit</Link>
+              </Button>
+              <DeletePatientButton patientId={patient.id} />
+            </>
+          )}
+        </div>
+      </header>
+
+      {/* Summary strip — at-a-glance clinical flags */}
+      <div className="flex flex-wrap items-center gap-2">
+        {age !== null && <Pill>{age} yrs</Pill>}
+        {patient.gender && <Pill tone="muted">{patient.gender}</Pill>}
+        {patient.blood_type && patient.blood_type !== "unknown" && (
+          <Pill>Blood {patient.blood_type}</Pill>
+        )}
+        {(allergies.length > 0 || (patient.allergies && patient.allergies.trim().length > 0)) && (
+          <Pill tone="alert">⚠ Allergies{allergies.length > 0 ? ` (${allergies.length})` : ""}</Pill>
+        )}
+        {activeMeds > 0 && <Pill>{activeMeds} active med{activeMeds === 1 ? "" : "s"}</Pill>}
+        {patient.do_not_contact && <Pill tone="alert">Do not contact</Pill>}
+        {insurance.length > 0 && <Pill tone="muted">Insured</Pill>}
+      </div>
+
+      <PatientTags
+        patientId={patient.id}
+        tags={patientTags}
+        clinicTags={clinicTags}
+        canWrite={canWrite}
+      />
+
+      <ProfileTabs tabs={tabs} />
     </main>
   );
 }

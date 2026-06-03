@@ -44,8 +44,35 @@ metadata, and Storage RLS — not trust in the client — enforces the clinic bo
 5. A receptionist (no `patients` write) sees the list but not create/edit; a role without
    `patients.read` is blocked entirely.
 
+## Enrichment (migrations 0014–0016)
+
+Additive upgrades that make the patient record "feature rich". The base schema in 0004 is
+untouched; everything below is new columns / new tables, gated by the same
+`patients.read` / `patients.write` policies.
+
+- **0014 — demographics & insurance**: new `patients` columns (`blood_type`, `marital_status`,
+  `national_id_type`/`national_id_number`, `preferred_language`, `preferred_contact_method`,
+  `do_not_contact`, `next_of_kin_*`) and a normalized `patient_insurance` table (multiple
+  policies). The detail page gains a **summary strip** (age, blood type, allergy/med flags,
+  tags) and **tabs** (Overview · Clinical · Financial · Communication · Documents · Timeline);
+  the list page gains an **Age** column and gender/blood-type filters.
+- **0015 — structured clinical lists**: `patient_allergies`, `patient_medications`,
+  `patient_immunizations`, `patient_conditions` (problem list), each with add/soft-delete
+  actions surfaced under the **Clinical** tab. Medication & immunization adds also write a
+  timeline event (new `medication` / `immunization` values on `timeline_event`). Legacy
+  free-text `allergies`/`medical_history` are retained for back-compat.
+- **0016 — engagement**: `patient_consents`, a `patient_communications` log (the follow-up
+  send in Module 14 now mirrors a row here), and segmentation via `patient_tags` +
+  `patient_tag_links` (chips on the header, filter on the list). `patient_documents` gains a
+  `category` column shown in the uploader/list.
+
+Reads live in `src/lib/db/queries/patients.ts` (incl. the `patientAge` helper), writes in
+`src/server/actions/patients.ts`; UI components are under `src/components/patients/`
+(`profile-tabs`, `insurance-section`, `clinical-lists`, `engagement-section`, `patient-tags`).
+
 ## Follow-ups
 - Full-text search / fuzzy matching at scale.
-- Age computed from `date_of_birth` in the UI.
 - Patient timeline auto-populated by later modules (appointments, visits, prescriptions, invoices)
   — the `timeline_event` enum already reserves those types.
+- Drug–allergy interaction checking against the structured allergy/medication lists.
+- Per-clinic configurable consent types and tag palettes.

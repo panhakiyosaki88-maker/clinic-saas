@@ -56,6 +56,16 @@ export function PatientForm({ patient }: { patient?: Patient }) {
       occupation: String(f.get("occupation") ?? ""),
       emergencyContactName: String(f.get("emergencyContactName") ?? ""),
       emergencyContactPhone: String(f.get("emergencyContactPhone") ?? ""),
+      bloodType: String(f.get("bloodType") ?? "") as never,
+      maritalStatus: String(f.get("maritalStatus") ?? "") as never,
+      nationalIdType: String(f.get("nationalIdType") ?? "") as never,
+      nationalIdNumber: String(f.get("nationalIdNumber") ?? ""),
+      preferredLanguage: String(f.get("preferredLanguage") ?? ""),
+      preferredContactMethod: String(f.get("preferredContactMethod") ?? "") as never,
+      doNotContact: f.get("doNotContact") === "on",
+      nextOfKinName: String(f.get("nextOfKinName") ?? ""),
+      nextOfKinPhone: String(f.get("nextOfKinPhone") ?? ""),
+      nextOfKinRelationship: String(f.get("nextOfKinRelationship") ?? ""),
       allergies: String(f.get("allergies") ?? ""),
       medicalHistory: String(f.get("medicalHistory") ?? ""),
       chronicDiseases: String(f.get("chronicDiseases") ?? ""),
@@ -107,16 +117,92 @@ export function PatientForm({ patient }: { patient?: Patient }) {
           <Field label="Email" htmlFor="email" errors={fieldErrors.email}>
             <Input id="email" name="email" type="email" defaultValue={patient?.email ?? ""} />
           </Field>
+          <Field label="Blood type" htmlFor="bloodType">
+            <select id="bloodType" name="bloodType" className={selectClass} defaultValue={patient?.blood_type ?? ""}>
+              <option value="">—</option>
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"].map((b) => (
+                <option key={b} value={b}>{b === "unknown" ? "Unknown" : b}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Marital status" htmlFor="maritalStatus">
+            <select id="maritalStatus" name="maritalStatus" className={selectClass} defaultValue={patient?.marital_status ?? ""}>
+              <option value="">—</option>
+              <option value="single">Single</option>
+              <option value="married">Married</option>
+              <option value="divorced">Divorced</option>
+              <option value="widowed">Widowed</option>
+              <option value="other">Other</option>
+            </select>
+          </Field>
+          <Field label="ID document type" htmlFor="nationalIdType">
+            <select id="nationalIdType" name="nationalIdType" className={selectClass} defaultValue={patient?.national_id_type ?? ""}>
+              <option value="">—</option>
+              <option value="national_id">National ID</option>
+              <option value="passport">Passport</option>
+              <option value="driver_license">Driver license</option>
+              <option value="other">Other</option>
+            </select>
+          </Field>
+          <Field label="ID document number" htmlFor="nationalIdNumber">
+            <Input id="nationalIdNumber" name="nationalIdNumber" defaultValue={patient?.national_id_number ?? ""} />
+          </Field>
         </div>
         <Field label="Address" htmlFor="address">
           <Textarea id="address" name="address" defaultValue={patient?.address ?? ""} />
         </Field>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+          Contact preferences
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Preferred language" htmlFor="preferredLanguage">
+            <Input id="preferredLanguage" name="preferredLanguage" defaultValue={patient?.preferred_language ?? ""} />
+          </Field>
+          <Field label="Preferred contact method" htmlFor="preferredContactMethod">
+            <select id="preferredContactMethod" name="preferredContactMethod" className={selectClass} defaultValue={patient?.preferred_contact_method ?? ""}>
+              <option value="">—</option>
+              <option value="phone">Phone</option>
+              <option value="sms">SMS</option>
+              <option value="email">Email</option>
+              <option value="telegram">Telegram</option>
+              <option value="none">Do not contact</option>
+            </select>
+          </Field>
+        </div>
+        <label htmlFor="doNotContact" className="flex items-center gap-2 text-sm">
+          <input
+            id="doNotContact"
+            name="doNotContact"
+            type="checkbox"
+            defaultChecked={patient?.do_not_contact ?? false}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          Do not contact this patient
+        </label>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+          Emergency &amp; next of kin
+        </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Emergency contact name" htmlFor="emergencyContactName">
             <Input id="emergencyContactName" name="emergencyContactName" defaultValue={patient?.emergency_contact_name ?? ""} />
           </Field>
           <Field label="Emergency contact phone" htmlFor="emergencyContactPhone">
             <Input id="emergencyContactPhone" name="emergencyContactPhone" defaultValue={patient?.emergency_contact_phone ?? ""} />
+          </Field>
+          <Field label="Next of kin name" htmlFor="nextOfKinName">
+            <Input id="nextOfKinName" name="nextOfKinName" defaultValue={patient?.next_of_kin_name ?? ""} />
+          </Field>
+          <Field label="Next of kin phone" htmlFor="nextOfKinPhone">
+            <Input id="nextOfKinPhone" name="nextOfKinPhone" defaultValue={patient?.next_of_kin_phone ?? ""} />
+          </Field>
+          <Field label="Next of kin relationship" htmlFor="nextOfKinRelationship">
+            <Input id="nextOfKinRelationship" name="nextOfKinRelationship" defaultValue={patient?.next_of_kin_relationship ?? ""} />
           </Field>
         </div>
       </section>

@@ -51,7 +51,9 @@ docs/modules/             one doc per module
 - [x] **Module 1 — Multi-Clinic Foundation** (clinics, subscriptions, branches, audit_logs, RLS)
 - [x] **Module 2 — Authentication** (profiles, signup/login/logout, email confirm + callback routes)
 - [x] **Module 3 — RBAC** (roles/permissions/memberships, has_permission engine, staff mgmt, invitations)
-- [x] **Module 4 — Patient Management** (patients, documents/Storage, timeline, search, plan limits)
+- [x] **Module 4 — Patient Management** (patients, documents/Storage, timeline, search, plan limits;
+  enriched 0014–0016: blood type/marital/ID/next-of-kin + insurance; structured allergies/meds/
+  immunizations/problem list; consents/communication log/tags; tabbed profile; age + filters)
 - [x] **Module 5 — EMR** (visits/SOAP, vital signs + generated BMI, attachments, visit history)
 - [x] **Module 6 — Doctor Management** (profiles, specialization/license, schedules, time off, performance)
 - [x] **Module 7 — Appointment Management** (day/week/month calendar, status lifecycle, queue, walk-ins)

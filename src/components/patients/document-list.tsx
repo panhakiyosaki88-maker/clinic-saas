@@ -56,7 +56,14 @@ export function DocumentList({
               ) : (
                 <span className="truncate text-sm font-medium">{d.file_name}</span>
               )}
-              <p className="text-xs text-[var(--muted-foreground)]">{formatSize(d.size_bytes)}</p>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                {d.category && (
+                  <span className="mr-1.5 rounded-full bg-[var(--muted)] px-1.5 py-0.5 capitalize">
+                    {d.category.replace("_", " ")}
+                  </span>
+                )}
+                {formatSize(d.size_bytes)}
+              </p>
             </div>
           </div>
           {canWrite && (
