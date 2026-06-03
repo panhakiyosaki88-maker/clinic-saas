@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperAdmin } from "@/lib/auth/super-admin";
-import type { Database, SubscriptionPlan } from "@/types/database";
+import type { AccountStatus, Database, SubscriptionPlan } from "@/types/database";
 
 export type AdminClinic = Database["public"]["Tables"]["clinics"]["Row"];
 export type AdminAuditLog = Database["public"]["Tables"]["audit_logs"]["Row"];
@@ -10,16 +10,18 @@ export interface PlatformStats {
   clinics: number;
   patients: number;
   users: number;
+  pendingUsers: number;
   byPlan: { plan: string; count: number }[];
 }
 
 export async function getPlatformStats(): Promise<PlatformStats> {
   await requireSuperAdmin();
   const admin = createAdminClient();
-  const [clinics, patients, users, subs] = await Promise.all([
+  const [clinics, patients, users, pending, subs] = await Promise.all([
     admin.from("clinics").select("id", { count: "exact", head: true }).is("deleted_at", null),
     admin.from("patients").select("id", { count: "exact", head: true }).is("deleted_at", null),
     admin.from("profiles").select("id", { count: "exact", head: true }),
+    admin.from("profiles").select("id", { count: "exact", head: true }).eq("status", "pending"),
     admin.from("subscriptions").select("plan"),
   ]);
 
@@ -30,6 +32,7 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     clinics: clinics.count ?? 0,
     patients: patients.count ?? 0,
     users: users.count ?? 0,
+    pendingUsers: pending.count ?? 0,
     byPlan: [...byPlanMap.entries()].map(([plan, count]) => ({ plan, count })),
   };
 }
@@ -100,6 +103,8 @@ export interface AdminUser {
   id: string;
   email: string | null;
   full_name: string | null;
+  status: AccountStatus;
+  approved_at: string | null;
   created_at: string;
 }
 
@@ -108,7 +113,9 @@ export async function listAllUsers(limit = 200): Promise<AdminUser[]> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("id, email, full_name, created_at")
+    .select("id, email, full_name, status, approved_at, created_at")
+    // Pending accounts first so they're the obvious thing to action.
+    .order("status", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;

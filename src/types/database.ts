@@ -28,6 +28,7 @@ export type SubscriptionStatus =
   | "canceled"
   | "expired";
 export type ClinicStatus = "active" | "suspended" | "pending";
+export type AccountStatus = "pending" | "approved" | "rejected";
 export type MembershipStatus = "active" | "invited" | "disabled";
 export type Gender = "male" | "female" | "other";
 export type RecordStatus = "draft" | "finalized";
@@ -64,6 +65,9 @@ export interface Database {
           email: string | null;
           full_name: string | null;
           avatar_url: string | null;
+          status: AccountStatus;
+          approved_at: string | null;
+          approved_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -72,6 +76,9 @@ export interface Database {
           email?: string | null;
           full_name?: string | null;
           avatar_url?: string | null;
+          status?: AccountStatus;
+          approved_at?: string | null;
+          approved_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
+import { getAccountStatus } from "@/lib/auth/account";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getRolePermissionKeys } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -18,6 +19,11 @@ export default async function DashboardLayout({
   if (!clinic_id) redirect("/onboarding");
 
   const isSuperAdmin = role === "super_admin";
+
+  // Defensive: a non-approved account must never reach the app shell.
+  if (!isSuperAdmin && (await getAccountStatus()) !== "approved") {
+    redirect("/account-pending");
+  }
   const clinic = await getCurrentClinic();
 
   // One query for the role's permissions (super admins implicitly hold all).

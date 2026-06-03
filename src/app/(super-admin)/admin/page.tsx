@@ -1,4 +1,5 @@
-import { LayoutDashboard } from "lucide-react";
+import Link from "next/link";
+import { LayoutDashboard, Clock } from "lucide-react";
 import { getPlatformStats } from "@/lib/db/queries/admin";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,23 @@ export default async function PlatformOverviewPage() {
         title="Platform analytics"
         subtitle={`${stats.clinics} clinics · ${stats.users} users`}
       />
+
+      {stats.pendingUsers > 0 && (
+        <Link href="/admin/users" className="block">
+          <Card className="border-amber-500/40 bg-amber-500/5 transition-colors hover:bg-amber-500/10">
+            <CardContent className="flex items-center gap-3 py-4">
+              <span className="flex size-9 items-center justify-center rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                <Clock className="size-5" />
+              </span>
+              <p className="text-sm">
+                <span className="font-semibold">{stats.pendingUsers}</span>{" "}
+                {stats.pendingUsers === 1 ? "account is" : "accounts are"} awaiting approval —{" "}
+                <span className="font-medium text-[var(--primary)]">review now</span>
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

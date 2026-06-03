@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
+import { getAccountStatus } from "@/lib/auth/account";
 import { getPendingInvitationByEmail } from "@/lib/db/invitations";
 import { OnboardingForm } from "@/components/clinic/onboarding-form";
 import { AcceptInvite } from "@/components/members/accept-invite";
@@ -18,8 +19,13 @@ export default async function OnboardingPage() {
   if (!user) redirect("/login");
 
   // Already onboarded → straight to the app.
-  const { clinic_id } = getClinicClaims(user);
+  const { clinic_id, role } = getClinicClaims(user);
   if (clinic_id) redirect("/dashboard");
+
+  // Awaiting Super Admin approval → cannot create a clinic yet.
+  if (role !== "super_admin" && (await getAccountStatus()) !== "approved") {
+    redirect("/account-pending");
+  }
 
   // Invited by an existing clinic? Offer to accept instead of creating one.
   const invitation = user.email ? await getPendingInvitationByEmail(user.email) : null;
