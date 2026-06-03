@@ -1,9 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MapPin } from "lucide-react";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { AddBranchForm } from "@/components/settings/add-branch-form";
+import { BranchForm } from "@/components/settings/branch-form";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -41,6 +42,7 @@ export default async function BranchesSettingsPage() {
                     <th className="p-3 font-medium">Code</th>
                     <th className="p-3 font-medium">Address</th>
                     <th className="p-3 font-medium">Phone</th>
+                    {canManage && <th className="p-3 font-medium text-right">Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -57,6 +59,16 @@ export default async function BranchesSettingsPage() {
                       <td className="p-3 text-[var(--muted-foreground)]">{b.code ?? "—"}</td>
                       <td className="p-3 text-[var(--muted-foreground)]">{b.address ?? "—"}</td>
                       <td className="p-3 text-[var(--muted-foreground)]">{b.phone ?? "—"}</td>
+                      {canManage && (
+                        <td className="p-3 text-right">
+                          <Link
+                            href={`/settings/branches/${b.id}/edit`}
+                            className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+                          >
+                            Edit
+                          </Link>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -72,7 +84,7 @@ export default async function BranchesSettingsPage() {
             <CardTitle>Add a branch</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddBranchForm />
+            <BranchForm />
           </CardContent>
         </Card>
       )}

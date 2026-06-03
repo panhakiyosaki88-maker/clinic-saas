@@ -58,3 +58,18 @@ export async function listBranches(): Promise<Branch[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+export async function getBranch(id: string): Promise<Branch | null> {
+  const { clinic_id } = getClinicClaims(await getCurrentUser());
+  if (!clinic_id) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("branches")
+    .select("*")
+    .eq("id", id)
+    .eq("clinic_id", clinic_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}

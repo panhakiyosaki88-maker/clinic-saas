@@ -8,10 +8,12 @@ import {
   createClinicSchema,
   updateClinicSchema,
   createBranchSchema,
+  updateBranchSchema,
   slugify,
   type CreateClinicInput,
   type UpdateClinicInput,
   type CreateBranchInput,
+  type UpdateBranchInput,
 } from "@/lib/validations/clinic";
 import { ok, fail, type ActionResult } from "./types";
 
@@ -190,4 +192,50 @@ export async function createBranch(
 
   revalidatePath("/settings/branches");
   return ok({ branchId: data.id });
+}
+
+/** Clinic owner edits a branch. Promoting to primary demotes the others so a
+ *  clinic always has exactly one primary location. */
+export async function updateBranch(input: UpdateBranchInput): Promise<ActionResult> {
+  const { clinicId } = await requireClinic();
+  const parsed = updateBranchSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  }
+  const v = parsed.data;
+
+  const supabase = await createClient();
+
+  // Single primary per clinic: demote the others before promoting this one.
+  if (v.isPrimary) {
+    const { error: demoteErr } = await supabase
+      .from("branches")
+      .update({ is_primary: false })
+      .eq("clinic_id", clinicId)
+      .neq("id", v.id);
+    if (demoteErr) return fail(demoteErr.message);
+  }
+
+  const { error } = await supabase
+    .from("branches")
+    .update({
+      name: v.name,
+      code: v.code || null,
+      address: v.address || null,
+      phone: v.phone || null,
+      // Only ever set primary here; clearing it happens by promoting another.
+      ...(v.isPrimary ? { is_primary: true } : {}),
+    })
+    .eq("id", v.id)
+    .eq("clinic_id", clinicId);
+
+  if (error) {
+    if (error.code === "23505") {
+      return fail("A branch with that code already exists.", { code: ["Already in use"] });
+    }
+    return fail(error.message);
+  }
+
+  revalidatePath("/settings/branches");
+  return ok(undefined);
 }

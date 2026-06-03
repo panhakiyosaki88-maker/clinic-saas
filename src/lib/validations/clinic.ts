@@ -46,3 +46,8 @@ export const createBranchSchema = z.object({
   isPrimary: z.boolean().default(false),
 });
 export type CreateBranchInput = z.infer<typeof createBranchSchema>;
+
+export const updateBranchSchema = createBranchSchema.extend({
+  id: z.string().uuid(),
+});
+export type UpdateBranchInput = z.infer<typeof updateBranchSchema>;
