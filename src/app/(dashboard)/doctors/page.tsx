@@ -4,7 +4,8 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { Button } from "@/components/ui/button";
+import { Stethoscope, Plus } from "lucide-react";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Doctors" };
@@ -24,17 +25,22 @@ export default async function DoctorsPage() {
 
   const canWrite = await hasPermission(PERMISSIONS.DOCTORS_WRITE);
   const doctors = await listDoctors();
+  const activeCount = doctors.filter((d) => d.is_active).length;
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Doctors</h1>
-        {canWrite && (
-          <Button asChild>
-            <Link href="/doctors/new">New doctor</Link>
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        icon={Stethoscope}
+        title="Doctors"
+        subtitle={`${activeCount} active of ${doctors.length}`}
+        actions={
+          canWrite && (
+            <HeaderAction href="/doctors/new">
+              <Plus /> New doctor
+            </HeaderAction>
+          )
+        }
+      />
 
       <Card>
         <CardContent className="p-0">

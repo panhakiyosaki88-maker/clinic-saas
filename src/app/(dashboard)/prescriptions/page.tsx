@@ -4,7 +4,8 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listPrescriptions } from "@/lib/db/queries/prescriptions";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { Button } from "@/components/ui/button";
+import { Pill, Plus } from "lucide-react";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Prescriptions" };
@@ -27,14 +28,18 @@ export default async function PrescriptionsPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Prescriptions</h1>
-        {canWrite && (
-          <Button asChild>
-            <Link href="/prescriptions/new">New prescription</Link>
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        icon={Pill}
+        title="Prescriptions"
+        subtitle={`${prescriptions.length} ${prescriptions.length === 1 ? "prescription" : "prescriptions"}`}
+        actions={
+          canWrite && (
+            <HeaderAction href="/prescriptions/new">
+              <Plus /> New prescription
+            </HeaderAction>
+          )
+        }
+      />
 
       <Card>
         <CardContent className="p-0">

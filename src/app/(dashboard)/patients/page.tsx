@@ -4,7 +4,9 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listPatients } from "@/lib/db/queries/patients";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { Users, Plus } from "lucide-react";
 import { PatientSearch } from "@/components/patients/patient-search";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
@@ -42,20 +44,22 @@ export default async function PatientsPage({
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Patients</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">{total} total</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <PatientSearch />
-          {canWrite && (
-            <Button asChild>
-              <Link href="/patients/new">New patient</Link>
-            </Button>
-          )}
-        </div>
-      </header>
+      <PageHeader
+        icon={Users}
+        title="Patients"
+        subtitle={`${total} ${total === 1 ? "patient" : "patients"} registered`}
+        actions={
+          canWrite && (
+            <HeaderAction href="/patients/new">
+              <Plus /> New patient
+            </HeaderAction>
+          )
+        }
+      />
+
+      <div className="flex justify-end">
+        <PatientSearch />
+      </div>
 
       <Card className="overflow-hidden">
         <CardContent className="p-0">

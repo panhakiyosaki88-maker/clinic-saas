@@ -11,9 +11,11 @@ import {
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ymd, parseYmd, startOfMonth, addDays } from "@/lib/date";
+import { BarChart3 } from "lucide-react";
 import { DateRange } from "@/components/reports/date-range";
 import { ReportExport } from "@/components/reports/report-export";
 import { PrintButton } from "@/components/print-button";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Reports" };
@@ -61,18 +63,16 @@ export default async function ReportsPage({
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-6 print:max-w-none">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Reports</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            {sp.from ?? ymd(startOfMonth(new Date()))} → {sp.to ?? ymd(new Date())}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <DateRange from={sp.from ?? ymd(startOfMonth(new Date()))} to={sp.to ?? ymd(new Date())} />
-          <PrintButton label="PDF" />
-        </div>
-      </header>
+      <PageHeader
+        icon={BarChart3}
+        title="Reports"
+        subtitle={`${sp.from ?? ymd(startOfMonth(new Date()))} → ${sp.to ?? ymd(new Date())}`}
+      />
+
+      <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
+        <DateRange from={sp.from ?? ymd(startOfMonth(new Date()))} to={sp.to ?? ymd(new Date())} />
+        <PrintButton label="PDF" />
+      </div>
 
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-4">

@@ -4,8 +4,9 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { FlaskConical, Plus, Tags } from "lucide-react";
 import { LabStatusBadge } from "@/components/lab/lab-status-badge";
-import { Button } from "@/components/ui/button";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
@@ -29,21 +30,23 @@ export default async function LabPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Laboratory</h1>
-        <div className="flex items-center gap-2">
-          {canWrite && (
-            <Button asChild variant="outline">
-              <Link href="/lab/categories">Categories</Link>
-            </Button>
-          )}
-          {canWrite && (
-            <Button asChild>
-              <Link href="/lab/new">New request</Link>
-            </Button>
-          )}
-        </div>
-      </header>
+      <PageHeader
+        icon={FlaskConical}
+        title="Laboratory"
+        subtitle={`${requests.length} ${requests.length === 1 ? "request" : "requests"}`}
+        actions={
+          canWrite && (
+            <>
+              <HeaderAction href="/lab/categories" variant="outline">
+                <Tags /> Categories
+              </HeaderAction>
+              <HeaderAction href="/lab/new">
+                <Plus /> New request
+              </HeaderAction>
+            </>
+          )
+        }
+      />
 
       <Card className="overflow-hidden">
         <CardContent className="p-0">

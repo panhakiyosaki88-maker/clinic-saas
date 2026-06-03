@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listAppointmentsInRange, listQueue } from "@/lib/db/queries/appointments";
@@ -13,12 +12,13 @@ import {
   startOfMonth,
   endOfMonth,
 } from "@/lib/date";
+import { Calendar, Plus } from "lucide-react";
 import { ViewSwitcher } from "@/components/appointments/view-switcher";
 import { DayView } from "@/components/appointments/day-view";
 import { WeekView } from "@/components/appointments/week-view";
 import { MonthView } from "@/components/appointments/month-view";
 import { QueuePanel } from "@/components/appointments/queue-panel";
-import { Button } from "@/components/ui/button";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 
 export const metadata = { title: "Appointments" };
 
@@ -75,14 +75,18 @@ export default async function AppointmentsPage({
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Appointments</h1>
-        {canWrite && (
-          <Button asChild>
-            <Link href={`/appointments/new?date=${ymd(anchor)}`}>New appointment</Link>
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        icon={Calendar}
+        title="Appointments"
+        subtitle={`${appointments.length} in view · ${queue.length} waiting`}
+        actions={
+          canWrite && (
+            <HeaderAction href={`/appointments/new?date=${ymd(anchor)}`}>
+              <Plus /> New appointment
+            </HeaderAction>
+          )
+        }
+      />
 
       <ViewSwitcher
         view={view}

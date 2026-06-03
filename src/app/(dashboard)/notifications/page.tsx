@@ -3,6 +3,8 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listNotifications } from "@/lib/db/queries/notifications";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { Bell } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Notifications" };
@@ -31,10 +33,11 @@ export default async function NotificationsPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-bold">Notifications</h1>
-        <p className="text-sm text-[var(--muted-foreground)]">Sent reminders &amp; messages.</p>
-      </header>
+      <PageHeader
+        icon={Bell}
+        title="Notifications"
+        subtitle={`${items.length} sent reminder${items.length === 1 ? "" : "s"} & messages`}
+      />
 
       <Card>
         <CardContent className="p-0">

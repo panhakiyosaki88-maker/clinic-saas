@@ -1,4 +1,6 @@
+import { Users } from "lucide-react";
 import { listAllUsers } from "@/lib/db/queries/admin";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Users · Super Admin" };
@@ -8,7 +10,11 @@ export default async function AdminUsersPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Users ({users.length})</h1>
+      <PageHeader
+        icon={Users}
+        title="Users"
+        subtitle={`${users.length} ${users.length === 1 ? "user" : "users"} across all clinics`}
+      />
       <Card>
         <CardContent className="p-0">
           {users.length === 0 ? (

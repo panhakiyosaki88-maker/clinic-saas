@@ -3,8 +3,10 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listMembers, listAssignableRoles } from "@/lib/db/queries/members";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { UserCog } from "lucide-react";
 import { InviteForm } from "@/components/members/invite-form";
 import { MemberList } from "@/components/members/member-list";
+import { PageHeader } from "@/components/page-header";
 import {
   Card,
   CardContent,
@@ -24,12 +26,11 @@ export default async function StaffPage() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-bold">Staff</h1>
-        <p className="text-sm text-[var(--muted-foreground)]">
-          Manage who can access {clinic.name} and what they can do.
-        </p>
-      </header>
+      <PageHeader
+        icon={UserCog}
+        title="Staff"
+        subtitle={`Manage who can access ${clinic.name} and what they can do`}
+      />
 
       {canManage && (
         <Card>

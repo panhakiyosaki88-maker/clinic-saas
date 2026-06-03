@@ -4,7 +4,8 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listInvoices } from "@/lib/db/queries/billing";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { Button } from "@/components/ui/button";
+import { Receipt, Plus } from "lucide-react";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
@@ -32,17 +33,22 @@ export default async function BillingPage() {
 
   const canWrite = await hasPermission(PERMISSIONS.BILLING_WRITE);
   const invoices = await listInvoices();
+  const outstanding = invoices.filter((i) => i.status !== "paid" && i.status !== "cancelled").length;
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Billing</h1>
-        {canWrite && (
-          <Button asChild>
-            <Link href="/billing/new">New invoice</Link>
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        icon={Receipt}
+        title="Billing"
+        subtitle={`${invoices.length} ${invoices.length === 1 ? "invoice" : "invoices"} · ${outstanding} outstanding`}
+        actions={
+          canWrite && (
+            <HeaderAction href="/billing/new">
+              <Plus /> New invoice
+            </HeaderAction>
+          )
+        }
+      />
 
       <Card className="overflow-hidden">
         <CardContent className="p-0">

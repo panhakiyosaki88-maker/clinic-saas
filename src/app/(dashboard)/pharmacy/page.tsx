@@ -4,8 +4,9 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listMedicines, lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { Package, Plus } from "lucide-react";
 import { PatientSearch } from "@/components/patients/patient-search";
-import { Button } from "@/components/ui/button";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
@@ -38,18 +39,23 @@ export default async function PharmacyPage({
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Pharmacy</h1>
-        <div className="flex items-center gap-2">
-          {/* Reuses the patient search box (generic ?q= updater). */}
-          <PatientSearch />
-          {canWrite && (
-            <Button asChild>
-              <Link href="/pharmacy/new">New medicine</Link>
-            </Button>
-          )}
-        </div>
-      </header>
+      <PageHeader
+        icon={Package}
+        title="Pharmacy"
+        subtitle={`${medicines.length} ${medicines.length === 1 ? "medicine" : "medicines"} · ${lowStock.length} low · ${expiring.length} expiring`}
+        actions={
+          canWrite && (
+            <HeaderAction href="/pharmacy/new">
+              <Plus /> New medicine
+            </HeaderAction>
+          )
+        }
+      />
+
+      <div className="flex justify-end">
+        {/* Reuses the patient search box (generic ?q= updater). */}
+        <PatientSearch />
+      </div>
 
       {(lowStock.length > 0 || expiring.length > 0) && (
         <div className="grid gap-4 sm:grid-cols-2">

@@ -4,7 +4,9 @@ import { getSubscriptionUsage } from "@/lib/db/queries/subscription";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PLANS } from "@/lib/plans";
+import { CreditCard } from "lucide-react";
 import { PlanSelector } from "@/components/subscription/plan-selector";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Subscription" };
@@ -44,15 +46,18 @@ export default async function SubscriptionPage() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-bold">Subscription</h1>
-        <p className="text-sm text-[var(--muted-foreground)]">
-          {plan.name} · <span className="capitalize">{subscription?.status ?? "—"}</span>
-          {subscription?.trial_ends_at && subscription.status === "trialing"
-            ? ` · trial ends ${new Date(subscription.trial_ends_at).toLocaleDateString()}`
-            : ""}
-        </p>
-      </header>
+      <PageHeader
+        icon={CreditCard}
+        title="Subscription"
+        subtitle={
+          <>
+            {plan.name} · <span className="capitalize">{subscription?.status ?? "—"}</span>
+            {subscription?.trial_ends_at && subscription.status === "trialing"
+              ? ` · trial ends ${new Date(subscription.trial_ends_at).toLocaleDateString()}`
+              : ""}
+          </>
+        }
+      />
 
       <Card>
         <CardHeader><CardTitle>Usage</CardTitle></CardHeader>

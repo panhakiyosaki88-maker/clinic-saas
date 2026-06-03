@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Building2 } from "lucide-react";
 import { listAllClinics } from "@/lib/db/queries/admin";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Clinics · Super Admin" };
@@ -9,7 +11,11 @@ export default async function AdminClinicsPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Clinics ({clinics.length})</h1>
+      <PageHeader
+        icon={Building2}
+        title="Clinics"
+        subtitle={`${clinics.length} ${clinics.length === 1 ? "clinic" : "clinics"} on the platform`}
+      />
       <Card>
         <CardContent className="p-0">
           {clinics.length === 0 ? (

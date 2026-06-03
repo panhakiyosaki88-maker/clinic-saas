@@ -1,4 +1,6 @@
+import { LayoutDashboard } from "lucide-react";
 import { getPlatformStats } from "@/lib/db/queries/admin";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Platform · Super Admin" };
@@ -8,7 +10,11 @@ export default async function PlatformOverviewPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Platform analytics</h1>
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Platform analytics"
+        subtitle={`${stats.clinics} clinics · ${stats.users} users`}
+      />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

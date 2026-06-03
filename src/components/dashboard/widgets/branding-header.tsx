@@ -73,7 +73,7 @@ export function BrandingHeader({
     day: "numeric",
     year: "numeric",
   });
-  const name = userName?.split(" ")[0] || "there";
+  const name = userName?.trim() || "there";
   const waiting = kpis.patientsWaiting ?? 0;
 
   return (
