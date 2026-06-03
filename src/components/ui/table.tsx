@@ -8,14 +8,18 @@ import { cn } from "@/lib/utils";
  */
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <table
-      ref={ref}
-      className={cn(
-        "w-full text-sm [&_tbody_tr:nth-child(even)]:bg-slate-50/60 dark:[&_tbody_tr:nth-child(even)]:bg-slate-800/20",
-        className
-      )}
-      {...props}
-    />
+    // Wrapper enables horizontal scroll on narrow screens instead of clipping
+    // (the enclosing Card uses overflow-hidden).
+    <div className="w-full overflow-x-auto">
+      <table
+        ref={ref}
+        className={cn(
+          "w-full min-w-[36rem] text-sm [&_tbody_tr:nth-child(even)]:bg-slate-50/60 dark:[&_tbody_tr:nth-child(even)]:bg-slate-800/20",
+          className
+        )}
+        {...props}
+      />
+    </div>
   )
 );
 Table.displayName = "Table";

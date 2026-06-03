@@ -32,7 +32,7 @@ export default async function NotificationsPage() {
   const items = await listNotifications();
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-6">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Bell}
         title="Notifications"
@@ -46,7 +46,8 @@ export default async function NotificationsPage() {
               No notifications yet. Send a reminder from an appointment or invoice.
             </p>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                 <tr>
                   <th className="p-3 font-medium">When</th>
@@ -71,6 +72,7 @@ export default async function NotificationsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -27,7 +27,7 @@ export default async function NewLabRequestPage({
   ]);
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 p-6">
+    <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
         <Link href="/lab" className="text-sm text-[var(--muted-foreground)] hover:underline">← Laboratory</Link>
         <h1 className="mt-1 text-2xl font-bold">New lab request</h1>

@@ -27,7 +27,7 @@ export default async function PrescriptionsPage() {
   const prescriptions = await listPrescriptions();
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-6">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Pill}
         title="Prescriptions"

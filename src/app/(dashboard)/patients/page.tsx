@@ -43,7 +43,7 @@ export default async function PatientsPage({
     `/patients?${new URLSearchParams({ ...(q ? { q } : {}), page: String(p) })}`;
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-6">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Users}
         title="Patients"

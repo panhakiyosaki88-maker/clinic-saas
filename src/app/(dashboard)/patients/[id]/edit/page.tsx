@@ -22,7 +22,7 @@ export default async function EditPatientPage({
   if (!patient) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
+    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
         <Link href={`/patients/${id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
           ← {patient.full_name}

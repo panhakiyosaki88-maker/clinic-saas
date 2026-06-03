@@ -62,7 +62,7 @@ export default async function ReportsPage({
   const money = (n: number) => Number(n).toFixed(2);
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-6 print:max-w-none">
+    <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 print:max-w-none print:p-0">
       <PageHeader
         icon={BarChart3}
         title="Reports"

@@ -36,7 +36,7 @@ export default async function BillingPage() {
   const outstanding = invoices.filter((i) => i.status !== "paid" && i.status !== "cancelled").length;
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-6">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Receipt}
         title="Billing"

@@ -10,7 +10,7 @@ export default async function AdminClinicsPage() {
   const clinics = await listAllClinics();
 
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-6">
+    <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Building2}
         title="Clinics"
@@ -21,7 +21,8 @@ export default async function AdminClinicsPage() {
           {clinics.length === 0 ? (
             <p className="p-6 text-sm text-[var(--muted-foreground)]">No clinics.</p>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                 <tr>
                   <th className="p-3 font-medium">Clinic</th>
@@ -46,6 +47,7 @@ export default async function AdminClinicsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </CardContent>
       </Card>

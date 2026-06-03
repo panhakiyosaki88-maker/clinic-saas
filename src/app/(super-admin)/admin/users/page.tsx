@@ -9,7 +9,7 @@ export default async function AdminUsersPage() {
   const users = await listAllUsers();
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-6">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Users}
         title="Users"
@@ -20,7 +20,8 @@ export default async function AdminUsersPage() {
           {users.length === 0 ? (
             <p className="p-6 text-sm text-[var(--muted-foreground)]">No users.</p>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                 <tr>
                   <th className="p-3 font-medium">Name</th>
@@ -38,6 +39,7 @@ export default async function AdminUsersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </CardContent>
       </Card>

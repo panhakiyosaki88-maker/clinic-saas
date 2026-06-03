@@ -13,7 +13,7 @@ export default async function NewPatientPage() {
   if (!(await hasPermission(PERMISSIONS.PATIENTS_WRITE))) redirect("/patients");
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
+    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
         <Link href="/patients" className="text-sm text-[var(--muted-foreground)] hover:underline">
           ← Patients

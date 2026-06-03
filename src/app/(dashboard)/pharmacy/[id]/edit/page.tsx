@@ -22,7 +22,7 @@ export default async function EditMedicinePage({
   if (!medicine) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
+    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
         <Link href={`/pharmacy/${id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
           ← {medicine.name}

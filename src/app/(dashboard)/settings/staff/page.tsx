@@ -25,7 +25,7 @@ export default async function StaffPage() {
   const [members, roles] = await Promise.all([listMembers(), listAssignableRoles()]);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
+    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={UserCog}
         title="Staff"

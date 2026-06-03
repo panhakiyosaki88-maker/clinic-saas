@@ -22,7 +22,7 @@ export default async function NewAppointmentPage({
   const [patients, doctors] = await Promise.all([listPatientOptions(), listDoctors()]);
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 p-6">
+    <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
         <Link href="/appointments" className="text-sm text-[var(--muted-foreground)] hover:underline">
           ← Appointments

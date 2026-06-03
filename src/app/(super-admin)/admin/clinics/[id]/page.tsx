@@ -17,7 +17,7 @@ export default async function AdminClinicDetailPage({
   const { clinic, subscription, patientCount, memberCount } = detail;
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
+    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
         <Link href="/admin/clinics" className="text-sm text-[var(--muted-foreground)] hover:underline">← Clinics</Link>
         <h1 className="mt-1 text-2xl font-bold">{clinic.name}</h1>
