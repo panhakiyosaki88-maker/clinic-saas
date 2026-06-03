@@ -8,14 +8,15 @@ import { StatusBadge } from "@/components/appointments/status-badge";
 import { StatusControl } from "@/components/appointments/status-control";
 import { DeleteAppointmentButton } from "@/components/appointments/delete-appointment-button";
 import { ReminderButton } from "@/components/notifications/reminder-button";
+import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Appointment" };
 
-function Row({ label, value }: { label: string; value: string | null }) {
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between border-b border-[var(--border)] py-2 last:border-0">
+    <div className="flex items-center justify-between border-b border-[var(--border)] py-2 last:border-0">
       <span className="text-sm text-[var(--muted-foreground)]">{label}</span>
       <span className="text-sm font-medium">{value ?? "—"}</span>
     </div>
@@ -74,7 +75,19 @@ export default async function AppointmentDetailPage({
         <CardHeader><CardTitle>Details</CardTitle></CardHeader>
         <CardContent>
           <Row label="Patient" value={`${a.patient_name} (${a.patient_number})`} />
-          <Row label="Doctor" value={a.doctor_name ?? "Unassigned"} />
+          <Row
+            label="Doctor"
+            value={
+              a.doctor_name ? (
+                <span className="inline-flex items-center gap-2">
+                  <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={24} />
+                  {a.doctor_name}
+                </span>
+              ) : (
+                "Unassigned"
+              )
+            }
+          />
           <Row label="When" value={a.is_walk_in ? "Walk-in" : new Date(a.scheduled_at).toLocaleString()} />
           <Row label="Duration" value={`${a.duration_minutes} min`} />
           <Row label="Reason" value={a.reason} />

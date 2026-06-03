@@ -6,6 +6,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Pill, Plus } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
+import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Prescriptions" };
@@ -53,10 +54,17 @@ export default async function PrescriptionsPage() {
                     <Link href={`/prescriptions/${p.id}`} className="font-medium text-[var(--primary)] hover:underline">
                       {p.patient_name}
                     </Link>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      {new Date(p.prescribed_at).toLocaleDateString()} · {p.item_count} item
-                      {p.item_count === 1 ? "" : "s"}
-                      {p.doctor_name ? ` · ${p.doctor_name}` : ""}
+                    <p className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
+                      <span>
+                        {new Date(p.prescribed_at).toLocaleDateString()} · {p.item_count} item
+                        {p.item_count === 1 ? "" : "s"}
+                      </span>
+                      {p.doctor_name && (
+                        <span className="inline-flex items-center gap-1">
+                          ·<DoctorAvatar name={p.doctor_name} avatarPath={p.doctor_avatar_path} size={16} />
+                          {p.doctor_name}
+                        </span>
+                      )}
                     </p>
                   </div>
                   <span className="font-mono text-xs text-[var(--muted-foreground)]">{p.patient_number}</span>

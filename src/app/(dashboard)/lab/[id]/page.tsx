@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { LabStatusBadge } from "@/components/lab/lab-status-badge";
 import { LabStatusControl } from "@/components/lab/lab-status-control";
 import { LabResultForm } from "@/components/lab/lab-result-form";
+import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Lab request" };
@@ -33,10 +34,15 @@ export default async function LabRequestPage({
         <div>
           <Link href="/lab" className="text-sm text-[var(--muted-foreground)] hover:underline">← Laboratory</Link>
           <h1 className="mt-1 text-2xl font-bold">{req.test_name}</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
+          <p className="flex flex-wrap items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
             <Link href={`/patients/${req.patient_id}`} className="hover:underline">{req.patient_name}</Link>
-            {req.category_name ? ` · ${req.category_name}` : ""}
-            {req.doctor_name ? ` · ${req.doctor_name}` : ""}
+            {req.category_name ? <span>· {req.category_name}</span> : null}
+            {req.doctor_name && (
+              <span className="inline-flex items-center gap-1.5">
+                ·<DoctorAvatar name={req.doctor_name} avatarPath={req.doctor_avatar_path} size={18} />
+                {req.doctor_name}
+              </span>
+            )}
           </p>
         </div>
         <LabStatusBadge status={req.status} />

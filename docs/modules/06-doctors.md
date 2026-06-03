@@ -56,6 +56,12 @@ same `doctors.read` / `doctors.write` policies.
   under the **Credentials** tab; the avatar shows in the header.
 - **0019 — scheduling depth**: `doctor_schedules` gains `break_start`, `break_end`,
   `slot_minutes`, `max_patients`, surfaced in `schedule-editor.tsx`.
+- **0020 — avatars everywhere**: a PUBLIC `doctor-avatars` bucket (avatars aren't sensitive,
+  unlike the private credential docs). The photo renders from a stable public URL — no signing —
+  via the shared `<DoctorAvatar avatarPath … />` (`src/components/doctors/doctor-avatar.tsx`) +
+  `doctorAvatarUrl` helper (`src/lib/doctor-avatar.ts`). It shows on the doctors list, the
+  workload widget, appointment day-view + detail, prescription list/detail, and lab detail —
+  fed by `doctors ( full_name, avatar_path )` joins. Writes stay gated by `doctors.write`.
 
 The **Performance** tab is computed (no schema) from `appointments` + `medical_records` via
 `getDoctorAnalytics` — completion/no-show rates, patients seen, a 6-month completed-visit trend

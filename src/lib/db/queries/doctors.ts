@@ -95,16 +95,6 @@ export async function listDoctorDocuments(doctorId: string): Promise<DoctorDocum
   return docs.map((d, i) => ({ ...d, signedUrl: signed?.[i]?.signedUrl ?? null }));
 }
 
-/** A single short-lived signed URL for a doctor's avatar (or null). */
-export async function doctorAvatarUrl(avatarPath: string | null): Promise<string | null> {
-  if (!avatarPath) return null;
-  const supabase = await createClient();
-  const { data } = await supabase.storage
-    .from("doctor-documents")
-    .createSignedUrl(avatarPath, 60 * 10);
-  return data?.signedUrl ?? null;
-}
-
 export async function listDoctorQualifications(doctorId: string): Promise<DoctorQualification[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -134,6 +124,7 @@ export async function listDoctorLicenses(doctorId: string): Promise<DoctorLicens
 export interface DoctorAvailabilityToday {
   id: string;
   name: string;
+  avatarPath: string | null;
   specialization: string | null;
   slots: { start: string; end: string }[];
   offToday: boolean;
@@ -153,7 +144,7 @@ export async function getDoctorAvailabilityToday(): Promise<DoctorAvailabilityTo
   const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
 
   const [{ data: docs }, { data: schedules }, { data: timeOff }, { data: todaysAppts }] = await Promise.all([
-    supabase.from("doctors").select("id, full_name, specialization, user_id").is("deleted_at", null).eq("is_active", true),
+    supabase.from("doctors").select("id, full_name, specialization, user_id, avatar_path").is("deleted_at", null).eq("is_active", true),
     supabase.from("doctor_schedules").select("doctor_id, start_time, end_time").eq("day_of_week", dow).eq("is_active", true),
     supabase.from("doctor_time_off").select("doctor_id").lte("start_date", ymd).gte("end_date", ymd),
     supabase
@@ -186,6 +177,7 @@ export async function getDoctorAvailabilityToday(): Promise<DoctorAvailabilityTo
   return (docs ?? []).map((d) => ({
     id: d.id,
     name: d.full_name,
+    avatarPath: d.avatar_path,
     specialization: d.specialization,
     slots: (slotsByDoctor.get(d.id) ?? []).sort((a, b) => a.start.localeCompare(b.start)),
     offToday: offSet.has(d.id),

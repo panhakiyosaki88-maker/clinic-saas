@@ -262,7 +262,7 @@ export async function setDoctorAvatar(doctorId: string, avatarPath: string | nul
       .eq("clinic_id", clinicId)
       .maybeSingle();
     if (prev?.avatar_path && prev.avatar_path !== avatarPath) {
-      await supabase.storage.from("doctor-documents").remove([prev.avatar_path]);
+      await supabase.storage.from("doctor-avatars").remove([prev.avatar_path]);
     }
   }
 

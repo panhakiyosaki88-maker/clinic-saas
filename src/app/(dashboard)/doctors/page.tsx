@@ -6,6 +6,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Stethoscope, Plus } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
+import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -99,14 +100,17 @@ export default async function DoctorsPage({
             <ul className="divide-y divide-[var(--border)]">
               {doctors.map((d) => (
                 <li key={d.id} className="flex items-center justify-between gap-3 p-4">
-                  <div className="min-w-0">
-                    <Link href={`/doctors/${d.id}`} className="font-medium text-[var(--primary)] hover:underline">
-                      {d.title ? `${d.title} ` : ""}{d.full_name}
-                    </Link>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      {d.specialization ?? "General"}
-                      {d.license_number ? ` · Lic. ${d.license_number}` : ""}
-                    </p>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <DoctorAvatar name={d.full_name} avatarPath={d.avatar_path} size={40} />
+                    <div className="min-w-0">
+                      <Link href={`/doctors/${d.id}`} className="font-medium text-[var(--primary)] hover:underline">
+                        {d.title ? `${d.title} ` : ""}{d.full_name}
+                      </Link>
+                      <p className="text-xs text-[var(--muted-foreground)]">
+                        {d.specialization ?? "General"}
+                        {d.license_number ? ` · Lic. ${d.license_number}` : ""}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {d.employment_type && (

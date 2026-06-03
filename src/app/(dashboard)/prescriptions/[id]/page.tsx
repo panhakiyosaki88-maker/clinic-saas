@@ -6,6 +6,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PrintButton } from "@/components/prescriptions/print-button";
 import { DeletePrescriptionButton } from "@/components/prescriptions/delete-prescription-button";
+import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 
 export const metadata = { title: "Prescription" };
 
@@ -52,7 +53,12 @@ export default async function PrescriptionDetailPage({
           <div className="text-right">
             <p className="text-xs text-[var(--muted-foreground)]">Date</p>
             <p className="font-medium">{new Date(rx.prescribed_at).toLocaleDateString()}</p>
-            {rx.doctor_name && <p className="text-xs">Dr. {rx.doctor_name}</p>}
+            {rx.doctor_name && (
+              <p className="flex items-center justify-end gap-1.5 text-xs">
+                <DoctorAvatar name={rx.doctor_name} avatarPath={rx.doctor_avatar_path} size={18} />
+                Dr. {rx.doctor_name}
+              </p>
+            )}
           </div>
         </div>
 

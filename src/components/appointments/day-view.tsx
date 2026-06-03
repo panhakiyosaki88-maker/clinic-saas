@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AppointmentWithNames } from "@/lib/db/queries/appointments";
 import { timeLabel } from "@/lib/date";
+import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 import { StatusBadge } from "./status-badge";
 import { StatusControl } from "./status-control";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,8 +29,9 @@ export function DayView({
                 <Link href={`/appointments/${a.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
                   {a.patient_name}
                 </Link>
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  {a.doctor_name ?? "Unassigned"}{a.reason ? ` · ${a.reason}` : ""}
+                <p className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
+                  {a.doctor_name && <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={16} />}
+                  <span>{a.doctor_name ?? "Unassigned"}{a.reason ? ` · ${a.reason}` : ""}</span>
                 </p>
               </div>
             </div>

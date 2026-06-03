@@ -9,14 +9,15 @@ export interface PrescriptionWithNames extends Prescription {
   patient_name: string;
   patient_number: string;
   doctor_name: string | null;
+  doctor_avatar_path: string | null;
   item_count: number;
 }
 
-const LIST_SELECT = `*, patients ( full_name, patient_number ), doctors ( full_name ), prescription_items ( id )`;
+const LIST_SELECT = `*, patients ( full_name, patient_number ), doctors ( full_name, avatar_path ), prescription_items ( id )`;
 
 type ListJoined = Prescription & {
   patients: { full_name: string; patient_number: string } | null;
-  doctors: { full_name: string } | null;
+  doctors: { full_name: string; avatar_path: string | null } | null;
   prescription_items: { id: string }[] | null;
 };
 
@@ -26,6 +27,7 @@ function mapList(rows: ListJoined[]): PrescriptionWithNames[] {
     patient_name: r.patients?.full_name ?? "—",
     patient_number: r.patients?.patient_number ?? "",
     doctor_name: r.doctors?.full_name ?? null,
+    doctor_avatar_path: r.doctors?.avatar_path ?? null,
     item_count: r.prescription_items?.length ?? 0,
   }));
 }
@@ -66,7 +68,7 @@ export async function getPrescription(id: string): Promise<PrescriptionDetail | 
   const { data, error } = await supabase
     .from("prescriptions")
     .select(
-      `*, patients ( full_name, patient_number ), doctors ( full_name ),
+      `*, patients ( full_name, patient_number ), doctors ( full_name, avatar_path ),
        clinics ( name ),
        prescription_items ( * )`
     )
@@ -78,7 +80,7 @@ export async function getPrescription(id: string): Promise<PrescriptionDetail | 
 
   const row = data as unknown as Prescription & {
     patients: { full_name: string; patient_number: string } | null;
-    doctors: { full_name: string } | null;
+    doctors: { full_name: string; avatar_path: string | null } | null;
     clinics: { name: string } | null;
     prescription_items: PrescriptionItem[] | null;
   };
@@ -89,6 +91,7 @@ export async function getPrescription(id: string): Promise<PrescriptionDetail | 
     patient_name: row.patients?.full_name ?? "—",
     patient_number: row.patients?.patient_number ?? "",
     doctor_name: row.doctors?.full_name ?? null,
+    doctor_avatar_path: row.doctors?.avatar_path ?? null,
     item_count: items.length,
     items,
     clinic_name: row.clinics?.name ?? "",

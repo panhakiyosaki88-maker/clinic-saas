@@ -35,7 +35,7 @@ export function AvatarUploader({
       const path = `${clinicId}/${doctorId}/avatar-${crypto.randomUUID()}-${safeName(file.name)}`;
       const supabase = createClient();
       const { error: upErr } = await supabase.storage
-        .from("doctor-documents")
+        .from("doctor-avatars")
         .upload(path, file, { upsert: false, contentType: file.type || undefined });
       if (upErr) {
         setError(upErr.message);
@@ -43,7 +43,7 @@ export function AvatarUploader({
       }
       const res = await setDoctorAvatar(doctorId, path);
       if (!res.ok) {
-        await supabase.storage.from("doctor-documents").remove([path]);
+        await supabase.storage.from("doctor-avatars").remove([path]);
         setError(res.error);
         return;
       }

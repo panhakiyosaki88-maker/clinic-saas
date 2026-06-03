@@ -1,5 +1,6 @@
 import { Stethoscope } from "lucide-react";
 import type { DoctorAvailabilityToday } from "@/lib/db/queries/doctors";
+import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 import { WidgetCard } from "./widget-card";
 import { EmptyState } from "./empty-state";
 
@@ -43,7 +44,10 @@ export function DoctorAvailability({
             return (
               <li key={d.id} className="flex items-center justify-between gap-3 px-5 py-3">
                 <div className="flex items-center gap-3">
-                  <span className={`size-2.5 shrink-0 rounded-full ${meta.dot}`} />
+                  <div className="relative shrink-0">
+                    <DoctorAvatar name={d.name} avatarPath={d.avatarPath} size={36} />
+                    <span className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white dark:border-slate-900 ${meta.dot}`} />
+                  </div>
                   <div>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">{d.name}</p>
                     <p className="text-xs text-slate-400">{d.specialization ?? "General"}</p>

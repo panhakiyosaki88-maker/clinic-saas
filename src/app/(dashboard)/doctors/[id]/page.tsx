@@ -10,8 +10,8 @@ import {
   listDoctorDocuments,
   listDoctorQualifications,
   listDoctorLicenses,
-  doctorAvatarUrl,
 } from "@/lib/db/queries/doctors";
+import { doctorAvatarUrl } from "@/lib/doctor-avatar";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ScheduleEditor } from "@/components/doctors/schedule-editor";
@@ -88,7 +88,7 @@ export default async function DoctorProfilePage({
   if (!doctor) notFound();
 
   const canWrite = await hasPermission(PERMISSIONS.DOCTORS_WRITE);
-  const [schedules, timeOff, performance, analytics, documents, qualifications, licenses, avatarUrl] =
+  const [schedules, timeOff, performance, analytics, documents, qualifications, licenses] =
     await Promise.all([
       listSchedules(id),
       listTimeOff(id),
@@ -97,8 +97,8 @@ export default async function DoctorProfilePage({
       listDoctorDocuments(id),
       listDoctorQualifications(id),
       listDoctorLicenses(id),
-      doctorAvatarUrl(doctor.avatar_path),
     ]);
+  const avatarUrl = doctorAvatarUrl(doctor.avatar_path);
 
   const expiryDays = daysUntil(doctor.license_expiry);
 
