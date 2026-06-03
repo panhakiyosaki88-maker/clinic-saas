@@ -3,48 +3,46 @@
 -- module so you can try the whole app. Paste into the Supabase SQL Editor and
 -- run. Safe to run once; re-running is a no-op (it detects existing demo data).
 --
--- It targets the clinic owned by v_email (set below) and uses that clinic's
--- owner as the actor. Re-running on an already-seeded clinic is a no-op; the
--- demo can be loaded into multiple clinics independently (fresh ids each run).
+-- It seeds the clinic for EACH login email in v_emails (set below), using each
+-- clinic's owner as the actor. Re-running on an already-seeded clinic is a
+-- no-op; clinics are seeded independently (fresh ids per clinic).
 -- To remove later, see the cleanup block at the bottom (commented out).
 -- ============================================================================
 do $$
 declare
-  -- 👇 set this to the email you LOG IN with. The demo seeds that account's clinic.
-  --    Leave as '' to fall back to the most-recently-created clinic.
-  v_email  text := 'panhakiyosaki88@gmail.com';
+  -- 👇 the demo seeds the clinic for EACH of these login emails. Add/remove as
+  --    needed. (An empty string '' would fall back to the newest clinic.)
+  v_emails text[] := array['panhakiyosaki88@gmail.com', 'ttd2.aj@gmail.com'];
+  v_email  text;
   v_clinic uuid;
   v_owner  uuid;
   v_branch uuid;
-  -- fresh random ids each run, so the demo can be loaded into ANY clinic
-  -- independently (re-running on the same clinic is still a no-op, see guard).
-  d1 uuid := gen_random_uuid();
-  d2 uuid := gen_random_uuid();
-  d3 uuid := gen_random_uuid();
-  p1 uuid := gen_random_uuid();
-  p2 uuid := gen_random_uuid();
-  p3 uuid := gen_random_uuid();
-  p4 uuid := gen_random_uuid();
-  p5 uuid := gen_random_uuid();
-  p6 uuid := gen_random_uuid();
-  m1 uuid := gen_random_uuid();
-  m2 uuid := gen_random_uuid();
-  m3 uuid := gen_random_uuid();
-  m4 uuid := gen_random_uuid();
-  rec1 uuid := gen_random_uuid();
-  rec2 uuid := gen_random_uuid();
-  pr1 uuid := gen_random_uuid();
-  pr2 uuid := gen_random_uuid();
-  inv1 uuid := gen_random_uuid();
-  inv2 uuid := gen_random_uuid();
-  inv3 uuid := gen_random_uuid();
-  cat1 uuid := gen_random_uuid();
-  cat2 uuid := gen_random_uuid();
-  lr1 uuid := gen_random_uuid();
-  lr2 uuid := gen_random_uuid();
+  -- fresh random ids, regenerated per clinic inside the loop so the same demo
+  -- can be seeded into multiple clinics without UUID collisions.
+  d1 uuid; d2 uuid; d3 uuid;
+  p1 uuid; p2 uuid; p3 uuid; p4 uuid; p5 uuid; p6 uuid;
+  m1 uuid; m2 uuid; m3 uuid; m4 uuid;
+  rec1 uuid; rec2 uuid;
+  pr1 uuid; pr2 uuid;
+  inv1 uuid; inv2 uuid; inv3 uuid;
+  cat1 uuid; cat2 uuid;
+  lr1 uuid; lr2 uuid;
   base timestamptz := date_trunc('day', now());
   dow int;
 begin
+ foreach v_email in array v_emails loop
+  v_clinic := null; v_owner := null; v_branch := null;
+  -- fresh ids for this clinic
+  d1 := gen_random_uuid(); d2 := gen_random_uuid(); d3 := gen_random_uuid();
+  p1 := gen_random_uuid(); p2 := gen_random_uuid(); p3 := gen_random_uuid();
+  p4 := gen_random_uuid(); p5 := gen_random_uuid(); p6 := gen_random_uuid();
+  m1 := gen_random_uuid(); m2 := gen_random_uuid(); m3 := gen_random_uuid(); m4 := gen_random_uuid();
+  rec1 := gen_random_uuid(); rec2 := gen_random_uuid();
+  pr1 := gen_random_uuid(); pr2 := gen_random_uuid();
+  inv1 := gen_random_uuid(); inv2 := gen_random_uuid(); inv3 := gen_random_uuid();
+  cat1 := gen_random_uuid(); cat2 := gen_random_uuid();
+  lr1 := gen_random_uuid(); lr2 := gen_random_uuid();
+
   -- Prefer the clinic owned by v_email; if that user is a member (not owner) of a
   -- clinic, use that; otherwise fall back to the most-recently-created clinic.
   if v_email <> '' then
@@ -70,17 +68,17 @@ begin
   end if;
 
   if v_clinic is null then
-    raise notice 'No clinic found — sign up & create a clinic first.'; return;
+    raise notice 'No clinic found for % — skipping.', v_email; continue;
   end if;
-  raise notice 'Seeding demo into clinic %', v_clinic;
   select id into v_branch from public.branches where clinic_id = v_clinic order by created_at asc limit 1;
 
   if exists (
     select 1 from public.patients
     where clinic_id = v_clinic and patient_number = 'P009001'
   ) then
-    raise notice 'Demo data already present in clinic % — skipping.', v_clinic; return;
+    raise notice 'Demo already present in clinic % (%) — skipping.', v_clinic, v_email; continue;
   end if;
+  raise notice 'Seeding demo into clinic % for %', v_clinic, v_email;
 
   -- ===== Doctors + weekly schedules + time off ============================
   insert into public.doctors (id, clinic_id, full_name, specialization, license_number, consultation_fee, phone, email, is_active, created_by) values
@@ -189,27 +187,31 @@ begin
     (v_clinic, 'email', 'appointment_reminder', 'dara@example.com', 'Appointment reminder', 'Reminder of your appointment.', 'sent', p1, v_owner),
     (v_clinic, 'email', 'payment_reminder', 'vannak@example.com', 'Payment reminder', 'Invoice INV009003 is outstanding.', 'skipped', p3, v_owner);
 
-  raise notice 'Demo data loaded for clinic %', v_clinic;
+  raise notice 'Demo data loaded for clinic % (%)', v_clinic, v_email;
+ end loop;
 end $$;
 
 -- ============================================================================
--- CLEANUP (optional) — removes the demo rows from a clinic. Uncomment & run.
--- Set v_email to the same account you seeded; deletes only that clinic's demo.
+-- CLEANUP (optional) — removes the demo rows. Uncomment & run. Uses the same
+-- v_emails list; deletes only those clinics' demo data.
 -- ----------------------------------------------------------------------------
 -- do $$
 -- declare
---   v_email  text := 'panhakiyosaki88@gmail.com';
+--   v_emails text[] := array['panhakiyosaki88@gmail.com', 'ttd2.aj@gmail.com'];
+--   v_email  text;
 --   v_clinic uuid;
 -- begin
+--  foreach v_email in array v_emails loop
 --   select c.id into v_clinic from public.clinics c
 --   join auth.users u on u.id = c.owner_user_id
 --   where lower(u.email) = lower(v_email) order by c.created_at desc limit 1;
---   if v_clinic is null then raise notice 'No clinic for %', v_email; return; end if;
+--   if v_clinic is null then raise notice 'No clinic for %', v_email; continue; end if;
 --   -- invoices, lab, prescriptions, appointments, vitals cascade from patients/doctors.
 --   delete from public.patients  where clinic_id = v_clinic and patient_number like 'P0090%';
 --   delete from public.doctors   where clinic_id = v_clinic and license_number in ('KH-GP-1024','KH-PED-2048','KH-DERM-3072');
 --   delete from public.medicines where clinic_id = v_clinic and sku in ('AML-5','PARA-500','AMOX-500','SALB-INH');
 --   delete from public.lab_categories where clinic_id = v_clinic and name in ('Hematology','Biochemistry');
 --   delete from public.notifications  where clinic_id = v_clinic and recipient in ('dara@example.com','vannak@example.com');
---   raise notice 'Demo data removed from clinic %', v_clinic;
+--   raise notice 'Demo data removed from clinic % (%)', v_clinic, v_email;
+--  end loop;
 -- end $$;
