@@ -3,9 +3,10 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createLabRequest } from "@/server/actions/lab";
+import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 const selectClass =
@@ -30,18 +31,39 @@ export function LabRequestForm({
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const [query, setQuery] = React.useState("");
+
+  function toggle(test: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(test)) next.delete(test);
+      else next.add(test);
+      return next;
+    });
+  }
+
+  const q = query.trim().toLowerCase();
+  const groups = React.useMemo(() => {
+    if (!q) return LAB_TEST_PANEL;
+    return LAB_TEST_PANEL.map((g) => ({
+      ...g,
+      tests: g.tests.filter((t) => t.toLowerCase().includes(q)),
+    })).filter((g) => g.tests.length > 0);
+  }, [q]);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
     const f = new FormData(e.currentTarget);
+    const testNames = Array.from(selected);
     startTransition(async () => {
       const result = await createLabRequest({
         patientId: String(f.get("patientId") ?? ""),
         doctorId: String(f.get("doctorId") ?? ""),
         categoryId: String(f.get("categoryId") ?? ""),
-        testName: String(f.get("testName") ?? ""),
+        testNames,
         notes: String(f.get("notes") ?? ""),
       });
       if (!result.ok) {
@@ -50,7 +72,8 @@ export function LabRequestForm({
         return;
       }
       router.refresh();
-      router.push(`/lab/${result.data.requestId}`);
+      const ids = result.data.requestIds;
+      router.push(ids.length === 1 ? `/lab/${ids[0]}` : "/lab");
     });
   }
 
@@ -83,9 +106,45 @@ export function LabRequestForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="testName">Test</Label>
-        <Input id="testName" name="testName" placeholder="e.g. Complete Blood Count" required />
-        {fieldErrors.testName?.map((m) => <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>)}
+        <div className="flex items-center justify-between gap-2">
+          <Label>Tests</Label>
+          <span className="text-xs text-[var(--muted-foreground)]">
+            {selected.size} selected
+          </span>
+        </div>
+        <Input
+          type="search"
+          placeholder="Filter tests…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {fieldErrors.testNames?.map((m) => <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>)}
+
+        <div className="max-h-[28rem] space-y-4 overflow-y-auto rounded-md border border-slate-200 p-3 dark:border-slate-700">
+          {groups.length === 0 && (
+            <p className="text-sm text-[var(--muted-foreground)]">No tests match “{query}”.</p>
+          )}
+          {groups.map((group) => (
+            <fieldset key={group.title} className="space-y-2">
+              <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                {group.title}
+              </legend>
+              <div className="grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
+                {group.tests.map((test) => (
+                  <label key={test} className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/30 dark:border-slate-600"
+                      checked={selected.has(test)}
+                      onChange={() => toggle(test)}
+                    />
+                    <span>{test}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -96,7 +155,9 @@ export function LabRequestForm({
       {error && <p className="rounded-md bg-[var(--destructive)]/10 px-3 py-2 text-sm text-[var(--destructive)]">{error}</p>}
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Create request"}</Button>
+        <Button type="submit" disabled={pending || selected.size === 0}>
+          {pending ? "Saving…" : selected.size > 1 ? `Create ${selected.size} requests` : "Create request"}
+        </Button>
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>Cancel</Button>
       </div>
     </form>

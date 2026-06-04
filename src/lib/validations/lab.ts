@@ -21,7 +21,10 @@ export const createLabRequestSchema = z.object({
   patientId: z.string().uuid("Choose a patient"),
   doctorId: z.string().uuid().optional().or(z.literal("")),
   categoryId: z.string().uuid().optional().or(z.literal("")),
-  testName: z.string().trim().min(1, "Test name is required").max(255),
+  testNames: z
+    .array(z.string().trim().min(1).max(255))
+    .min(1, "Select at least one test")
+    .max(100),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
 });
 export type CreateLabRequestInput = z.infer<typeof createLabRequestSchema>;

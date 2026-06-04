@@ -17,12 +17,13 @@ describe("createCategorySchema", () => {
 });
 
 describe("createLabRequestSchema", () => {
-  it("requires patient + test name", () => {
-    expect(createLabRequestSchema.safeParse({ patientId: PID, testName: "" }).success).toBe(false);
-    expect(createLabRequestSchema.safeParse({ patientId: PID, testName: "CBC" }).success).toBe(true);
+  it("requires patient + at least one test", () => {
+    expect(createLabRequestSchema.safeParse({ patientId: PID, testNames: [] }).success).toBe(false);
+    expect(createLabRequestSchema.safeParse({ patientId: PID, testNames: ["CBC"] }).success).toBe(true);
+    expect(createLabRequestSchema.safeParse({ patientId: PID, testNames: ["CBC", "Glycémie"] }).success).toBe(true);
   });
   it("allows optional category/doctor as empty strings", () => {
-    const r = createLabRequestSchema.safeParse({ patientId: PID, testName: "CBC", categoryId: "", doctorId: "" });
+    const r = createLabRequestSchema.safeParse({ patientId: PID, testNames: ["CBC"], categoryId: "", doctorId: "" });
     expect(r.success).toBe(true);
   });
 });

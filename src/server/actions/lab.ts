@@ -39,7 +39,7 @@ export async function createLabCategory(input: CreateCategoryInput): Promise<Act
 
 export async function createLabRequest(
   input: CreateLabRequestInput
-): Promise<ActionResult<{ requestId: string }>> {
+): Promise<ActionResult<{ requestIds: string[] }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.LAB_WRITE);
   const parsed = createLabRequestSchema.safeParse(input);
   if (!parsed.success) {
@@ -47,34 +47,41 @@ export async function createLabRequest(
   }
   const v = parsed.data;
 
+  // De-duplicate ticked tests; one lab_request row per test so each can be
+  // tracked and resulted independently.
+  const testNames = Array.from(new Set(v.testNames));
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("lab_requests")
-    .insert({
-      clinic_id: clinicId,
-      patient_id: v.patientId,
-      doctor_id: v.doctorId || null,
-      category_id: v.categoryId || null,
-      test_name: v.testName,
-      notes: v.notes || null,
-      created_by: user.id,
-    })
-    .select("id")
-    .single();
-  if (error || !data) return fail(error?.message ?? "Could not create lab request.");
+    .insert(
+      testNames.map((testName) => ({
+        clinic_id: clinicId,
+        patient_id: v.patientId,
+        doctor_id: v.doctorId || null,
+        category_id: v.categoryId || null,
+        test_name: testName,
+        notes: v.notes || null,
+        created_by: user.id,
+      }))
+    )
+    .select("id");
+  if (error || !data || data.length === 0) {
+    return fail(error?.message ?? "Could not create lab request.");
+  }
 
   await supabase.from("patient_timeline").insert({
     clinic_id: clinicId,
     patient_id: v.patientId,
     event_type: "lab",
-    title: "Lab requested",
-    description: v.testName,
+    title: testNames.length === 1 ? "Lab requested" : `${testNames.length} labs requested`,
+    description: testNames.join(", "),
     created_by: user.id,
   });
 
   revalidatePath("/lab");
   revalidatePath(`/patients/${v.patientId}`);
-  return ok({ requestId: data.id });
+  return ok({ requestIds: data.map((r) => r.id) });
 }
 
 export async function changeLabStatus(input: ChangeLabStatusInput): Promise<ActionResult> {
