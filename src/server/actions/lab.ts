@@ -131,8 +131,7 @@ export async function changeLabStatus(input: ChangeLabStatusInput): Promise<Acti
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
-  revalidatePath(`/lab/${requestId}`);
-  revalidatePath("/lab");
+  revalidatePath("/lab", "layout");
   return ok(undefined);
 }
 
@@ -159,7 +158,7 @@ export async function addLabResult(input: AddLabResultInput): Promise<ActionResu
   });
   if (error) return fail(error.message);
 
-  revalidatePath(`/lab/${v.requestId}`);
+  revalidatePath("/lab", "layout");
   return ok(undefined);
 }
 

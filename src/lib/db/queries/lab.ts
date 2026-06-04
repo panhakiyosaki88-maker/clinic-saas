@@ -65,37 +65,6 @@ export interface LabRequestDetail extends LabRequestWithNames {
   results: LabResultWithUrl[];
 }
 
-export async function getLabRequest(id: string): Promise<LabRequestDetail | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("lab_requests")
-    .select(`${SELECT}, lab_results ( * )`)
-    .eq("id", id)
-    .is("deleted_at", null)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) return null;
-
-  const row = data as unknown as Joined & { lab_results: LabResult[] | null };
-  const results = (row.lab_results ?? []).slice().sort((a, b) => +new Date(b.result_at) - +new Date(a.result_at));
-
-  const withUrls: LabResultWithUrl[] = [];
-  const withFiles = results.filter((r) => r.file_path);
-  let signed: { signedUrl: string | null }[] | null = null;
-  if (withFiles.length > 0) {
-    const res = await supabase.storage
-      .from("lab-results")
-      .createSignedUrls(withFiles.map((r) => r.file_path as string), 60 * 10);
-    signed = res.data ?? null;
-  }
-  let si = 0;
-  for (const r of results) {
-    withUrls.push({ ...r, signedUrl: r.file_path ? signed?.[si++]?.signedUrl ?? null : null });
-  }
-
-  return { ...map([row])[0], results: withUrls };
-}
-
 /** A patient's lab requests, each with its results and signed report URLs. */
 export async function listPatientLabRequestsDetailed(
   patientId: string

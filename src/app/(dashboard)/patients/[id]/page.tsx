@@ -272,7 +272,7 @@ export default async function PatientProfilePage({
               <ul className="divide-y divide-[var(--border)]">
                 {labRequests.map((r) => (
                   <li key={r.id} className="flex items-center justify-between py-2">
-                    <Link href={`/lab/${r.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                    <Link href={`/lab/patient/${patient.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
                       {r.test_name}
                     </Link>
                     <LabStatusBadge status={r.status} />

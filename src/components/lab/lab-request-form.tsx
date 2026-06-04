@@ -54,10 +54,11 @@ export function LabRequestForm({
     setError(null);
     setFieldErrors({});
     const f = new FormData(e.currentTarget);
+    const patientId = String(f.get("patientId") ?? "");
     const testNames = Array.from(selected);
     startTransition(async () => {
       const result = await createLabRequest({
-        patientId: String(f.get("patientId") ?? ""),
+        patientId,
         doctorId: String(f.get("doctorId") ?? ""),
         testNames,
         notes: String(f.get("notes") ?? ""),
@@ -68,8 +69,7 @@ export function LabRequestForm({
         return;
       }
       router.refresh();
-      const ids = result.data.requestIds;
-      router.push(ids.length === 1 ? `/lab/${ids[0]}` : "/lab");
+      router.push(`/lab/patient/${patientId}`);
     });
   }
 
