@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, startOfWeek, startOfMonth, ymd, isSameDay, WEEKDAYS } from "@/lib/date";
 import { getAppointmentCalendar, type CalendarDay } from "@/server/actions/appointments";
 import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
+import { Button } from "@/components/ui/button";
 import { WidgetCard } from "./widget-card";
 
 type Days = Record<string, CalendarDay>;
@@ -86,42 +87,38 @@ export function MiniCalendar({
       title="Appointments Calendar"
       action={{ href: "/appointments?view=month", label: "Open calendar" }}
     >
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-            {monthLabel}
-          </span>
-          <span className="text-xs text-slate-400">
-            {monthTotal} appt{monthTotal === 1 ? "" : "s"}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          {!isCurrentMonth && (
-            <button
-              type="button"
-              onClick={goToday}
-              className="rounded-md px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
-            >
-              Today
-            </button>
-          )}
-          <button
-            type="button"
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => go(-1)}
             aria-label="Previous month"
-            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
           >
-            <ChevronLeft className="size-4" />
-          </button>
-          <button
-            type="button"
+            <ChevronLeft />
+          </Button>
+          <Button
+            variant={isCurrentMonth ? "secondary" : "outline"}
+            size="sm"
+            onClick={goToday}
+          >
+            Today
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => go(1)}
             aria-label="Next month"
-            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
           >
-            <ChevronRight className="size-4" />
-          </button>
+            <ChevronRight />
+          </Button>
+          <span className="ml-1 text-base font-semibold text-slate-900 dark:text-white">
+            {monthLabel}
+          </span>
         </div>
+        <span className="text-xs text-slate-400">
+          {monthTotal} appt{monthTotal === 1 ? "" : "s"}
+        </span>
       </div>
 
       <div className="mb-2 grid grid-cols-7 text-center text-[11px] font-medium uppercase tracking-wide text-slate-400">
