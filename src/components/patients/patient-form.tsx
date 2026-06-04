@@ -63,8 +63,6 @@ export function PatientForm({ patient }: { patient?: Patient }) {
       preferredLanguage: String(f.get("preferredLanguage") ?? ""),
       preferredContactMethod: String(f.get("preferredContactMethod") ?? "") as never,
       doNotContact: f.get("doNotContact") === "on",
-      nextOfKinName: String(f.get("nextOfKinName") ?? ""),
-      nextOfKinPhone: String(f.get("nextOfKinPhone") ?? ""),
       nextOfKinRelationship: String(f.get("nextOfKinRelationship") ?? ""),
       allergies: String(f.get("allergies") ?? ""),
       medicalHistory: String(f.get("medicalHistory") ?? ""),
@@ -195,13 +193,7 @@ export function PatientForm({ patient }: { patient?: Patient }) {
           <Field label="Emergency contact phone" htmlFor="emergencyContactPhone">
             <Input id="emergencyContactPhone" name="emergencyContactPhone" defaultValue={patient?.emergency_contact_phone ?? ""} />
           </Field>
-          <Field label="Next of kin name" htmlFor="nextOfKinName">
-            <Input id="nextOfKinName" name="nextOfKinName" defaultValue={patient?.next_of_kin_name ?? ""} />
-          </Field>
-          <Field label="Next of kin phone" htmlFor="nextOfKinPhone">
-            <Input id="nextOfKinPhone" name="nextOfKinPhone" defaultValue={patient?.next_of_kin_phone ?? ""} />
-          </Field>
-          <Field label="Next of kin relationship" htmlFor="nextOfKinRelationship">
+          <Field label="Relationship" htmlFor="nextOfKinRelationship">
             <Input id="nextOfKinRelationship" name="nextOfKinRelationship" defaultValue={patient?.next_of_kin_relationship ?? ""} />
           </Field>
         </div>

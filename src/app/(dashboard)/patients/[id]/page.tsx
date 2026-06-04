@@ -150,7 +150,7 @@ export default async function PatientProfilePage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Contact &amp; next of kin</CardTitle>
+          <CardTitle>Contact</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-4">
@@ -158,8 +158,6 @@ export default async function PatientProfilePage({
             <Detail label="Preferred contact" value={patient.preferred_contact_method} />
             <Detail label="Emergency contact" value={patient.emergency_contact_name} />
             <Detail label="Emergency phone" value={patient.emergency_contact_phone} />
-            <Detail label="Next of kin" value={patient.next_of_kin_name} />
-            <Detail label="Next of kin phone" value={patient.next_of_kin_phone} />
             <Detail label="Relationship" value={patient.next_of_kin_relationship} />
           </dl>
         </CardContent>
