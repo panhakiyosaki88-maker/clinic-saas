@@ -4,10 +4,18 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listPatientLabRequests, listPatientLabReports, listLabCategoryTree } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 import { PatientLabUpload } from "@/components/lab/patient-lab-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Patient lab tests" };
+
+// Fallback: map a test name to its panel group (for older tests with no
+// stored category, and for the requisition-sheet ordering).
+const PANEL_GROUP_BY_TEST = new Map<string, string>();
+LAB_TEST_PANEL.forEach((g) => g.tests.forEach((t) => {
+  if (!PANEL_GROUP_BY_TEST.has(t)) PANEL_GROUP_BY_TEST.set(t, g.title);
+}));
 
 export default async function PatientLabPage({
   params,
@@ -32,18 +40,24 @@ export default async function PatientLabPage({
   // Resolve every category (group or subgroup) to its Main Category, and
   // capture the order Main Categories appear in Lab Categories.
   const mainByCategoryId = new Map<string, string>();
-  const mainOrder = new Map<string, number>();
+  const order = new Map<string, number>();
   tree.forEach((g, i) => {
-    mainOrder.set(g.name, i);
+    order.set(g.name, i);
     mainByCategoryId.set(g.id, g.name);
     for (const c of g.children) mainByCategoryId.set(c.id, g.name);
   });
+  // Append any panel groups not already defined as categories, in sheet order.
+  LAB_TEST_PANEL.forEach((g, i) => {
+    if (!order.has(g.title)) order.set(g.title, tree.length + i);
+  });
 
-  // Group the patient's tests under their Main Category.
+  // Group the patient's tests under their Main Category: prefer the stored
+  // category, else fall back to the panel group for the test name.
   const groups = new Map<string, typeof requests>();
   for (const r of requests) {
     const key =
-      (r.category_id ? mainByCategoryId.get(r.category_id) : null) ??
+      (r.category_id ? mainByCategoryId.get(r.category_id) : undefined) ??
+      PANEL_GROUP_BY_TEST.get(r.test_name) ??
       r.category_name ??
       "Uncategorized";
     const list = groups.get(key);
@@ -51,7 +65,7 @@ export default async function PatientLabPage({
     else groups.set(key, [r]);
   }
   const orderedGroups = Array.from(groups.entries()).sort(
-    ([a], [b]) => (mainOrder.get(a) ?? 999) - (mainOrder.get(b) ?? 999)
+    ([a], [b]) => (order.get(a) ?? 999) - (order.get(b) ?? 999)
   );
 
   const activeRequestIds = requests.filter((r) => r.status !== "cancelled").map((r) => r.id);
