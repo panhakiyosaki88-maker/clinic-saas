@@ -19,6 +19,8 @@ import {
 import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
 import { listPatientInvoices } from "@/lib/db/queries/billing";
+import { getUnbilledForPatient } from "@/lib/db/queries/billing-suggestions";
+import { SuggestedCharges } from "@/components/billing/suggested-charges";
 import { listPatientLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -115,6 +117,10 @@ export default async function PatientProfilePage({
     canBillRead ? listPatientInvoices(id) : Promise.resolve([]),
     canLabRead ? listPatientLabRequests(id) : Promise.resolve([]),
   ]);
+  const unbilled = canBillWrite
+    ? await getUnbilledForPatient(id)
+    : { appointments: [], labs: [] };
+  const hasUnbilled = unbilled.appointments.length > 0 || unbilled.labs.length > 0;
 
   const age = patientAge(patient.date_of_birth);
   const activeMeds = medications.filter((m) => m.status === "active").length;
@@ -284,6 +290,14 @@ export default async function PatientProfilePage({
 
   const financialPanel = (
     <div className="space-y-6">
+      {canBillWrite && hasUnbilled && (
+        <Card>
+          <CardHeader><CardTitle>Suggested charges</CardTitle></CardHeader>
+          <CardContent>
+            <SuggestedCharges patientId={patient.id} appointments={unbilled.appointments} labs={unbilled.labs} />
+          </CardContent>
+        </Card>
+      )}
       {canBillRead && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">

@@ -1265,6 +1265,26 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["service_prices"]["Insert"]>;
         Relationships: [];
       };
+      invoice_source_links: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          invoice_id: string;
+          source: InvoiceSource;
+          source_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          invoice_id: string;
+          source: InvoiceSource;
+          source_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["invoice_source_links"]["Insert"]>;
+        Relationships: [];
+      };
       billing_settings: {
         Row: {
           clinic_id: string;
