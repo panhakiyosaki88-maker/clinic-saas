@@ -6,6 +6,7 @@ import type { LabRequestWithNames, PatientLabReport } from "@/lib/db/queries/lab
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
+import { labSessionKey, labSessionAnchor, formatLabSessionDate } from "@/lib/lab/session";
 import { PATIENT_LAB_STATE_LABELS, type PatientLabState } from "@/lib/validations/lab";
 import { PatientLabUpload } from "@/components/lab/patient-lab-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,10 +91,10 @@ export default async function PatientLabPage({
   const sessions = new Map<string, Session>();
   const sessionByRequestId = new Map<string, string>();
   for (const r of requests) {
-    const dateKey = new Date(r.requested_at).toLocaleDateString();
+    const dateKey = labSessionKey(r.requested_at);
     let s = sessions.get(dateKey);
     if (!s) {
-      s = { dateKey, label: dateKey, tests: [], reports: [] };
+      s = { dateKey, label: formatLabSessionDate(dateKey), tests: [], reports: [] };
       sessions.set(dateKey, s);
     }
     s.tests.push(r);
@@ -149,7 +150,7 @@ export default async function PatientLabPage({
             .map((r) => r.id);
 
           return (
-            <Card key={session.dateKey} className="overflow-hidden">
+            <Card key={session.dateKey} id={labSessionAnchor(session.dateKey)} className="scroll-mt-24 overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
                 <CardTitle className="text-base">{session.label}</CardTitle>
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATE_BADGE[state]}`}>
