@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listPatientLabRequests, listPatientLabReports, listLabCategoryTree } from "@/lib/db/queries/lab";
+import type { LabRequestWithNames, PatientLabReport } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
+import { PATIENT_LAB_STATE_LABELS, type PatientLabState } from "@/lib/validations/lab";
 import { PatientLabUpload } from "@/components/lab/patient-lab-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -16,6 +18,26 @@ const PANEL_GROUP_BY_TEST = new Map<string, string>();
 LAB_TEST_PANEL.forEach((g) => g.tests.forEach((t) => {
   if (!PANEL_GROUP_BY_TEST.has(t)) PANEL_GROUP_BY_TEST.set(t, g.title);
 }));
+
+const STATE_BADGE: Record<PatientLabState, string> = {
+  requested: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  processing: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
+  completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+};
+
+/** Collapse a session's individual test statuses into one patient-level state. */
+function sessionState(tests: LabRequestWithNames[]): PatientLabState {
+  let active = 0, completed = 0, inProgress = 0;
+  for (const t of tests) {
+    if (t.status === "cancelled") continue;
+    active += 1;
+    if (t.status === "completed") completed += 1;
+    else if (t.status === "collected" || t.status === "processing") inProgress += 1;
+  }
+  if (active > 0 && completed === active) return "completed";
+  if (inProgress > 0) return "processing";
+  return "requested";
+}
 
 export default async function PatientLabPage({
   params,
@@ -46,29 +68,53 @@ export default async function PatientLabPage({
     mainByCategoryId.set(g.id, g.name);
     for (const c of g.children) mainByCategoryId.set(c.id, g.name);
   });
-  // Append any panel groups not already defined as categories, in sheet order.
   LAB_TEST_PANEL.forEach((g, i) => {
     if (!order.has(g.title)) order.set(g.title, tree.length + i);
   });
 
-  // Group the patient's tests under their Main Category: prefer the stored
-  // category, else fall back to the panel group for the test name.
-  const groups = new Map<string, typeof requests>();
-  for (const r of requests) {
-    const key =
-      (r.category_id ? mainByCategoryId.get(r.category_id) : undefined) ??
-      PANEL_GROUP_BY_TEST.get(r.test_name) ??
-      r.category_name ??
-      "Uncategorized";
-    const list = groups.get(key);
-    if (list) list.push(r);
-    else groups.set(key, [r]);
-  }
-  const orderedGroups = Array.from(groups.entries()).sort(
-    ([a], [b]) => (order.get(a) ?? 999) - (order.get(b) ?? 999)
-  );
+  const categoryOf = (r: LabRequestWithNames) =>
+    (r.category_id ? mainByCategoryId.get(r.category_id) : undefined) ??
+    PANEL_GROUP_BY_TEST.get(r.test_name) ??
+    r.category_name ??
+    "Uncategorized";
 
-  const activeRequestIds = requests.filter((r) => r.status !== "cancelled").map((r) => r.id);
+  // Group the patient's tests by the date they were requested — each date is a
+  // lab session, building a chronological history. Requests already arrive
+  // newest-first, so insertion order preserves that.
+  interface Session {
+    dateKey: string;
+    label: string;
+    tests: LabRequestWithNames[];
+    reports: PatientLabReport[];
+  }
+  const sessions = new Map<string, Session>();
+  const sessionByRequestId = new Map<string, string>();
+  for (const r of requests) {
+    const dateKey = new Date(r.requested_at).toLocaleDateString();
+    let s = sessions.get(dateKey);
+    if (!s) {
+      s = { dateKey, label: dateKey, tests: [], reports: [] };
+      sessions.set(dateKey, s);
+    }
+    s.tests.push(r);
+    sessionByRequestId.set(r.id, dateKey);
+  }
+  // Attach each uploaded report to the session of the test it belongs to. One
+  // upload is attached to every test in a session, so dedupe by file so each
+  // uploaded file shows once per session.
+  const seenFile = new Map<string, Set<string>>();
+  for (const rep of reports) {
+    const key = sessionByRequestId.get(rep.lab_request_id);
+    if (!key) continue;
+    const fileKey = rep.file_path ?? rep.id;
+    const seen = seenFile.get(key) ?? new Set<string>();
+    if (seen.has(fileKey)) continue;
+    seen.add(fileKey);
+    seenFile.set(key, seen);
+    sessions.get(key)!.reports.push(rep);
+  }
+
+  const sessionList = Array.from(sessions.values());
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
@@ -78,62 +124,87 @@ export default async function PatientLabPage({
           <Link href={`/patients/${patientId}`} className="hover:underline">{patientName}</Link>
         </h1>
         <p className="text-sm text-[var(--muted-foreground)]">
-          {requests.length} {requests.length === 1 ? "test" : "tests"}
+          {requests.length} {requests.length === 1 ? "test" : "tests"} across{" "}
+          {sessionList.length} {sessionList.length === 1 ? "visit" : "visits"}
         </p>
       </header>
 
-      <div className="space-y-5">
-        {orderedGroups.map(([title, tests]) => (
-          <section key={title}>
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-              {title}
-            </h2>
-            <Card>
-              <CardContent className="p-0">
-                <ol className="divide-y divide-[var(--border)]">
-                  {tests.map((t, i) => (
-                    <li key={t.id} className="flex items-baseline gap-3 px-4 py-2.5 text-sm">
-                      <span className="w-6 shrink-0 text-right tabular-nums text-[var(--muted-foreground)]">{i + 1}.</span>
-                      <span className="font-medium">{t.test_name}</span>
-                    </li>
-                  ))}
-                </ol>
+      <div className="space-y-6">
+        {sessionList.map((session) => {
+          const state = sessionState(session.tests);
+
+          // Within a session, group tests under their Main Category in sheet order.
+          const groups = new Map<string, LabRequestWithNames[]>();
+          for (const r of session.tests) {
+            const key = categoryOf(r);
+            const list = groups.get(key);
+            if (list) list.push(r);
+            else groups.set(key, [r]);
+          }
+          const orderedGroups = Array.from(groups.entries()).sort(
+            ([a], [b]) => (order.get(a) ?? 999) - (order.get(b) ?? 999)
+          );
+          const activeRequestIds = session.tests
+            .filter((r) => r.status !== "cancelled")
+            .map((r) => r.id);
+
+          return (
+            <Card key={session.dateKey} className="overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+                <CardTitle className="text-base">{session.label}</CardTitle>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATE_BADGE[state]}`}>
+                  {PATIENT_LAB_STATE_LABELS[state]}
+                </span>
+              </CardHeader>
+              <CardContent className="space-y-4 p-0 pb-2">
+                {orderedGroups.map(([title, tests]) => (
+                  <section key={title}>
+                    <h3 className="px-4 pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                      {title}
+                    </h3>
+                    <ol className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
+                      {tests.map((t, i) => (
+                        <li key={t.id} className="flex items-baseline gap-3 px-4 py-2.5 text-sm">
+                          <span className="w-6 shrink-0 text-right tabular-nums text-[var(--muted-foreground)]">{i + 1}.</span>
+                          <span className="font-medium">{t.test_name}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                ))}
+
+                {session.reports.length > 0 && (
+                  <div className="px-4">
+                    <h3 className="pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                      Results
+                    </h3>
+                    <ul className="space-y-2 text-sm">
+                      {session.reports.map((r) => (
+                        <li key={r.id} className="flex items-center justify-between gap-3">
+                          {r.signedUrl ? (
+                            <a href={r.signedUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline">
+                              {r.file_name ?? r.test_name}
+                            </a>
+                          ) : (
+                            <span>{r.file_name ?? r.test_name}</span>
+                          )}
+                          <span className="text-xs text-[var(--muted-foreground)]">{new Date(r.result_at).toLocaleDateString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {canWrite && activeRequestIds.length > 0 && (
+                  <div className="border-t border-[var(--border)] px-4 pt-3">
+                    <PatientLabUpload clinicId={clinic.id} patientId={patientId} requestIds={activeRequestIds} />
+                  </div>
+                )}
               </CardContent>
             </Card>
-          </section>
-        ))}
+          );
+        })}
       </div>
-
-      {reports.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle>Uploaded reports</CardTitle></CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              {reports.map((r) => (
-                <li key={r.id} className="flex items-center justify-between gap-3">
-                  {r.signedUrl ? (
-                    <a href={r.signedUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline">
-                      {r.file_name ?? "Report"}
-                    </a>
-                  ) : (
-                    <span>{r.file_name ?? "Report"}</span>
-                  )}
-                  <span className="text-xs text-[var(--muted-foreground)]">{new Date(r.result_at).toLocaleDateString()}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {canWrite && (
-        <Card>
-          <CardHeader><CardTitle>Upload result</CardTitle></CardHeader>
-          <CardContent>
-            <PatientLabUpload clinicId={clinic.id} patientId={patientId} requestIds={activeRequestIds} />
-          </CardContent>
-        </Card>
-      )}
     </main>
   );
 }

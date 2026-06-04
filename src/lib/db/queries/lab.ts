@@ -60,6 +60,8 @@ export async function listPatientLabRequests(patientId: string): Promise<LabRequ
 
 export interface PatientLabReport {
   id: string;
+  lab_request_id: string;
+  file_path: string | null;
   file_name: string | null;
   result_at: string;
   test_name: string;
@@ -71,7 +73,7 @@ export async function listPatientLabReports(patientId: string): Promise<PatientL
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("lab_results")
-    .select("id, file_path, file_name, result_at, lab_requests!inner ( test_name, patient_id, deleted_at )")
+    .select("id, lab_request_id, file_path, file_name, result_at, lab_requests!inner ( test_name, patient_id, deleted_at )")
     .eq("lab_requests.patient_id", patientId)
     .is("lab_requests.deleted_at", null)
     .not("file_path", "is", null)
@@ -80,6 +82,7 @@ export async function listPatientLabReports(patientId: string): Promise<PatientL
 
   const rows = (data ?? []) as unknown as {
     id: string;
+    lab_request_id: string;
     file_path: string | null;
     file_name: string | null;
     result_at: string;
@@ -95,6 +98,8 @@ export async function listPatientLabReports(patientId: string): Promise<PatientL
 
   return rows.map((r) => ({
     id: r.id,
+    lab_request_id: r.lab_request_id,
+    file_path: r.file_path,
     file_name: r.file_name,
     result_at: r.result_at,
     test_name: r.lab_requests?.test_name ?? "—",
