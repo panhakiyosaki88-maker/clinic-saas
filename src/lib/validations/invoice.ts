@@ -82,3 +82,12 @@ export const recordPaymentSchema = z.object({
   note: z.string().trim().max(255).optional().or(z.literal("")),
 });
 export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
+
+export const refundPaymentSchema = z.object({
+  invoiceId: z.string().uuid(),
+  amount: z.coerce.number().positive("Enter an amount"),
+  method: z.enum(PAYMENT_METHODS),
+  reference: z.string().trim().max(255).optional().or(z.literal("")),
+  note: z.string().trim().max(255).optional().or(z.literal("")),
+});
+export type RefundPaymentInput = z.infer<typeof refundPaymentSchema>;

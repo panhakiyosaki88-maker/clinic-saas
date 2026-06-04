@@ -60,6 +60,46 @@ export async function outstandingInvoices(): Promise<InvoiceWithPatient[]> {
   return mapList((data ?? []) as unknown as ListJoined[]);
 }
 
+export interface PaymentRow {
+  id: string;
+  receipt_number: string;
+  invoice_id: string;
+  invoice_number: string;
+  patient_name: string | null;
+  amount: number;
+  method: Payment["method"];
+  kind: Payment["kind"];
+  reference: string | null;
+  paid_at: string;
+}
+
+/** Clinic-wide payments + refunds ledger, newest first. */
+export async function listPayments(limit = 100): Promise<PaymentRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("payments")
+    .select("id, receipt_number, invoice_id, amount, method, kind, reference, paid_at, invoices ( invoice_number, patients ( full_name ) )")
+    .order("paid_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+
+  const rows = (data ?? []) as unknown as (Payment & {
+    invoices: { invoice_number: string; patients: { full_name: string } | null } | null;
+  })[];
+  return rows.map((r) => ({
+    id: r.id,
+    receipt_number: r.receipt_number,
+    invoice_id: r.invoice_id,
+    invoice_number: r.invoices?.invoice_number ?? "—",
+    patient_name: r.invoices?.patients?.full_name ?? null,
+    amount: Number(r.amount),
+    method: r.method,
+    kind: r.kind,
+    reference: r.reference,
+    paid_at: r.paid_at,
+  }));
+}
+
 export interface InvoiceDetail extends InvoiceWithPatient {
   items: InvoiceItem[];
   payments: Payment[];

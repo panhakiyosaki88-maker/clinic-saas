@@ -9,6 +9,7 @@ import { PrintButton } from "@/components/print-button";
 import { PaymentForm } from "@/components/billing/payment-form";
 import { CancelInvoiceButton } from "@/components/billing/cancel-invoice-button";
 import { InvoiceActions } from "@/components/billing/invoice-actions";
+import { RefundForm } from "@/components/billing/refund-form";
 import { ReminderButton } from "@/components/notifications/reminder-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -114,21 +115,32 @@ export default async function InvoiceDetailPage({
       )}
 
       <Card className="print:hidden">
-        <CardHeader><CardTitle>Payments</CardTitle></CardHeader>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle>Payments</CardTitle>
+          {canWrite && active && Number(inv.amount_paid) > 0 && (
+            <RefundForm invoiceId={inv.id} amountPaid={Number(inv.amount_paid)} />
+          )}
+        </CardHeader>
         <CardContent>
           {inv.payments.length === 0 ? (
             <p className="text-sm text-[var(--muted-foreground)]">No payments recorded.</p>
           ) : (
             <ul className="divide-y divide-[var(--border)]">
-              {inv.payments.map((p) => (
-                <li key={p.id} className="flex items-center justify-between py-2 text-sm">
-                  <span>
-                    <span className="font-mono text-xs">{p.receipt_number}</span> · {PAYMENT_METHOD_LABELS[p.method]}
-                    {p.reference ? ` · ${p.reference}` : ""}
-                  </span>
-                  <span className="tabular-nums">{fmt(p.amount)}</span>
-                </li>
-              ))}
+              {inv.payments.map((p) => {
+                const refund = p.kind === "refund";
+                return (
+                  <li key={p.id} className="flex items-center justify-between py-2 text-sm">
+                    <span>
+                      <span className="font-mono text-xs">{p.receipt_number}</span> · {PAYMENT_METHOD_LABELS[p.method]}
+                      {refund && <span className="ml-1 text-xs font-medium text-[var(--destructive)]">refund</span>}
+                      {p.reference ? ` · ${p.reference}` : ""}
+                    </span>
+                    <span className={`tabular-nums ${refund ? "text-[var(--destructive)]" : ""}`}>
+                      {refund ? "−" : ""}{fmt(p.amount)}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </CardContent>

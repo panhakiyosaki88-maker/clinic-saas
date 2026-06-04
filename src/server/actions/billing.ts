@@ -8,9 +8,11 @@ import {
   createInvoiceSchema,
   editInvoiceSchema,
   recordPaymentSchema,
+  refundPaymentSchema,
   type CreateInvoiceInput,
   type EditInvoiceInput,
   type RecordPaymentInput,
+  type RefundPaymentInput,
 } from "@/lib/validations/invoice";
 import { ok, fail, type ActionResult } from "./types";
 
@@ -237,6 +239,60 @@ export async function recordPayment(input: RecordPaymentInput): Promise<ActionRe
     created_by: user.id,
   });
   if (error) return fail(error.message);
+
+  revalidateBilling(v.invoiceId);
+  return ok(undefined);
+}
+
+/**
+ * Records a refund against an invoice (a negative-effect payment row). Capped at
+ * the net amount paid. When the invoice is fully refunded its status is set to
+ * 'refunded'; otherwise the totals trigger reverts it to unpaid/partially_paid.
+ */
+export async function refundPayment(input: RefundPaymentInput): Promise<ActionResult> {
+  const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const parsed = refundPaymentSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  }
+  const v = parsed.data;
+
+  const supabase = await createClient();
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select("amount_paid, status")
+    .eq("id", v.invoiceId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+  if (!invoice) return fail("Invoice not found.");
+  if (invoice.status === "cancelled") return fail("This invoice is cancelled.");
+  if (v.amount > Number(invoice.amount_paid) + 0.001) {
+    return fail(`Refund exceeds the amount paid (${invoice.amount_paid}).`);
+  }
+
+  const { error } = await supabase.from("payments").insert({
+    clinic_id: clinicId,
+    invoice_id: v.invoiceId,
+    amount: v.amount,
+    method: v.method,
+    kind: "refund",
+    reference: v.reference || null,
+    note: v.note || null,
+    created_by: user.id,
+  });
+  if (error) return fail(error.message);
+
+  // Mark fully-refunded invoices explicitly (the totals trigger only manages the
+  // unpaid/partial/paid trio).
+  const { data: after } = await supabase
+    .from("invoices")
+    .select("amount_paid, refunded_total")
+    .eq("id", v.invoiceId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+  if (after && Number(after.refunded_total) > 0 && Number(after.amount_paid) <= 0.001) {
+    await supabase.from("invoices").update({ status: "refunded" }).eq("id", v.invoiceId).eq("clinic_id", clinicId);
+  }
 
   revalidateBilling(v.invoiceId);
   return ok(undefined);
