@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -144,6 +145,80 @@ export async function deletePatient(patientId: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("patients")
     .update({ deleted_at: new Date().toISOString() })
+    .eq("id", patientId)
+    .eq("clinic_id", clinicId);
+  if (error) return fail(error.message);
+
+  revalidatePath("/patients");
+  return ok(undefined);
+}
+
+/**
+ * Permanently deletes a patient and everything tied to them — clinical records,
+ * prescriptions, lab work, documents, etc. — and removes their uploaded files
+ * from Storage to reclaim space. This is irreversible and bypasses the usual
+ * soft-delete; the caller must retype the patient's full name to confirm.
+ *
+ * Verification (permission + clinic ownership + name match) runs on the RLS
+ * client; the destructive deletes run on the admin client, strictly scoped to
+ * this one patient/clinic, so FK cascades can clear child rows across modules
+ * and files can be removed from buckets the caller may not otherwise write to.
+ */
+export async function purgePatient(patientId: string, confirmName: string): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.PATIENTS_WRITE);
+  const supabase = await createClient();
+
+  const { data: patient } = await supabase
+    .from("patients")
+    .select("id, full_name")
+    .eq("id", patientId)
+    .eq("clinic_id", clinicId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!patient) return fail("Patient not found.");
+  if (confirmName.trim() !== patient.full_name.trim()) {
+    return fail("The name does not match. Type the patient's full name exactly to confirm deletion.");
+  }
+
+  const admin = createAdminClient();
+
+  // 1. Uploaded files are the real storage consumers, and FK cascades won't
+  //    touch Storage — remove them explicitly, scoped to this patient.
+  // patient-documents (incl. EMR attachments): everything under {clinic}/{patient}/.
+  const docFolder = `${clinicId}/${patientId}`;
+  const { data: docFiles } = await admin.storage
+    .from("patient-documents")
+    .list(docFolder, { limit: 1000 });
+  const docPaths = (docFiles ?? []).map((f) => `${docFolder}/${f.name}`);
+  if (docPaths.length > 0) await admin.storage.from("patient-documents").remove(docPaths);
+
+  // lab-results are keyed by lab_request id, so resolve via the patient's requests.
+  const { data: labReqs } = await admin
+    .from("lab_requests")
+    .select("id")
+    .eq("patient_id", patientId)
+    .eq("clinic_id", clinicId);
+  const reqIds = (labReqs ?? []).map((r) => r.id);
+  if (reqIds.length > 0) {
+    const { data: results } = await admin
+      .from("lab_results")
+      .select("file_path")
+      .in("lab_request_id", reqIds)
+      .not("file_path", "is", null);
+    const labPaths = (results ?? [])
+      .map((r) => r.file_path)
+      .filter((p): p is string => Boolean(p));
+    if (labPaths.length > 0) await admin.storage.from("lab-results").remove(labPaths);
+  }
+
+  // 2. Delete the patient row; FK cascades clear documents, timeline,
+  //    appointments, records + vitals, prescriptions + items, lab requests +
+  //    results, insurance, allergies/meds/immunizations/conditions, consents,
+  //    communications and tag links. Invoices/notifications keep their history
+  //    with patient_id nulled out (financial records are not destroyed).
+  const { error } = await admin
+    .from("patients")
+    .delete()
     .eq("id", patientId)
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);

@@ -6,14 +6,12 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Users, Plus } from "lucide-react";
 import { PatientSearch } from "@/components/patients/patient-search";
+import { PatientsTable } from "@/components/patients/patients-table";
 import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export const metadata = { title: "Patients" };
-
-const fmtDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString() : "—");
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"];
 const selectClass =
@@ -115,45 +113,21 @@ export default async function PatientsPage({
               {q || gender || blood || tag ? "No patients match your filters." : "No patients yet."}
             </p>
           ) : (
-            <Table>
-              <THead>
-                <tr>
-                  <TH>Number</TH>
-                  <TH>Name</TH>
-                  <TH>Gender</TH>
-                  <TH>Age</TH>
-                  <TH>Blood</TH>
-                  <TH>Phone</TH>
-                  <TH>Registered</TH>
-                  <TH>Last visit</TH>
-                  <TH>Visits</TH>
-                </tr>
-              </THead>
-              <TBody>
-                {rows.map((p) => {
-                  const age = patientAge(p.date_of_birth);
-                  return (
-                    <TR key={p.id}>
-                      <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.patient_number}</TD>
-                      <TD>
-                        <Link href={`/patients/${p.id}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">
-                          {p.full_name}
-                        </Link>
-                      </TD>
-                      <TD className="capitalize text-slate-500 dark:text-slate-400">{p.gender ?? "—"}</TD>
-                      <TD className="text-slate-500 dark:text-slate-400">{age !== null ? age : "—"}</TD>
-                      <TD className="text-slate-500 dark:text-slate-400">
-                        {p.blood_type && p.blood_type !== "unknown" ? p.blood_type : "—"}
-                      </TD>
-                      <TD className="text-slate-500 dark:text-slate-400">{p.phone ?? "—"}</TD>
-                      <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.created_at)}</TD>
-                      <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.last_visit_date)}</TD>
-                      <TD className="text-slate-500 dark:text-slate-400">{p.visit_count}</TD>
-                    </TR>
-                  );
-                })}
-              </TBody>
-            </Table>
+            <PatientsTable
+              canWrite={canWrite}
+              rows={rows.map((p) => ({
+                id: p.id,
+                patient_number: p.patient_number,
+                full_name: p.full_name,
+                gender: p.gender,
+                age: patientAge(p.date_of_birth),
+                blood_type: p.blood_type,
+                phone: p.phone,
+                created_at: p.created_at,
+                last_visit_date: p.last_visit_date,
+                visit_count: p.visit_count,
+              }))}
+            />
           )}
         </CardContent>
       </Card>
