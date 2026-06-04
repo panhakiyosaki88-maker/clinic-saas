@@ -14,6 +14,7 @@ const optionalShort = z.string().trim().max(255).optional().or(z.literal(""));
 export const createCategorySchema = z.object({
   name: z.string().trim().min(2, "Category name is required").max(120),
   description: optionalShort,
+  parentId: z.string().uuid().optional().or(z.literal("")),
 });
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 

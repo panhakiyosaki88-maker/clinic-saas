@@ -36,6 +36,7 @@ export async function createLabCategory(input: CreateCategoryInput): Promise<Act
     clinic_id: clinicId,
     name: parsed.data.name,
     description: parsed.data.description || null,
+    parent_id: parsed.data.parentId || null,
     created_by: user.id,
   });
   if (error) {
@@ -44,6 +45,67 @@ export async function createLabCategory(input: CreateCategoryInput): Promise<Act
   }
   revalidatePath("/lab/categories");
   return ok(undefined);
+}
+
+/** Deletes a category. A group cascades to its subgroups (FK on delete cascade). */
+export async function deleteLabCategory(id: string): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.LAB_WRITE);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("lab_categories")
+    .delete()
+    .eq("id", id)
+    .eq("clinic_id", clinicId);
+  if (error) return fail(error.message);
+  revalidatePath("/lab/categories");
+  return ok(undefined);
+}
+
+/**
+ * Seeds the standard lab panel (from the requisition sheet) as categories:
+ * each section becomes a group, each test a subgroup under it. Idempotent —
+ * existing names are reused, only missing rows are inserted.
+ */
+export async function seedLabPanelCategories(): Promise<ActionResult<{ created: number }>> {
+  const { clinicId, user } = await requirePermission(PERMISSIONS.LAB_WRITE);
+  const supabase = await createClient();
+
+  const { data: existing, error: readErr } = await supabase
+    .from("lab_categories")
+    .select("id, name");
+  if (readErr) return fail(readErr.message);
+  const idByName = new Map<string, string>();
+  for (const c of existing ?? []) idByName.set(c.name, c.id);
+
+  let created = 0;
+  for (const group of LAB_TEST_PANEL) {
+    let groupId = idByName.get(group.title);
+    if (!groupId) {
+      const { data, error } = await supabase
+        .from("lab_categories")
+        .insert({ clinic_id: clinicId, name: group.title, parent_id: null, created_by: user.id })
+        .select("id")
+        .single();
+      if (error || !data) return fail(error?.message ?? "Could not create group.");
+      groupId = data.id;
+      idByName.set(group.title, groupId);
+      created++;
+    }
+
+    const missing = group.tests.filter((t) => !idByName.has(t));
+    if (missing.length > 0) {
+      const { data, error } = await supabase
+        .from("lab_categories")
+        .insert(missing.map((name) => ({ clinic_id: clinicId, name, parent_id: groupId, created_by: user.id })))
+        .select("id, name");
+      if (error) return fail(error.message);
+      for (const c of data ?? []) idByName.set(c.name, c.id);
+      created += data?.length ?? 0;
+    }
+  }
+
+  revalidatePath("/lab/categories");
+  return ok({ created });
 }
 
 export async function createLabRequest(

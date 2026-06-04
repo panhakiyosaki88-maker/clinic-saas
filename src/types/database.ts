@@ -1198,6 +1198,7 @@ export interface Database {
           clinic_id: string;
           name: string;
           description: string | null;
+          parent_id: string | null;
           is_active: boolean;
           created_at: string;
           updated_at: string;
@@ -1208,6 +1209,7 @@ export interface Database {
           clinic_id: string;
           name: string;
           description?: string | null;
+          parent_id?: string | null;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;

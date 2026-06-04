@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
+import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 
 export type LabCategory = Database["public"]["Tables"]["lab_categories"]["Row"];
 export type LabRequest = Database["public"]["Tables"]["lab_requests"]["Row"];
@@ -109,4 +110,35 @@ export async function listLabCategories(): Promise<LabCategory[]> {
     .order("name", { ascending: true });
   if (error) throw error;
   return data ?? [];
+}
+
+export interface LabCategoryGroup {
+  id: string;
+  name: string;
+  description: string | null;
+  children: LabCategory[];
+}
+
+// Panel order so groups list like the requisition sheet; unknown groups last.
+const PANEL_ORDER = new Map(LAB_TEST_PANEL.map((g, i) => [g.title, i]));
+
+/** Lab categories as Group → Subgroup. Groups are rows with no parent. */
+export async function listLabCategoryTree(): Promise<LabCategoryGroup[]> {
+  const cats = await listLabCategories();
+  const childrenByParent = new Map<string, LabCategory[]>();
+  for (const c of cats) {
+    if (!c.parent_id) continue;
+    const arr = childrenByParent.get(c.parent_id) ?? [];
+    arr.push(c);
+    childrenByParent.set(c.parent_id, arr);
+  }
+  return cats
+    .filter((c) => !c.parent_id)
+    .sort((a, b) => (PANEL_ORDER.get(a.name) ?? 999) - (PANEL_ORDER.get(b.name) ?? 999))
+    .map((g) => ({
+      id: g.id,
+      name: g.name,
+      description: g.description,
+      children: childrenByParent.get(g.id) ?? [],
+    }));
 }
