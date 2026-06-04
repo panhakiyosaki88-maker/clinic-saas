@@ -104,6 +104,7 @@ export interface Database {
           timezone: string;
           currency: string;
           status: ClinicStatus;
+          logo_path: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -120,6 +121,7 @@ export interface Database {
           timezone?: string;
           currency?: string;
           status?: ClinicStatus;
+          logo_path?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;

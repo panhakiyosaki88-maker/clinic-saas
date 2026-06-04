@@ -4,6 +4,7 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ClinicProfileForm } from "@/components/settings/clinic-profile-form";
+import { ClinicLogoUploader } from "@/components/settings/clinic-logo-uploader";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -27,6 +28,17 @@ export default async function ClinicSettingsPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <PageHeader icon={Building2} title="General" subtitle="Your clinic profile" />
+
+      {canManage && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Clinic logo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ClinicLogoUploader clinicId={clinic.id} logoPath={clinic.logo_path} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

@@ -33,6 +33,7 @@ export function DashboardShell({
   navKeys,
   clinicName,
   clinicSlug,
+  logoUrl,
   userName,
   userEmail,
   isSuperAdmin,
@@ -42,6 +43,7 @@ export function DashboardShell({
   navKeys: string[];
   clinicName: string;
   clinicSlug: string;
+  logoUrl: string | null;
   userName: string;
   userEmail: string;
   isSuperAdmin: boolean;
@@ -95,9 +97,18 @@ export function DashboardShell({
         ].join(" ")}
       >
         <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-4 dark:border-slate-800">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
-            {clinicName.slice(0, 1).toUpperCase()}
-          </div>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={clinicName}
+              className="size-8 shrink-0 rounded-lg object-contain"
+            />
+          ) : (
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
+              {clinicName.slice(0, 1).toUpperCase()}
+            </div>
+          )}
           {!collapsed && (
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{clinicName}</p>

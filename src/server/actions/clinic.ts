@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser, requireClinic } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/guard";
+import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   createClinicSchema,
   updateClinicSchema,
@@ -155,6 +157,33 @@ export async function updateClinic(
 
   if (error) return fail(error.message);
   revalidatePath("/settings/clinic");
+  return ok(undefined);
+}
+
+/** Sets (or clears) the clinic's logo path after a client upload to Storage. */
+export async function setClinicLogo(logoPath: string | null): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.CLINIC_MANAGE);
+  if (logoPath && !logoPath.startsWith(`${clinicId}/`)) return fail("Invalid file path.");
+
+  const supabase = await createClient();
+  // Best-effort removal of the previous logo object.
+  const { data: prev } = await supabase
+    .from("clinics")
+    .select("logo_path")
+    .eq("id", clinicId)
+    .maybeSingle();
+  if (prev?.logo_path && prev.logo_path !== logoPath) {
+    await supabase.storage.from("clinic-logos").remove([prev.logo_path]);
+  }
+
+  const { error } = await supabase
+    .from("clinics")
+    .update({ logo_path: logoPath })
+    .eq("id", clinicId);
+  if (error) return fail(error.message);
+
+  revalidatePath("/settings/clinic");
+  revalidatePath("/", "layout");
   return ok(undefined);
 }
 

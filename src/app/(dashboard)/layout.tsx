@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getAccountStatus } from "@/lib/auth/account";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { clinicLogoUrl } from "@/lib/clinic-logo";
 import { getRolePermissionKeys } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { NAV } from "@/components/dashboard/nav-config";
@@ -44,6 +45,7 @@ export default async function DashboardLayout({
       navKeys={navKeys}
       clinicName={clinic?.name ?? "Clinic"}
       clinicSlug={clinic?.slug ?? ""}
+      logoUrl={clinicLogoUrl(clinic?.logo_path)}
       userName={userName}
       userEmail={user.email ?? ""}
       isSuperAdmin={isSuperAdmin}
