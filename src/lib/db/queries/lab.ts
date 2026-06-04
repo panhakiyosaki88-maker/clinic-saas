@@ -57,51 +57,6 @@ export async function listPatientLabRequests(patientId: string): Promise<LabRequ
   return map((data ?? []) as unknown as Joined[]);
 }
 
-export interface LabResultWithUrl extends LabResult {
-  signedUrl: string | null;
-}
-
-export interface LabRequestDetail extends LabRequestWithNames {
-  results: LabResultWithUrl[];
-}
-
-/** A patient's lab requests, each with its results and signed report URLs. */
-export async function listPatientLabRequestsDetailed(
-  patientId: string
-): Promise<LabRequestDetail[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("lab_requests")
-    .select(`${SELECT}, lab_results ( * )`)
-    .eq("patient_id", patientId)
-    .is("deleted_at", null)
-    .order("requested_at", { ascending: false });
-  if (error) throw error;
-
-  const rows = (data ?? []) as unknown as (Joined & { lab_results: LabResult[] | null })[];
-
-  // Batch-sign every report file across all requests in one call.
-  const allFiles = rows.flatMap((r) => (r.lab_results ?? []).filter((x) => x.file_path));
-  const signedByPath = new Map<string, string | null>();
-  if (allFiles.length > 0) {
-    const res = await supabase.storage
-      .from("lab-results")
-      .createSignedUrls(allFiles.map((r) => r.file_path as string), 60 * 10);
-    (res.data ?? []).forEach((s, i) => signedByPath.set(allFiles[i].file_path as string, s.signedUrl ?? null));
-  }
-
-  return rows.map((row) => {
-    const results = (row.lab_results ?? [])
-      .slice()
-      .sort((a, b) => +new Date(b.result_at) - +new Date(a.result_at))
-      .map<LabResultWithUrl>((r) => ({
-        ...r,
-        signedUrl: r.file_path ? signedByPath.get(r.file_path) ?? null : null,
-      }));
-    return { ...map([row])[0], results };
-  });
-}
-
 export async function listLabCategories(): Promise<LabCategory[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
