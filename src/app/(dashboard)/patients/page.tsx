@@ -125,7 +125,7 @@ export default async function PatientsPage({
                   <TH>Blood</TH>
                   <TH>Phone</TH>
                   <TH>Registered</TH>
-                  <TH>Last checkup</TH>
+                  <TH>Last visit</TH>
                   <TH>Visits</TH>
                 </tr>
               </THead>
