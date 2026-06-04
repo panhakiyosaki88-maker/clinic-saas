@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listPatientOptions } from "@/lib/db/queries/patients";
 import { listDoctors } from "@/lib/db/queries/doctors";
-import { listLabCategories } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { LabRequestForm } from "@/components/lab/lab-request-form";
@@ -20,10 +19,9 @@ export default async function NewLabRequestPage({
   if (!(await hasPermission(PERMISSIONS.LAB_WRITE))) redirect("/lab");
 
   const sp = await searchParams;
-  const [patients, doctors, categories] = await Promise.all([
+  const [patients, doctors] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
-    listLabCategories(),
   ]);
 
   return (
@@ -35,7 +33,6 @@ export default async function NewLabRequestPage({
       <LabRequestForm
         patients={patients}
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
-        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
         defaultPatientId={sp.patientId}
       />
     </main>

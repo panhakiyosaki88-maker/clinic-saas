@@ -14,7 +14,14 @@ import {
   type ChangeLabStatusInput,
   type AddLabResultInput,
 } from "@/lib/validations/lab";
+import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 import { ok, fail, type ActionResult } from "./types";
+
+/** Maps each panel test name to its group title (which doubles as its category). */
+const TEST_GROUP = new Map<string, string>();
+for (const g of LAB_TEST_PANEL) {
+  for (const t of g.tests) if (!TEST_GROUP.has(t)) TEST_GROUP.set(t, g.title);
+}
 
 export async function createLabCategory(input: CreateCategoryInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.LAB_WRITE);
@@ -52,6 +59,29 @@ export async function createLabRequest(
   const testNames = Array.from(new Set(v.testNames));
 
   const supabase = await createClient();
+
+  // The panel group is the category. Resolve a lab_category per group used,
+  // creating any that don't exist yet for this clinic.
+  const groupTitles = Array.from(
+    new Set(testNames.map((t) => TEST_GROUP.get(t)).filter((t): t is string => Boolean(t)))
+  );
+  const categoryByGroup = new Map<string, string>();
+  if (groupTitles.length > 0) {
+    const { data: existing } = await supabase
+      .from("lab_categories")
+      .select("id, name")
+      .in("name", groupTitles);
+    for (const c of existing ?? []) categoryByGroup.set(c.name, c.id);
+    const missing = groupTitles.filter((t) => !categoryByGroup.has(t));
+    if (missing.length > 0) {
+      const { data: created } = await supabase
+        .from("lab_categories")
+        .insert(missing.map((name) => ({ clinic_id: clinicId, name, created_by: user.id })))
+        .select("id, name");
+      for (const c of created ?? []) categoryByGroup.set(c.name, c.id);
+    }
+  }
+
   const { data, error } = await supabase
     .from("lab_requests")
     .insert(
@@ -59,7 +89,7 @@ export async function createLabRequest(
         clinic_id: clinicId,
         patient_id: v.patientId,
         doctor_id: v.doctorId || null,
-        category_id: v.categoryId || null,
+        category_id: categoryByGroup.get(TEST_GROUP.get(testName) ?? "") ?? null,
         test_name: testName,
         notes: v.notes || null,
         created_by: user.id,

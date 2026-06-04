@@ -20,7 +20,6 @@ export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export const createLabRequestSchema = z.object({
   patientId: z.string().uuid("Choose a patient"),
   doctorId: z.string().uuid().optional().or(z.literal("")),
-  categoryId: z.string().uuid().optional().or(z.literal("")),
   testNames: z
     .array(z.string().trim().min(1).max(255))
     .min(1, "Select at least one test")

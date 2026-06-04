@@ -14,17 +14,14 @@ const selectClass =
 
 export interface PatientOption { id: string; label: string }
 export interface DoctorOption { id: string; full_name: string }
-export interface CategoryOption { id: string; name: string }
 
 export function LabRequestForm({
   patients,
   doctors,
-  categories,
   defaultPatientId,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
-  categories: CategoryOption[];
   defaultPatientId?: string;
 }) {
   const router = useRouter();
@@ -62,7 +59,6 @@ export function LabRequestForm({
       const result = await createLabRequest({
         patientId: String(f.get("patientId") ?? ""),
         doctorId: String(f.get("doctorId") ?? ""),
-        categoryId: String(f.get("categoryId") ?? ""),
         testNames,
         notes: String(f.get("notes") ?? ""),
       });
@@ -88,21 +84,12 @@ export function LabRequestForm({
         {fieldErrors.patientId?.map((m) => <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>)}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="categoryId">Category</Label>
-          <select id="categoryId" name="categoryId" className={selectClass} defaultValue="">
-            <option value="">Uncategorized</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="doctorId">Requesting doctor</Label>
-          <select id="doctorId" name="doctorId" className={selectClass} defaultValue="">
-            <option value="">Unassigned</option>
-            {doctors.map((d) => <option key={d.id} value={d.id}>{d.full_name}</option>)}
-          </select>
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="doctorId">Requesting doctor</Label>
+        <select id="doctorId" name="doctorId" className={selectClass} defaultValue="">
+          <option value="">Unassigned</option>
+          {doctors.map((d) => <option key={d.id} value={d.id}>{d.full_name}</option>)}
+        </select>
       </div>
 
       <div className="space-y-2">
