@@ -8,6 +8,7 @@ const TABS = [
   { href: "/billing/invoices", label: "Invoices" },
   { href: "/billing/payments", label: "Payments" },
   { href: "/billing/debt", label: "Debt" },
+  { href: "/billing/reports", label: "Reports" },
   { href: "/billing/catalog", label: "Price catalog" },
   { href: "/billing/settings", label: "Settings" },
 ];

@@ -43,6 +43,7 @@ export function KhqrPanel({
       <p className="text-sm font-medium">Scan to pay</p>
       <p className="text-xs text-[var(--muted-foreground)]">{reference} · {currency} {amount.toFixed(2)}</p>
       {src ? (
+        // eslint-disable-next-line @next/next/no-img-element -- generated QR data URL, not a static asset
         <img src={src} alt="KHQR" className="mx-auto my-3 h-60 w-60" />
       ) : (
         <div className="mx-auto my-3 h-60 w-60 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
