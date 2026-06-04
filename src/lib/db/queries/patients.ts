@@ -29,8 +29,14 @@ export function patientAge(dob: string | null | undefined): number | null {
   return age >= 0 ? age : null;
 }
 
+/** A patient row enriched with their visit count and most recent visit date. */
+export interface PatientListRow extends Patient {
+  last_visit_date: string | null;
+  visit_count: number;
+}
+
 export interface PatientListResult {
-  rows: Patient[];
+  rows: PatientListRow[];
   total: number;
   page: number;
   pageCount: number;
@@ -89,9 +95,30 @@ export async function listPatients(opts: {
     .range(from, to);
   if (error) throw error;
 
+  // Enrich each patient with their visit count and most recent visit date.
+  const patients = data ?? [];
+  const lastVisit = new Map<string, string>();
+  const visitCount = new Map<string, number>();
+  if (patients.length > 0) {
+    const { data: visits } = await supabase
+      .from("medical_records")
+      .select("patient_id, visit_date")
+      .in("patient_id", patients.map((p) => p.id))
+      .is("deleted_at", null)
+      .order("visit_date", { ascending: false });
+    for (const v of visits ?? []) {
+      if (!lastVisit.has(v.patient_id)) lastVisit.set(v.patient_id, v.visit_date);
+      visitCount.set(v.patient_id, (visitCount.get(v.patient_id) ?? 0) + 1);
+    }
+  }
+
   const total = count ?? 0;
   return {
-    rows: data ?? [],
+    rows: patients.map((p) => ({
+      ...p,
+      last_visit_date: lastVisit.get(p.id) ?? null,
+      visit_count: visitCount.get(p.id) ?? 0,
+    })),
     total,
     page,
     pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),

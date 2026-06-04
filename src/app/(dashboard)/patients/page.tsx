@@ -13,6 +13,8 @@ import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export const metadata = { title: "Patients" };
 
+const fmtDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString() : "—");
+
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"];
 const selectClass =
   "h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
@@ -59,7 +61,7 @@ export default async function PatientsPage({
     `/patients?${new URLSearchParams({ ...baseParams, page: String(p) })}`;
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
+    <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Users}
         title="Patients"
@@ -122,6 +124,9 @@ export default async function PatientsPage({
                   <TH>Age</TH>
                   <TH>Blood</TH>
                   <TH>Phone</TH>
+                  <TH>Registered</TH>
+                  <TH>Last checkup</TH>
+                  <TH>Visits</TH>
                 </tr>
               </THead>
               <TBody>
@@ -141,6 +146,9 @@ export default async function PatientsPage({
                         {p.blood_type && p.blood_type !== "unknown" ? p.blood_type : "—"}
                       </TD>
                       <TD className="text-slate-500 dark:text-slate-400">{p.phone ?? "—"}</TD>
+                      <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.created_at)}</TD>
+                      <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.last_visit_date)}</TD>
+                      <TD className="text-slate-500 dark:text-slate-400">{p.visit_count}</TD>
                     </TR>
                   );
                 })}
