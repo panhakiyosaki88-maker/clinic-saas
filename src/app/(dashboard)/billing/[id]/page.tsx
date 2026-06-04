@@ -2,6 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { buildKhqr } from "@/lib/billing/khqr";
+import { KhqrPanel } from "@/components/billing/khqr-panel";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PAYMENT_METHOD_LABELS, INVOICE_STATUS_LABELS, type InvoiceStatusValue } from "@/lib/validations/invoice";
@@ -29,14 +32,28 @@ export default async function InvoiceDetailPage({
   const inv = await getInvoice(id);
   if (!inv) notFound();
 
-  const [canWrite, canNotify] = await Promise.all([
+  const [canWrite, canNotify, settings] = await Promise.all([
     hasPermission(PERMISSIONS.BILLING_WRITE),
     hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
+    getBillingSettings(),
   ]);
   const fmt = (n: number) => Number(n).toFixed(2);
   const active = inv.status !== "cancelled";
   const editable = active && Number(inv.amount_paid) === 0;
   const isDraft = inv.status === "draft";
+
+  const currency = settings?.currency ?? "USD";
+  const khqrPayload =
+    settings?.khqr_merchant_account && active && !isDraft && Number(inv.balance) > 0
+      ? buildKhqr({
+          merchantAccount: settings.khqr_merchant_account,
+          merchantName: settings.khqr_merchant_name || inv.clinic_name,
+          merchantCity: settings.khqr_merchant_city || "Phnom Penh",
+          amount: Number(inv.balance),
+          currency: currency === "KHR" ? "KHR" : "USD",
+          billNumber: inv.invoice_number,
+        })
+      : null;
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
@@ -107,10 +124,21 @@ export default async function InvoiceDetailPage({
         {inv.notes && <p className="mt-6 whitespace-pre-wrap text-sm text-[var(--muted-foreground)]">{inv.notes}</p>}
       </article>
 
-      {canWrite && active && Number(inv.balance) > 0 && (
+      {canWrite && active && !isDraft && Number(inv.balance) > 0 && (
         <Card className="print:hidden">
           <CardHeader><CardTitle>Record payment</CardTitle></CardHeader>
-          <CardContent><PaymentForm invoiceId={inv.id} balance={Number(inv.balance)} /></CardContent>
+          <CardContent className="space-y-4">
+            <PaymentForm invoiceId={inv.id} balance={Number(inv.balance)} />
+            {khqrPayload && (
+              <KhqrPanel
+                invoiceId={inv.id}
+                payload={khqrPayload}
+                amount={Number(inv.balance)}
+                reference={inv.invoice_number}
+                currency={currency}
+              />
+            )}
+          </CardContent>
         </Card>
       )}
 

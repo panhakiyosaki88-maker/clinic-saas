@@ -9,6 +9,7 @@ const TABS = [
   { href: "/billing/payments", label: "Payments" },
   { href: "/billing/debt", label: "Debt" },
   { href: "/billing/catalog", label: "Price catalog" },
+  { href: "/billing/settings", label: "Settings" },
 ];
 
 /** Sub-navigation shared across the billing pages. */
