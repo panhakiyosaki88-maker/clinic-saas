@@ -124,13 +124,24 @@ export async function createLabRequest(
 
   const supabase = await createClient();
 
-  // The panel group is the category. Resolve a lab_category per group used,
-  // creating any that don't exist yet for this clinic.
+  // Resolve a category per test, keeping requests in sync with Lab Categories.
+  // Names are unique per clinic, so a direct name match is the test's own
+  // category (a subgroup when the picker was driven by the category tree).
+  const categoryByTest = new Map<string, string>();
+  const { data: matched } = await supabase
+    .from("lab_categories")
+    .select("id, name")
+    .in("name", testNames);
+  for (const c of matched ?? []) categoryByTest.set(c.name, c.id);
+
+  // Fallback for tests with no category yet (fresh clinic on the standard
+  // panel): file them under their panel group, creating it if needed.
+  const unresolved = testNames.filter((t) => !categoryByTest.has(t));
   const groupTitles = Array.from(
-    new Set(testNames.map((t) => TEST_GROUP.get(t)).filter((t): t is string => Boolean(t)))
+    new Set(unresolved.map((t) => TEST_GROUP.get(t)).filter((t): t is string => Boolean(t)))
   );
-  const categoryByGroup = new Map<string, string>();
   if (groupTitles.length > 0) {
+    const categoryByGroup = new Map<string, string>();
     const { data: existing } = await supabase
       .from("lab_categories")
       .select("id, name")
@@ -144,6 +155,10 @@ export async function createLabRequest(
         .select("id, name");
       for (const c of created ?? []) categoryByGroup.set(c.name, c.id);
     }
+    for (const t of unresolved) {
+      const id = categoryByGroup.get(TEST_GROUP.get(t) ?? "");
+      if (id) categoryByTest.set(t, id);
+    }
   }
 
   const { data, error } = await supabase
@@ -153,7 +168,7 @@ export async function createLabRequest(
         clinic_id: clinicId,
         patient_id: v.patientId,
         doctor_id: v.doctorId || null,
-        category_id: categoryByGroup.get(TEST_GROUP.get(testName) ?? "") ?? null,
+        category_id: categoryByTest.get(testName) ?? null,
         test_name: testName,
         notes: v.notes || null,
         created_by: user.id,

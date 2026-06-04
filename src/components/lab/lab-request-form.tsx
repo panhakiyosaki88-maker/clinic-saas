@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createLabRequest } from "@/server/actions/lab";
-import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
+import type { LabTestGroup } from "@/lib/lab/test-panel";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -19,10 +19,12 @@ export function LabRequestForm({
   patients,
   doctors,
   defaultPatientId,
+  panel,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
   defaultPatientId?: string;
+  panel: LabTestGroup[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
@@ -42,12 +44,12 @@ export function LabRequestForm({
 
   const q = query.trim().toLowerCase();
   const groups = React.useMemo(() => {
-    if (!q) return LAB_TEST_PANEL;
-    return LAB_TEST_PANEL.map((g) => ({
+    if (!q) return panel;
+    return panel.map((g) => ({
       ...g,
       tests: g.tests.filter((t) => t.toLowerCase().includes(q)),
     })).filter((g) => g.tests.length > 0);
-  }, [q]);
+  }, [q, panel]);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
