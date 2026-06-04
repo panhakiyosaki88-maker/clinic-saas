@@ -56,7 +56,7 @@ export function PatientIntelligence({
           <ul className="space-y-1.5">
             {highRisk.rows.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-2">
-                <Link href={`/patients/${p.id}`} className="truncate text-sm text-slate-700 hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-400">
+                <Link href={`/patients/${p.id}`} className="truncate text-sm text-slate-700 hover:text-brand-600 dark:text-slate-200 dark:hover:text-brand-400">
                   {p.name}
                 </Link>
                 <span className="flex shrink-0 flex-wrap justify-end gap-1">
@@ -74,7 +74,7 @@ export function PatientIntelligence({
 
       <div>
         <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-          <CalendarClock className="size-3.5 text-blue-500" /> Upcoming follow-ups
+          <CalendarClock className="size-3.5 text-brand-500" /> Upcoming follow-ups
         </div>
         {followUps.length === 0 ? (
           <p className="text-xs text-slate-400">No follow-ups scheduled this week.</p>
@@ -82,7 +82,7 @@ export function PatientIntelligence({
           <ul className="space-y-1.5">
             {followUps.slice(0, 5).map((f) => (
               <li key={f.id} className="flex items-center justify-between gap-2 text-sm">
-                <Link href={`/appointments/${f.id}`} className="truncate text-slate-700 hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-400">
+                <Link href={`/appointments/${f.id}`} className="truncate text-slate-700 hover:text-brand-600 dark:text-slate-200 dark:hover:text-brand-400">
                   {f.patient_name}
                 </Link>
                 <span className="shrink-0 text-xs text-slate-400">{dayLabel(f.scheduled_at)}</span>

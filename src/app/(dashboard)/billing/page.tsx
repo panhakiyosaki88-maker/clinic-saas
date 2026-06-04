@@ -69,7 +69,7 @@ export default async function BillingPage() {
                 {invoices.map((inv) => (
                   <TR key={inv.id}>
                     <TD>
-                      <Link href={`/billing/${inv.id}`} className="font-mono text-xs text-blue-600 hover:underline dark:text-blue-400">
+                      <Link href={`/billing/${inv.id}`} className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400">
                         {inv.invoice_number}
                       </Link>
                     </TD>

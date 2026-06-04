@@ -14,7 +14,7 @@ function statusOf(d: DoctorAvailabilityToday): Status {
 
 const STATUS_META: Record<Status, { dot: string; label: string; text: string }> = {
   available: { dot: "bg-emerald-500", label: "Available", text: "text-emerald-600 dark:text-emerald-400" },
-  busy: { dot: "bg-blue-500", label: "Busy", text: "text-blue-600 dark:text-blue-400" },
+  busy: { dot: "bg-brand-500", label: "Busy", text: "text-brand-600 dark:text-brand-400" },
   off: { dot: "bg-slate-300 dark:bg-slate-600", label: "Off", text: "text-slate-400" },
 };
 

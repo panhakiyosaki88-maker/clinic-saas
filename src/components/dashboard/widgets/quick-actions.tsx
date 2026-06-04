@@ -24,7 +24,7 @@ interface Action {
 
 const ALL: Action[] = [
   { key: "patient", label: "Register Patient", href: "/patients/new", icon: UserPlus, tint: "text-emerald-600 dark:text-emerald-400", shortcut: "p" },
-  { key: "appointment", label: "Book Appointment", href: "/appointments/new", icon: CalendarPlus, tint: "text-blue-600 dark:text-blue-400", shortcut: "a" },
+  { key: "appointment", label: "Book Appointment", href: "/appointments/new", icon: CalendarPlus, tint: "text-brand-600 dark:text-brand-400", shortcut: "a" },
   { key: "appointment", label: "Walk-in", href: "/appointments/new?walkin=1", icon: Footprints, tint: "text-sky-600 dark:text-sky-400", shortcut: "w" },
   { key: "invoice", label: "Create Invoice", href: "/billing/new", icon: ReceiptText, tint: "text-violet-600 dark:text-violet-400", shortcut: "i" },
   { key: "prescription", label: "New Prescription", href: "/prescriptions/new", icon: FileText, tint: "text-amber-600 dark:text-amber-400", shortcut: "r" },

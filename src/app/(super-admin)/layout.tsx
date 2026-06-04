@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, Shield } from "lucide-react";
 import { isSuperAdmin } from "@/lib/auth/super-admin";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AccentToggle } from "@/components/accent-toggle";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +33,7 @@ export default async function SuperAdminLayout({
                 <ArrowLeft /> Back to app
               </Link>
             </Button>
+            <AccentToggle />
             <ThemeToggle />
             <SignOutButton />
           </div>

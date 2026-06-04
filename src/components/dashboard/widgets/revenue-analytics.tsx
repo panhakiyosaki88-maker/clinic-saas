@@ -44,7 +44,7 @@ export function RevenueAnalytics({
               <div className="mt-1 flex items-center gap-2">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{billing.collectionRate}%</p>
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${billing.collectionRate}%` }} />
+                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${billing.collectionRate}%` }} />
                 </div>
               </div>
             </div>

@@ -96,7 +96,7 @@ export function BranchForm({ branch }: { branch?: BranchFormData }) {
           checked={makePrimary}
           disabled={alreadyPrimary}
           onChange={(e) => setMakePrimary(e.target.checked)}
-          className="size-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800"
+          className="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800"
         />
         <span>Primary location{alreadyPrimary ? " (current)" : ""}</span>
       </label>

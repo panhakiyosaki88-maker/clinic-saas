@@ -30,8 +30,8 @@ const SEVERITY_META: Record<
     order: 2,
     emoji: "🔵",
     label: "Financial",
-    row: "bg-blue-50 dark:bg-blue-500/10",
-    chip: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
+    row: "bg-brand-50 dark:bg-brand-500/10",
+    chip: "bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300",
   },
   inventory: {
     order: 3,

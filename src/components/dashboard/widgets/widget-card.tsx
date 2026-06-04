@@ -20,7 +20,7 @@ export function WidgetCard({
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-slate-800">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h2>
           {action && (
-            <Link href={action.href} className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">
+            <Link href={action.href} className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">
               {action.label}
             </Link>
           )}

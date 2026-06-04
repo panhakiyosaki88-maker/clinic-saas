@@ -149,7 +149,7 @@ export function MiniCalendar({
               }
               className={`relative flex aspect-square flex-col items-center justify-center gap-0.5 rounded-lg border p-1 text-sm transition ${
                 isToday
-                  ? "border-blue-500 bg-blue-50 font-semibold text-blue-700 dark:border-blue-500 dark:bg-blue-500/15 dark:text-blue-300"
+                  ? "border-brand-500 bg-brand-50 font-semibold text-brand-700 dark:border-brand-500 dark:bg-brand-500/15 dark:text-brand-300"
                   : "border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800"
               } ${
                 inMonth
@@ -161,8 +161,8 @@ export function MiniCalendar({
                 <span
                   className={`absolute right-0.5 top-0.5 inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-4 ${
                     isToday
-                      ? "bg-blue-600 text-white"
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+                      ? "bg-brand-600 text-white"
+                      : "bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300"
                   }`}
                 >
                   {count}

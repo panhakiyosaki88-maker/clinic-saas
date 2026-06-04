@@ -36,13 +36,13 @@ export default async function SettingsPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {sections.map((s) => (
             <Link key={s.href} href={s.href} className="group">
-              <Card className="h-full transition-colors hover:border-blue-300 hover:shadow-sm dark:hover:border-blue-500/40">
+              <Card className="h-full transition-colors hover:border-brand-300 hover:shadow-sm dark:hover:border-brand-500/40">
                 <CardContent className="flex items-start gap-3 p-5">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
                     <s.icon className="size-5" />
                   </span>
                   <div>
-                    <p className="font-medium group-hover:text-blue-700 dark:group-hover:text-blue-400">{s.label}</p>
+                    <p className="font-medium group-hover:text-brand-700 dark:group-hover:text-brand-400">{s.label}</p>
                     <p className="text-sm text-[var(--muted-foreground)]">{s.description}</p>
                   </div>
                 </CardContent>

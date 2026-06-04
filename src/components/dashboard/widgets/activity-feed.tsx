@@ -24,7 +24,7 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
             <li key={a.id} className="flex items-center gap-3 px-5 py-2.5">
               <span
                 className={`size-2 shrink-0 rounded-full ${
-                  a.action === "INSERT" ? "bg-emerald-500" : a.action === "UPDATE" ? "bg-blue-500" : "bg-slate-400"
+                  a.action === "INSERT" ? "bg-emerald-500" : a.action === "UPDATE" ? "bg-brand-500" : "bg-slate-400"
                 }`}
               />
               <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">{describeActivity(a)}</span>

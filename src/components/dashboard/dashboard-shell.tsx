@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { signOut } from "@/server/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AccentToggle } from "@/components/accent-toggle";
 import { NAV } from "@/components/dashboard/nav-config";
 
 export interface QuickActions {
@@ -94,7 +95,7 @@ export function DashboardShell({
         ].join(" ")}
       >
         <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-4 dark:border-slate-800">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
             {clinicName.slice(0, 1).toUpperCase()}
           </div>
           {!collapsed && (
@@ -119,7 +120,7 @@ export function DashboardShell({
                 className={[
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   active
-                    ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                    ? "bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
                 ].join(" ")}
               >
@@ -161,7 +162,7 @@ export function DashboardShell({
             <input
               name="q"
               placeholder="Search patients, doctors, invoices…"
-              className="w-full max-w-md rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:bg-slate-800 dark:focus:ring-blue-500/20"
+              className="w-full max-w-md rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:bg-slate-800 dark:focus:ring-brand-500/20"
             />
           </form>
 
@@ -174,6 +175,7 @@ export function DashboardShell({
               <Bell className="size-5" />
               <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
             </Link>
+            <AccentToggle />
             <ThemeToggle />
 
             {/* Profile dropdown */}
@@ -182,7 +184,7 @@ export function DashboardShell({
                 onClick={() => setProfileOpen((o) => !o)}
                 className="flex items-center gap-2 rounded-lg p-1 pl-2 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-xs font-semibold text-white">
+                <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-semibold text-white">
                   {initials}
                 </span>
                 <ChevronDown className="hidden size-4 text-slate-400 sm:block" />
@@ -222,7 +224,7 @@ export function DashboardShell({
               <div className="absolute bottom-16 right-0 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
                 {quick.appointment && (
                   <Link href="/appointments/new" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
-                    <CalendarPlus className="size-4 text-blue-600" /> New appointment
+                    <CalendarPlus className="size-4 text-brand-600" /> New appointment
                   </Link>
                 )}
                 {quick.patient && (
@@ -240,7 +242,7 @@ export function DashboardShell({
           )}
           <button
             onClick={() => setQuickOpen((o) => !o)}
-            className="flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 font-medium text-white shadow-lg shadow-blue-600/30 transition-transform hover:scale-105 hover:bg-blue-700"
+            className="flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3 font-medium text-white shadow-lg shadow-brand-600/30 transition-transform hover:scale-105 hover:bg-brand-700"
           >
             <Plus className={`size-5 transition-transform ${quickOpen ? "rotate-45" : ""}`} />
             <span className="hidden sm:inline">Quick Action</span>

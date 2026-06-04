@@ -32,7 +32,7 @@ export function SettingsNav({ tabs }: { tabs: { href: string; label: string }[] 
               aria-current={active ? "page" : undefined}
               className={
                 active
-                  ? "rounded-lg bg-blue-600 px-3 py-1.5 font-medium text-white"
+                  ? "rounded-lg bg-brand-600 px-3 py-1.5 font-medium text-white"
                   : "rounded-lg px-3 py-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
               }
             >

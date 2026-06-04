@@ -116,7 +116,7 @@ export default async function PharmacyPage({
                   return (
                     <TR key={m.id}>
                       <TD>
-                        <Link href={`/pharmacy/${m.id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">{m.name}</Link>
+                        <Link href={`/pharmacy/${m.id}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">{m.name}</Link>
                         {m.generic_name && <span className="block text-xs text-slate-400">{m.generic_name}</span>}
                       </TD>
                       <TD className="text-slate-500 dark:text-slate-400">{m.category ?? "—"}</TD>

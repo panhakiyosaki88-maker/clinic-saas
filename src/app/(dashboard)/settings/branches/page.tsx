@@ -51,7 +51,7 @@ export default async function BranchesSettingsPage() {
                       <td className="p-3 font-medium">
                         {b.name}
                         {b.is_primary && (
-                          <span className="ml-2 inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-600 dark:text-blue-400">
+                          <span className="ml-2 inline-flex rounded-full bg-brand-500/10 px-2 py-0.5 text-xs font-medium text-brand-600 dark:text-brand-400">
                             Primary
                           </span>
                         )}
@@ -63,7 +63,7 @@ export default async function BranchesSettingsPage() {
                         <td className="p-3 text-right">
                           <Link
                             href={`/settings/branches/${b.id}/edit`}
-                            className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+                            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
                           >
                             Edit
                           </Link>

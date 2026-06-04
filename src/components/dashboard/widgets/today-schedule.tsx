@@ -32,7 +32,7 @@ export function TodaySchedule({
                 {a.is_walk_in ? "walk-in" : timeLabel(a.scheduled_at)}
               </span>
               <div className="min-w-0 flex-1">
-                <Link href={`/appointments/${a.id}`} className="block truncate text-sm font-medium text-slate-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">
+                <Link href={`/appointments/${a.id}`} className="block truncate text-sm font-medium text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400">
                   {a.patient_name}
                 </Link>
                 <p className="truncate text-xs text-slate-400">{a.doctor_name ?? "Unassigned"}</p>

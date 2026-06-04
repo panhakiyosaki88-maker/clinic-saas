@@ -20,7 +20,7 @@ export function PatientStatsWidget({ stats, canRegister }: { stats: PatientStats
             <p className="text-xs text-slate-400">Total</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.newThisWeek}</p>
+            <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">{stats.newThisWeek}</p>
             <p className="text-xs text-slate-400">New this week</p>
           </div>
           <div>

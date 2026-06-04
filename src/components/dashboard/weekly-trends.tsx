@@ -18,7 +18,7 @@ export function WeeklyTrends({ data }: { data: DayCount[] }) {
           <div key={d.date} className="flex flex-1 flex-col items-center gap-2">
             <div className="flex w-full flex-1 items-end">
               <div
-                className="group relative w-full rounded-t-md bg-gradient-to-t from-blue-500 to-blue-400 transition-all hover:from-blue-600 hover:to-blue-500"
+                className="group relative w-full rounded-t-md bg-gradient-to-t from-brand-500 to-brand-400 transition-all hover:from-brand-600 hover:to-brand-500"
                 style={{ height: `${Math.max(4, (d.count / max) * 100)}%` }}
               >
                 <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-medium text-slate-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-slate-300">

@@ -48,7 +48,7 @@ export function QueueBoard({
 
   const columns: Column[] = [
     { key: "waiting", title: "Waiting", accent: "text-amber-600 dark:text-amber-400", rows: waiting },
-    { key: "in_consultation", title: "In Consultation", accent: "text-blue-600 dark:text-blue-400", rows: inConsult },
+    { key: "in_consultation", title: "In Consultation", accent: "text-brand-600 dark:text-brand-400", rows: inConsult },
     { key: "completed", title: "Completed", accent: "text-emerald-600 dark:text-emerald-400", rows: completed },
   ];
 
@@ -97,7 +97,7 @@ export function QueueBoard({
                         <div className="flex items-center justify-between gap-2">
                           <Link
                             href={`/appointments/${a.id}`}
-                            className="truncate text-sm font-medium text-slate-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
+                            className="truncate text-sm font-medium text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400"
                           >
                             {col.key === "waiting" && (
                               <span className="mr-1.5 font-mono text-xs text-slate-400">#{i + 1}</span>

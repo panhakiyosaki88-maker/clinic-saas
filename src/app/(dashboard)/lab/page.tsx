@@ -66,7 +66,7 @@ export default async function LabPage() {
                 {requests.map((r) => (
                   <TR key={r.id}>
                     <TD>
-                      <Link href={`/lab/${r.id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">{r.test_name}</Link>
+                      <Link href={`/lab/${r.id}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">{r.test_name}</Link>
                     </TD>
                     <TD>{r.patient_name}</TD>
                     <TD className="text-slate-500 dark:text-slate-400">{r.category_name ?? "—"}</TD>

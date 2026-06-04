@@ -9,7 +9,7 @@
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.546 0.215 262.881);
+  --primary: var(--brand-600);
   --primary-foreground: oklch(0.97 0.014 254.604);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
@@ -21,8 +21,66 @@
   --destructive-foreground: oklch(0.97 0.014 254.604);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.546 0.215 262.881);
+  --ring: var(--brand-500);
   --radius: 0.625rem;
+
+  /* Accent ("tone") scale — defaults to blue. Switched via [data-accent] below. */
+  --brand-50: oklch(0.97 0.014 254.604);
+  --brand-100: oklch(0.932 0.032 255.585);
+  --brand-300: oklch(0.809 0.105 251.813);
+  --brand-400: oklch(0.707 0.165 254.624);
+  --brand-500: oklch(0.623 0.214 259.815);
+  --brand-600: oklch(0.546 0.215 262.881);
+  --brand-700: oklch(0.488 0.243 264.376);
+}
+
+/* ── UI tone presets ────────────────────────────────────────────────────────
+   Each sets the brand scale to a Tailwind palette; every `brand-*` utility and
+   `--primary`/`--ring` follow it, so the whole UI recolors instantly. */
+[data-accent="violet"] {
+  --brand-50: oklch(0.969 0.016 293.756);
+  --brand-100: oklch(0.943 0.029 294.588);
+  --brand-300: oklch(0.811 0.111 293.571);
+  --brand-400: oklch(0.702 0.183 293.541);
+  --brand-500: oklch(0.606 0.25 292.717);
+  --brand-600: oklch(0.541 0.281 293.009);
+  --brand-700: oklch(0.491 0.27 292.581);
+}
+[data-accent="emerald"] {
+  --brand-50: oklch(0.979 0.021 166.113);
+  --brand-100: oklch(0.95 0.052 163.051);
+  --brand-300: oklch(0.765 0.177 163.223);
+  --brand-400: oklch(0.696 0.17 162.48);
+  --brand-500: oklch(0.596 0.145 163.225);
+  --brand-600: oklch(0.508 0.118 165.612);
+  --brand-700: oklch(0.432 0.095 166.913);
+}
+[data-accent="rose"] {
+  --brand-50: oklch(0.969 0.015 12.422);
+  --brand-100: oklch(0.941 0.03 12.58);
+  --brand-300: oklch(0.81 0.117 11.638);
+  --brand-400: oklch(0.712 0.194 13.428);
+  --brand-500: oklch(0.645 0.246 16.439);
+  --brand-600: oklch(0.586 0.253 17.585);
+  --brand-700: oklch(0.514 0.222 16.935);
+}
+[data-accent="amber"] {
+  --brand-50: oklch(0.987 0.022 95.277);
+  --brand-100: oklch(0.962 0.059 95.617);
+  --brand-300: oklch(0.879 0.169 91.605);
+  --brand-400: oklch(0.828 0.189 84.429);
+  --brand-500: oklch(0.769 0.188 70.08);
+  --brand-600: oklch(0.666 0.179 58.318);
+  --brand-700: oklch(0.555 0.163 48.998);
+}
+[data-accent="teal"] {
+  --brand-50: oklch(0.984 0.014 180.72);
+  --brand-100: oklch(0.953 0.051 180.801);
+  --brand-300: oklch(0.777 0.152 181.912);
+  --brand-400: oklch(0.704 0.14 182.503);
+  --brand-500: oklch(0.6 0.118 184.704);
+  --brand-600: oklch(0.511 0.096 186.391);
+  --brand-700: oklch(0.437 0.078 188.216);
 }
 
 .dark {
@@ -32,7 +90,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.623 0.214 259.815);
+  --primary: var(--brand-500);
   --primary-foreground: oklch(0.97 0.014 254.604);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
@@ -67,6 +125,13 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

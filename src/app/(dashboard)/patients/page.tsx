@@ -131,7 +131,7 @@ export default async function PatientsPage({
                     <TR key={p.id}>
                       <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.patient_number}</TD>
                       <TD>
-                        <Link href={`/patients/${p.id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                        <Link href={`/patients/${p.id}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">
                           {p.full_name}
                         </Link>
                       </TD>
