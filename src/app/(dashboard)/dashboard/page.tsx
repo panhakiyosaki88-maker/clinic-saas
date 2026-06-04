@@ -31,6 +31,7 @@ import { BrandingHeader } from "@/components/dashboard/widgets/branding-header";
 import { QuickActions } from "@/components/dashboard/widgets/quick-actions";
 import { StatCard } from "@/components/dashboard/widgets/stat-card";
 import { TodaySchedule } from "@/components/dashboard/widgets/today-schedule";
+import { MiniCalendar } from "@/components/dashboard/widgets/mini-calendar";
 import { DoctorAvailability } from "@/components/dashboard/widgets/doctor-availability";
 import { PatientStatsWidget } from "@/components/dashboard/widgets/patient-stats";
 import { PatientIntelligence } from "@/components/dashboard/widgets/patient-intelligence";
@@ -83,6 +84,9 @@ export default async function DashboardPage() {
   const yesterday = addDays(todayStart, -1);
   const weekStart = startOfWeek(todayStart);
   const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+  // Visible 6-week grid for the dashboard calendar (spills into adjacent months).
+  const calStart = startOfWeek(monthStart);
+  const calEnd = addDays(calStart, 42);
 
   // Fetch everything the role is allowed to see, in parallel.
   const [
@@ -108,6 +112,7 @@ export default async function DashboardPage() {
     highRisk,
     followUps,
     doctorActivity,
+    monthAppts,
   ] = await Promise.all([
     safe("subscription", getCurrentSubscription(), null),
     canAppts ? safe("todays", listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString()), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
@@ -131,6 +136,7 @@ export default async function DashboardPage() {
     canPatients ? safe("highRisk", getHighRiskPatients(), { count: 0, rows: [] }) : Promise.resolve({ count: 0, rows: [] }),
     canAppts ? safe("followUps", getUpcomingFollowUps(7), []) : Promise.resolve([]),
     canDoctors ? safe("doctorActivity", getDoctorActivity(monthStart.toISOString(), tomorrow.toISOString()), []) : Promise.resolve([]),
+    canAppts ? safe("monthAppts", listAppointmentsInRange(calStart.toISOString(), calEnd.toISOString()), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
   ]);
 
   // Doctor view: their own appointments ("My Day").
@@ -237,6 +243,7 @@ export default async function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {canAppts && <TodaySchedule items={scheduleItems} title={scheduleTitle} canBook={quickFlags.appointment} />}
+          {canAppts && <MiniCalendar appointments={monthAppts} monthStart={monthStart} />}
         </div>
         <div className="space-y-6">
           <AiInsights insights={insights} />
