@@ -241,27 +241,58 @@ export async function getDoctorActivity(
     .sort((a, b) => b.visits - a.visits);
 }
 
+export interface InventoryItem {
+  // Index signature so items are usable directly as report export rows.
+  [key: string]: string | number | null;
+  sku: string;
+  name: string;
+  strength: string;
+  category: string;
+  stock: number;
+  reorder_level: number;
+  purchase_price: number | null;
+  selling_price: number | null;
+  stock_value: number;
+  low: string;
+}
+
 export interface InventoryReport {
   medicineCount: number;
   lowStockCount: number;
   stockValue: number;
+  items: InventoryItem[];
 }
 
 export async function getInventoryReport(): Promise<InventoryReport> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("medicines")
-    .select("stock_quantity, reorder_level, purchase_price, is_active")
-    .is("deleted_at", null);
+    .select("name, sku, strength, category, stock_quantity, reorder_level, purchase_price, selling_price, is_active")
+    .is("deleted_at", null)
+    .order("name", { ascending: true });
 
   let stockValue = 0;
   let lowStockCount = 0;
   const rows = data ?? [];
-  for (const m of rows) {
-    stockValue += m.stock_quantity * Number(m.purchase_price ?? 0);
-    if (m.is_active && m.stock_quantity <= m.reorder_level) lowStockCount += 1;
-  }
-  return { medicineCount: rows.length, lowStockCount, stockValue };
+  const items: InventoryItem[] = rows.map((m) => {
+    const value = m.stock_quantity * Number(m.purchase_price ?? 0);
+    const low = m.is_active && m.stock_quantity <= m.reorder_level;
+    stockValue += value;
+    if (low) lowStockCount += 1;
+    return {
+      sku: m.sku ?? "—",
+      name: m.name,
+      strength: m.strength ?? "",
+      category: m.category ?? "",
+      stock: m.stock_quantity,
+      reorder_level: m.reorder_level,
+      purchase_price: m.purchase_price,
+      selling_price: m.selling_price,
+      stock_value: Number(value.toFixed(2)),
+      low: low ? "Low" : "",
+    };
+  });
+  return { medicineCount: rows.length, lowStockCount, stockValue, items };
 }
 
 export interface OutstandingReport {

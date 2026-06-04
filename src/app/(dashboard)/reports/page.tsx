@@ -180,6 +180,61 @@ export default async function ReportsPage({
         </Card>
       )}
 
+      {inventory && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>Inventory ({inventory.medicineCount} · {inventory.lowStockCount} low)</CardTitle>
+            <ReportExport
+              name="inventory"
+              columns={[
+                { key: "sku", label: "SKU" },
+                { key: "name", label: "Name" },
+                { key: "strength", label: "Strength" },
+                { key: "category", label: "Category" },
+                { key: "stock", label: "Stock" },
+                { key: "reorder_level", label: "Reorder" },
+                { key: "purchase_price", label: "Purchase" },
+                { key: "selling_price", label: "Selling" },
+                { key: "stock_value", label: "Stock value" },
+                { key: "low", label: "Low" },
+              ]}
+              rows={inventory.items}
+            />
+          </CardHeader>
+          <CardContent>
+            {inventory.items.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No medicines.</p>
+            ) : (
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
+                    <tr>
+                      <th className="py-2">SKU</th>
+                      <th>Name</th>
+                      <th className="text-right">Stock</th>
+                      <th className="text-right">Stock value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventory.items.map((m) => (
+                      <tr key={`${m.sku}-${m.name}`} className="border-b border-[var(--border)] last:border-0">
+                        <td className="py-1 font-mono text-xs">{m.sku}</td>
+                        <td className="py-1">
+                          {m.name}{m.strength ? ` ${m.strength}` : ""}
+                          {m.low && <span className="ml-2 text-xs text-[var(--destructive)]">low</span>}
+                        </td>
+                        <td className="py-1 text-right tabular-nums">{m.stock}</td>
+                        <td className="py-1 text-right tabular-nums">{money(m.stock_value)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {outstanding && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
