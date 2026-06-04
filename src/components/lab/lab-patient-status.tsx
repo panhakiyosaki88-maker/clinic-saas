@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 /**
  * Pending / In Progress / Finish buttons for a patient's lab order. Selecting
  * a state applies it to all of the patient's tests; Finish records the date.
+ *
+ * The highlight is driven by the server-provided `status` (via useOptimistic),
+ * so each row reflects only its own patient and re-syncs after every refresh.
  */
 export function LabPatientStatus({
   patientId,
@@ -25,7 +28,7 @@ export function LabPatientStatus({
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
-  const [current, setCurrent] = React.useState<PatientLabState>(status);
+  const [optimistic, setOptimistic] = React.useOptimistic(status);
 
   return (
     <div className="flex flex-wrap gap-1">
@@ -33,11 +36,11 @@ export function LabPatientStatus({
         <Button
           key={s}
           size="sm"
-          variant={current === s ? "default" : "outline"}
+          variant={optimistic === s ? "default" : "outline"}
           disabled={disabled || pending}
           onClick={() =>
             startTransition(async () => {
-              setCurrent(s);
+              setOptimistic(s);
               await setPatientLabStatus({ patientId, status: s });
               router.refresh();
             })

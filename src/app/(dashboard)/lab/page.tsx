@@ -127,7 +127,7 @@ export default async function LabPage() {
                     <TD className="text-slate-500 dark:text-slate-400">{p.count}</TD>
                     <TD>
                       {canWrite ? (
-                        <LabPatientStatus patientId={p.patientId} status={p.status} />
+                        <LabPatientStatus key={p.patientId} patientId={p.patientId} status={p.status} />
                       ) : (
                         <span className="text-slate-500 dark:text-slate-400">
                           {p.status === "completed" ? "Finish" : p.status === "processing" ? "In Progress" : "Pending"}
