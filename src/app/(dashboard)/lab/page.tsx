@@ -6,6 +6,8 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { FlaskConical, Plus, Tags } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
+import { LabPatientStatus } from "@/components/lab/lab-patient-status";
+import type { PatientLabState } from "@/lib/validations/lab";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
@@ -27,27 +29,61 @@ export default async function LabPage() {
   const canWrite = await hasPermission(PERMISSIONS.LAB_WRITE);
   const requests = await listLabRequests();
 
-  // Group requests by patient — the table lists one row per patient.
-  const byPatient = new Map<
-    string,
-    { patientId: string; name: string; number: string; count: number; pending: number }
-  >();
+  // Group requests by patient — the table lists one row per patient, with a
+  // single collective status, earliest start date and (when finished) finish date.
+  interface Agg {
+    patientId: string;
+    name: string;
+    number: string;
+    count: number;
+    active: number;
+    completed: number;
+    inProgress: number;
+    start: string;
+    finish: string | null;
+  }
+  const byPatient = new Map<string, Agg>();
   for (const r of requests) {
-    const g = byPatient.get(r.patient_id) ?? {
-      patientId: r.patient_id,
-      name: r.patient_name,
-      number: r.patient_number,
-      count: 0,
-      pending: 0,
-    };
+    const g =
+      byPatient.get(r.patient_id) ??
+      {
+        patientId: r.patient_id,
+        name: r.patient_name,
+        number: r.patient_number,
+        count: 0,
+        active: 0,
+        completed: 0,
+        inProgress: 0,
+        start: r.requested_at,
+        finish: null,
+      };
     g.count += 1;
-    if (r.status !== "completed" && r.status !== "cancelled") g.pending += 1;
+    if (r.requested_at < g.start) g.start = r.requested_at;
+    if (r.status !== "cancelled") {
+      g.active += 1;
+      if (r.status === "completed") {
+        g.completed += 1;
+        if (r.completed_at && (!g.finish || r.completed_at > g.finish)) g.finish = r.completed_at;
+      } else if (r.status === "collected" || r.status === "processing") {
+        g.inProgress += 1;
+      }
+    }
     byPatient.set(r.patient_id, g);
   }
-  const patients = Array.from(byPatient.values());
+  const patients = Array.from(byPatient.values()).map((g) => {
+    const status: PatientLabState =
+      g.active > 0 && g.completed === g.active
+        ? "completed"
+        : g.inProgress > 0
+          ? "processing"
+          : "requested";
+    return { ...g, status, finish: status === "completed" ? g.finish : null };
+  });
+
+  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString() : "—");
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
+    <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={FlaskConical}
         title="Laboratory"
@@ -76,7 +112,9 @@ export default async function LabPage() {
                 <tr>
                   <TH>Patient</TH>
                   <TH>Tests</TH>
-                  <TH>Pending</TH>
+                  <TH>Status</TH>
+                  <TH>Start Date</TH>
+                  <TH>Finish Date</TH>
                 </tr>
               </THead>
               <TBody>
@@ -87,7 +125,17 @@ export default async function LabPage() {
                       {p.number && <span className="ml-2 text-xs text-slate-400">{p.number}</span>}
                     </TD>
                     <TD className="text-slate-500 dark:text-slate-400">{p.count}</TD>
-                    <TD className="text-slate-500 dark:text-slate-400">{p.pending > 0 ? p.pending : "—"}</TD>
+                    <TD>
+                      {canWrite ? (
+                        <LabPatientStatus patientId={p.patientId} status={p.status} />
+                      ) : (
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {p.status === "completed" ? "Finish" : p.status === "processing" ? "In Progress" : "Pending"}
+                        </span>
+                      )}
+                    </TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{fmt(p.start)}</TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{fmt(p.finish)}</TD>
                   </TR>
                 ))}
               </TBody>

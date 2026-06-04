@@ -34,6 +34,21 @@ export const changeLabStatusSchema = z.object({
 });
 export type ChangeLabStatusInput = z.infer<typeof changeLabStatusSchema>;
 
+/** The three patient-level lab states surfaced on the Laboratory table. */
+export const PATIENT_LAB_STATES = ["requested", "processing", "completed"] as const;
+export type PatientLabState = (typeof PATIENT_LAB_STATES)[number];
+export const PATIENT_LAB_STATE_LABELS: Record<PatientLabState, string> = {
+  requested: "Pending",
+  processing: "In Progress",
+  completed: "Finish",
+};
+
+export const setPatientLabStatusSchema = z.object({
+  patientId: z.string().uuid(),
+  status: z.enum(PATIENT_LAB_STATES),
+});
+export type SetPatientLabStatusInput = z.infer<typeof setPatientLabStatusSchema>;
+
 export const addLabResultSchema = z.object({
   requestId: z.string().uuid(),
   resultValue: optionalShort,

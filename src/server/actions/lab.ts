@@ -8,10 +8,12 @@ import {
   createCategorySchema,
   createLabRequestSchema,
   changeLabStatusSchema,
+  setPatientLabStatusSchema,
   addLabResultSchema,
   type CreateCategoryInput,
   type CreateLabRequestInput,
   type ChangeLabStatusInput,
+  type SetPatientLabStatusInput,
   type AddLabResultInput,
 } from "@/lib/validations/lab";
 import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
@@ -129,6 +131,33 @@ export async function changeLabStatus(input: ChangeLabStatusInput): Promise<Acti
     })
     .eq("id", requestId)
     .eq("clinic_id", clinicId);
+  if (error) return fail(error.message);
+
+  revalidatePath("/lab", "layout");
+  return ok(undefined);
+}
+
+/**
+ * Sets a single status across all of a patient's (non-cancelled) lab tests.
+ * "completed" stamps the finish date; the other states clear it.
+ */
+export async function setPatientLabStatus(input: SetPatientLabStatusInput): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.LAB_WRITE);
+  const parsed = setPatientLabStatusSchema.safeParse(input);
+  if (!parsed.success) return fail("Invalid request.");
+  const { patientId, status } = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("lab_requests")
+    .update({
+      status,
+      completed_at: status === "completed" ? new Date().toISOString() : null,
+    })
+    .eq("patient_id", patientId)
+    .eq("clinic_id", clinicId)
+    .is("deleted_at", null)
+    .neq("status", "cancelled");
   if (error) return fail(error.message);
 
   revalidatePath("/lab", "layout");
