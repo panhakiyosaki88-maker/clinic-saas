@@ -31,7 +31,7 @@ import { ClinicalLists } from "@/components/patients/clinical-lists";
 import { EngagementSection } from "@/components/patients/engagement-section";
 import { PatientTags } from "@/components/patients/patient-tags";
 import { ProfileTabs, type ProfileTab } from "@/components/patients/profile-tabs";
-import { LabStatusBadge } from "@/components/lab/lab-status-badge";
+import { PatientLabByDate } from "@/components/lab/patient-lab-by-date";
 import { FollowUpForm } from "@/components/notifications/follow-up-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -266,20 +266,15 @@ export default async function PatientProfilePage({
             )}
           </CardHeader>
           <CardContent>
-            {labRequests.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">No lab requests yet.</p>
-            ) : (
-              <ul className="divide-y divide-[var(--border)]">
-                {labRequests.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between py-2">
-                    <Link href={`/lab/patient/${patient.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
-                      {r.test_name}
-                    </Link>
-                    <LabStatusBadge status={r.status} />
-                  </li>
-                ))}
-              </ul>
-            )}
+            <PatientLabByDate
+              patientId={patient.id}
+              requests={labRequests.map((r) => ({
+                id: r.id,
+                test_name: r.test_name,
+                status: r.status,
+                requested_at: r.requested_at,
+              }))}
+            />
           </CardContent>
         </Card>
       )}
