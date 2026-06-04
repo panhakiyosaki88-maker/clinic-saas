@@ -1,17 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
-import { listPatientLabRequests, listPatientLabReports } from "@/lib/db/queries/lab";
+import { listPatientLabRequests, listPatientLabReports, listLabCategoryTree } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 import { PatientLabUpload } from "@/components/lab/patient-lab-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Patient lab tests" };
-
-// Panel order, so groups render in the same order as the requisition sheet.
-const GROUP_ORDER = new Map(LAB_TEST_PANEL.map((g, i) => [g.title, i]));
 
 export default async function PatientLabPage({
   params,
@@ -23,25 +19,39 @@ export default async function PatientLabPage({
   if (!(await hasPermission(PERMISSIONS.LAB_READ))) redirect("/dashboard");
 
   const { patientId } = await params;
-  const [requests, reports] = await Promise.all([
+  const [requests, reports, tree] = await Promise.all([
     listPatientLabRequests(patientId),
     listPatientLabReports(patientId),
+    listLabCategoryTree(),
   ]);
   if (requests.length === 0) notFound();
 
   const canWrite = await hasPermission(PERMISSIONS.LAB_WRITE);
   const patientName = requests[0].patient_name;
 
-  // Group tests under their category, ordered by the panel.
+  // Resolve every category (group or subgroup) to its Main Category, and
+  // capture the order Main Categories appear in Lab Categories.
+  const mainByCategoryId = new Map<string, string>();
+  const mainOrder = new Map<string, number>();
+  tree.forEach((g, i) => {
+    mainOrder.set(g.name, i);
+    mainByCategoryId.set(g.id, g.name);
+    for (const c of g.children) mainByCategoryId.set(c.id, g.name);
+  });
+
+  // Group the patient's tests under their Main Category.
   const groups = new Map<string, typeof requests>();
   for (const r of requests) {
-    const key = r.category_name ?? "Uncategorized";
+    const key =
+      (r.category_id ? mainByCategoryId.get(r.category_id) : null) ??
+      r.category_name ??
+      "Uncategorized";
     const list = groups.get(key);
     if (list) list.push(r);
     else groups.set(key, [r]);
   }
   const orderedGroups = Array.from(groups.entries()).sort(
-    ([a], [b]) => (GROUP_ORDER.get(a) ?? 999) - (GROUP_ORDER.get(b) ?? 999)
+    ([a], [b]) => (mainOrder.get(a) ?? 999) - (mainOrder.get(b) ?? 999)
   );
 
   const activeRequestIds = requests.filter((r) => r.status !== "cancelled").map((r) => r.id);
