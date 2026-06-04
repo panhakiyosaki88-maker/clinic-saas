@@ -33,10 +33,15 @@ export default async function MedicineDetailPage({
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link href="/pharmacy" className="text-sm text-[var(--muted-foreground)] hover:underline">← Pharmacy</Link>
-          <h1 className="mt-1 text-2xl font-bold">{medicine.name}</h1>
+          <h1 className="mt-1 text-2xl font-bold">
+            {medicine.name}{medicine.strength ? ` ${medicine.strength}` : ""}
+          </h1>
           <p className="text-sm text-[var(--muted-foreground)]">
-            {medicine.generic_name ?? ""}{medicine.category ? ` · ${medicine.category}` : ""}
+            {[medicine.generic_name, medicine.category].filter(Boolean).join(" · ")}
           </p>
+          {medicine.sku && (
+            <p className="mt-1 font-mono text-xs text-[var(--muted-foreground)]">SKU {medicine.sku}</p>
+          )}
         </div>
         {canWrite && (
           <div className="flex items-center gap-2">

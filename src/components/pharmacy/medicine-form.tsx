@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createMedicine, updateMedicine } from "@/server/actions/pharmacy";
+import { createMedicine, updateMedicine, previewSku } from "@/server/actions/pharmacy";
 import type { Medicine } from "@/lib/db/queries/pharmacy";
+import { skuBase } from "@/lib/pharmacy/sku";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,28 @@ export function MedicineForm({ medicine }: { medicine?: Medicine }) {
   const [error, setError] = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
 
+  const [name, setName] = React.useState(medicine?.name ?? "");
+  const [strength, setStrength] = React.useState(medicine?.strength ?? "");
+  const [autoSku, setAutoSku] = React.useState(true);
+  const [manualSku, setManualSku] = React.useState(medicine?.sku ?? "");
+  const [preview, setPreview] = React.useState(medicine?.sku ?? "");
+
+  // Live SKU preview while auto-generating. The base updates instantly from the
+  // shared helper; the real sequence is fetched (debounced) from the server.
+  React.useEffect(() => {
+    if (!autoSku || name.trim().length < 2) {
+      setPreview("");
+      return;
+    }
+    const t = setTimeout(async () => {
+      const res = await previewSku(name, strength);
+      if (res.ok) setPreview(res.data.sku);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [autoSku, name, strength]);
+
+  const baseHint = name.trim().length >= 2 ? skuBase(name, strength) : "";
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -35,9 +58,11 @@ export function MedicineForm({ medicine }: { medicine?: Medicine }) {
       return s === "" ? undefined : Number(s);
     };
     const payload = {
-      name: String(f.get("name") ?? ""),
+      name,
       genericName: String(f.get("genericName") ?? ""),
-      sku: String(f.get("sku") ?? ""),
+      autoSku,
+      sku: autoSku ? "" : manualSku,
+      strength,
       category: String(f.get("category") ?? ""),
       unit: String(f.get("unit") ?? "unit") || "unit",
       reorderLevel: numOrUndef("reorderLevel") ?? 0,
@@ -63,13 +88,13 @@ export function MedicineForm({ medicine }: { medicine?: Medicine }) {
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Name" htmlFor="name" errors={fieldErrors.name}>
-          <Input id="name" name="name" defaultValue={medicine?.name ?? ""} required autoFocus />
+          <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
         </Field>
         <Field label="Generic name" htmlFor="genericName">
           <Input id="genericName" name="genericName" defaultValue={medicine?.generic_name ?? ""} />
         </Field>
-        <Field label="SKU / code" htmlFor="sku">
-          <Input id="sku" name="sku" defaultValue={medicine?.sku ?? ""} />
+        <Field label="Strength" htmlFor="strength">
+          <Input id="strength" name="strength" value={strength} onChange={(e) => setStrength(e.target.value)} placeholder="e.g. 500mg, 1000IU, 5ml" />
         </Field>
         <Field label="Category" htmlFor="category">
           <Input id="category" name="category" defaultValue={medicine?.category ?? ""} />
@@ -87,6 +112,36 @@ export function MedicineForm({ medicine }: { medicine?: Medicine }) {
           <Input id="sellingPrice" name="sellingPrice" type="number" step="0.01" defaultValue={medicine?.selling_price ?? ""} />
         </Field>
       </div>
+
+      {/* SKU: auto-generate by default; uncheck for a manual override. */}
+      <div className="space-y-2 rounded-md border border-[var(--border)] p-3">
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor="sku">SKU</Label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={autoSku} onChange={(e) => setAutoSku(e.target.checked)} />
+            Auto-generate
+          </label>
+        </div>
+        <Input
+          id="sku"
+          value={autoSku ? preview : manualSku}
+          onChange={(e) => setManualSku(e.target.value)}
+          readOnly={autoSku}
+          placeholder={autoSku ? "Generated from name + strength" : "Enter SKU"}
+          className={autoSku ? "bg-[var(--muted)] text-[var(--muted-foreground)]" : ""}
+        />
+        {fieldErrors.sku?.map((m) => <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>)}
+        {autoSku ? (
+          <p className="text-xs text-[var(--muted-foreground)]">
+            {baseHint
+              ? `Format ${baseHint}-#### — assigned on save${isEdit ? " (existing SKU is kept)" : ""}.`
+              : "Enter a name (and optional strength) to generate a SKU."}
+          </p>
+        ) : (
+          <p className="text-xs text-[var(--muted-foreground)]">Manual override — must be unique.</p>
+        )}
+      </div>
+
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="isActive" defaultChecked={medicine?.is_active ?? true} />
         Active

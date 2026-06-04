@@ -1025,6 +1025,7 @@ export interface Database {
           name: string;
           generic_name: string | null;
           sku: string | null;
+          strength: string | null;
           category: string | null;
           unit: string;
           reorder_level: number;
@@ -1043,6 +1044,7 @@ export interface Database {
           name: string;
           generic_name?: string | null;
           sku?: string | null;
+          strength?: string | null;
           category?: string | null;
           unit?: string;
           reorder_level?: number;

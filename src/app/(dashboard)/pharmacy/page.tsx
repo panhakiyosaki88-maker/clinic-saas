@@ -105,6 +105,7 @@ export default async function PharmacyPage({
               <THead>
                 <tr>
                   <TH>Name</TH>
+                  <TH>SKU</TH>
                   <TH>Category</TH>
                   <TH className="text-right">Stock</TH>
                   <TH className="text-right">Price</TH>
@@ -117,8 +118,13 @@ export default async function PharmacyPage({
                     <TR key={m.id}>
                       <TD>
                         <Link href={`/pharmacy/${m.id}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">{m.name}</Link>
-                        {m.generic_name && <span className="block text-xs text-slate-400">{m.generic_name}</span>}
+                        {(m.strength || m.generic_name) && (
+                          <span className="block text-xs text-slate-400">
+                            {[m.strength, m.generic_name].filter(Boolean).join(" · ")}
+                          </span>
+                        )}
                       </TD>
+                      <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{m.sku ?? "—"}</TD>
                       <TD className="text-slate-500 dark:text-slate-400">{m.category ?? "—"}</TD>
                       <TD className={`text-right ${low ? "font-semibold text-rose-600 dark:text-rose-400" : ""}`}>
                         {m.stock_quantity} {m.unit}

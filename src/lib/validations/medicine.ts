@@ -7,7 +7,11 @@ const optMoney = z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_
 export const createMedicineSchema = z.object({
   name: z.string().trim().min(2, "Medicine name is required").max(255),
   genericName: optionalShort,
+  // When autoSku is true (default) the server generates the SKU and ignores
+  // any sku value; when false (manual override) sku is used and must be unique.
+  autoSku: z.boolean().optional(),
   sku: optionalShort,
+  strength: optionalShort,
   category: optionalShort,
   unit: z.string().trim().min(1).max(40).default("unit"),
   reorderLevel: z.preprocess(emptyToUndef, z.coerce.number().int().min(0).max(1_000_000).default(0)),

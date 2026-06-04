@@ -14,7 +14,9 @@ import {
   type RecordTransactionInput,
 } from "@/lib/validations/medicine";
 import { ok, fail, type ActionResult } from "./types";
+import { skuBase, skuSequence } from "@/lib/pharmacy/sku";
 import type { Database } from "@/types/database";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type MedicineWrite = Database["public"]["Tables"]["medicines"]["Update"];
 
@@ -23,7 +25,7 @@ function toColumns(v: Partial<CreateMedicineInput>): MedicineWrite {
   const out: MedicineWrite = {};
   if (v.name !== undefined) out.name = v.name;
   if (v.genericName !== undefined) out.generic_name = orNull(v.genericName);
-  if (v.sku !== undefined) out.sku = orNull(v.sku);
+  if (v.strength !== undefined) out.strength = orNull(v.strength);
   if (v.category !== undefined) out.category = orNull(v.category);
   if (v.unit !== undefined) out.unit = v.unit;
   if (v.reorderLevel !== undefined) out.reorder_level = v.reorderLevel;
@@ -31,6 +33,47 @@ function toColumns(v: Partial<CreateMedicineInput>): MedicineWrite {
   if (v.sellingPrice !== undefined) out.selling_price = v.sellingPrice ?? null;
   if (v.isActive !== undefined) out.is_active = v.isActive;
   return out;
+}
+
+const escapeLike = (s: string) => s.replace(/[%_\\]/g, "\\$&");
+
+/**
+ * Computes the next SKU for a medicine-strength combination within a clinic:
+ * the base (PREFIX + STRENGTH) plus the next zero-padded sequence. Existing
+ * SKUs sharing the base — including soft-deleted ones — are scanned so numbers
+ * are never reused. A DB unique index is the final guard against races.
+ */
+async function generateSku(
+  supabase: SupabaseClient<Database>,
+  clinicId: string,
+  name: string,
+  strength: string | undefined | null
+): Promise<string> {
+  const base = skuBase(name, strength);
+  const { data } = await supabase
+    .from("medicines")
+    .select("sku")
+    .eq("clinic_id", clinicId)
+    .ilike("sku", `${escapeLike(base)}-%`);
+
+  const seqRe = new RegExp(`^${base}-(\\d+)$`, "i");
+  let max = 0;
+  for (const row of data ?? []) {
+    const m = row.sku?.match(seqRe);
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  }
+  return `${base}-${skuSequence(max + 1)}`;
+}
+
+/** Live SKU preview for the form (the real sequence is assigned on save). */
+export async function previewSku(
+  name: string,
+  strength?: string
+): Promise<ActionResult<{ sku: string }>> {
+  const { clinicId } = await requirePermission(PERMISSIONS.PHARMACY_WRITE);
+  if (!name || name.trim().length < 2) return ok({ sku: "" });
+  const supabase = await createClient();
+  return ok({ sku: await generateSku(supabase, clinicId, name, strength) });
 }
 
 export async function createMedicine(
@@ -42,16 +85,43 @@ export async function createMedicine(
     return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
   }
 
+  const v = parsed.data;
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("medicines")
-    .insert({ clinic_id: clinicId, created_by: user.id, ...toColumns(parsed.data), name: parsed.data.name })
-    .select("id")
-    .single();
-  if (error || !data) return fail(error?.message ?? "Could not create medicine.");
+  const manual = v.autoSku === false;
+  const cols = toColumns(v);
 
-  revalidatePath("/pharmacy");
-  return ok({ medicineId: data.id });
+  if (manual) {
+    const sku = (v.sku ?? "").trim();
+    if (!sku) {
+      return fail("Please fix the highlighted fields.", { sku: ["Enter a SKU or turn on auto-generate."] });
+    }
+    const { data, error } = await supabase
+      .from("medicines")
+      .insert({ clinic_id: clinicId, created_by: user.id, ...cols, name: v.name, sku })
+      .select("id")
+      .single();
+    if (error?.code === "23505") {
+      return fail("Please fix the highlighted fields.", { sku: ["That SKU is already in use."] });
+    }
+    if (error || !data) return fail(error?.message ?? "Could not create medicine.");
+    revalidatePath("/pharmacy");
+    return ok({ medicineId: data.id });
+  }
+
+  // Auto-generate: retry across the unique index in case of a concurrent insert.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const sku = await generateSku(supabase, clinicId, v.name, v.strength);
+    const { data, error } = await supabase
+      .from("medicines")
+      .insert({ clinic_id: clinicId, created_by: user.id, ...cols, name: v.name, sku })
+      .select("id")
+      .single();
+    if (error?.code === "23505") continue;
+    if (error || !data) return fail(error?.message ?? "Could not create medicine.");
+    revalidatePath("/pharmacy");
+    return ok({ medicineId: data.id });
+  }
+  return fail("Could not generate a unique SKU. Please try again.");
 }
 
 export async function updateMedicine(
@@ -64,12 +134,38 @@ export async function updateMedicine(
     return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
   }
 
+  const v = parsed.data;
   const supabase = await createClient();
+  const cols = toColumns(v);
+
+  // SKU is a stable identifier: keep it on edit unless manually overridden, or
+  // auto-fill it when the medicine doesn't have one yet.
+  if (v.autoSku === false) {
+    const sku = (v.sku ?? "").trim();
+    if (!sku) {
+      return fail("Please fix the highlighted fields.", { sku: ["Enter a SKU or turn on auto-generate."] });
+    }
+    cols.sku = sku;
+  } else {
+    const { data: current } = await supabase
+      .from("medicines")
+      .select("sku")
+      .eq("id", medicineId)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
+    if (current && !current.sku && v.name) {
+      cols.sku = await generateSku(supabase, clinicId, v.name, v.strength);
+    }
+  }
+
   const { error } = await supabase
     .from("medicines")
-    .update(toColumns(parsed.data))
+    .update(cols)
     .eq("id", medicineId)
     .eq("clinic_id", clinicId);
+  if (error?.code === "23505") {
+    return fail("Please fix the highlighted fields.", { sku: ["That SKU is already in use."] });
+  }
   if (error) return fail(error.message);
 
   revalidatePath(`/pharmacy/${medicineId}`);
