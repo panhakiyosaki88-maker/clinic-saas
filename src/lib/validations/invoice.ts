@@ -53,14 +53,26 @@ export const invoiceItemSchema = z.object({
 });
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;
 
+const optId = z.string().uuid().optional().or(z.literal(""));
+const optDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD").optional().or(z.literal(""));
+
 export const createInvoiceSchema = z.object({
-  patientId: z.string().uuid().optional().or(z.literal("")),
+  patientId: optId,
+  branchId: optId,
+  doctorId: optId,
+  serviceType: z.string().trim().max(80).optional().or(z.literal("")),
+  dueDate: optDate,
   discount: money,
   tax: money,
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
+  // "draft" saves without issuing; otherwise the invoice is issued (unpaid).
+  asDraft: z.boolean().optional(),
   items: z.array(invoiceItemSchema).min(1, "Add at least one line item"),
 });
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
+
+export const editInvoiceSchema = createInvoiceSchema.omit({ asDraft: true });
+export type EditInvoiceInput = z.infer<typeof editInvoiceSchema>;
 
 export const recordPaymentSchema = z.object({
   invoiceId: z.string().uuid(),

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { listPatientOptions } from "@/lib/db/queries/patients";
+import { listDoctors } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { InvoiceForm } from "@/components/billing/invoice-form";
@@ -18,7 +19,11 @@ export default async function NewInvoicePage({
   if (!(await hasPermission(PERMISSIONS.BILLING_WRITE))) redirect("/billing");
 
   const sp = await searchParams;
-  const patients = await listPatientOptions();
+  const [patients, doctors, branches] = await Promise.all([
+    listPatientOptions(),
+    listDoctors(),
+    listBranches(),
+  ]);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -26,7 +31,12 @@ export default async function NewInvoicePage({
         <Link href="/billing/invoices" className="text-sm text-[var(--muted-foreground)] hover:underline">← Invoices</Link>
         <h1 className="mt-1 text-2xl font-bold">New invoice</h1>
       </header>
-      <InvoiceForm patients={patients} defaultPatientId={sp.patientId} />
+      <InvoiceForm
+        patients={patients}
+        doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
+        branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+        defaultPatientId={sp.patientId}
+      />
     </main>
   );
 }

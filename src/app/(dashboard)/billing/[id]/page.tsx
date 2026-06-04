@@ -4,10 +4,11 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
+import { PAYMENT_METHOD_LABELS, INVOICE_STATUS_LABELS, type InvoiceStatusValue } from "@/lib/validations/invoice";
 import { PrintButton } from "@/components/print-button";
 import { PaymentForm } from "@/components/billing/payment-form";
 import { CancelInvoiceButton } from "@/components/billing/cancel-invoice-button";
+import { InvoiceActions } from "@/components/billing/invoice-actions";
 import { ReminderButton } from "@/components/notifications/reminder-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,17 +34,23 @@ export default async function InvoiceDetailPage({
   ]);
   const fmt = (n: number) => Number(n).toFixed(2);
   const active = inv.status !== "cancelled";
+  const editable = active && Number(inv.amount_paid) === 0;
+  const isDraft = inv.status === "draft";
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
       <div className="flex items-center justify-between print:hidden">
         <Link href="/billing/invoices" className="text-sm text-[var(--muted-foreground)] hover:underline">← Invoices</Link>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <PrintButton label="Invoice PDF" />
           {inv.payments.length > 0 && (
             <Button asChild variant="outline" size="sm"><Link href={`/billing/${inv.id}/receipt`}>Receipt</Link></Button>
           )}
-          {canNotify && active && Number(inv.balance) > 0 && (
+          {canWrite && editable && (
+            <Button asChild variant="outline" size="sm"><Link href={`/billing/${inv.id}/edit`}>Edit</Link></Button>
+          )}
+          {canWrite && <InvoiceActions invoiceId={inv.id} isDraft={isDraft} />}
+          {canNotify && active && !isDraft && Number(inv.balance) > 0 && (
             <ReminderButton kind="payment" id={inv.id} label="Payment reminder" />
           )}
           {canWrite && active && <CancelInvoiceButton invoiceId={inv.id} />}
@@ -60,7 +67,7 @@ export default async function InvoiceDetailPage({
           <div className="text-right text-sm">
             <p className="font-mono font-medium">{inv.invoice_number}</p>
             <p className="text-[var(--muted-foreground)]">{new Date(inv.issued_at).toLocaleDateString()}</p>
-            <p className="mt-1 capitalize">{inv.status.replace("_", " ")}</p>
+            <p className="mt-1">{INVOICE_STATUS_LABELS[inv.status as InvoiceStatusValue] ?? inv.status}</p>
           </div>
         </header>
 

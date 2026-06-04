@@ -42,8 +42,18 @@ describe("recordPaymentSchema", () => {
 });
 
 describe("payment methods", () => {
-  it("covers cash, bank transfer and KHQR", () => {
-    expect(PAYMENT_METHODS).toEqual(["cash", "bank_transfer", "khqr"]);
+  it("covers the Cambodia-focused methods", () => {
+    expect(PAYMENT_METHODS).toEqual([
+      "cash",
+      "khqr",
+      "aba_transfer",
+      "acleda_transfer",
+      "wing",
+      "bank_transfer",
+      "credit_card",
+      "other",
+    ]);
     expect(PAYMENT_METHOD_LABELS.khqr).toBe("KHQR");
+    expect(PAYMENT_METHOD_LABELS.aba_transfer).toBe("ABA Transfer");
   });
 });
