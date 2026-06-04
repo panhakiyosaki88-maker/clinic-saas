@@ -3,11 +3,47 @@ import { z } from "zod";
 const emptyToUndef = (v: unknown) => (v === "" || v === null ? undefined : v);
 const money = z.preprocess(emptyToUndef, z.coerce.number().min(0).max(100_000_000).default(0));
 
-export const PAYMENT_METHODS = ["cash", "bank_transfer", "khqr"] as const;
+export const PAYMENT_METHODS = [
+  "cash",
+  "khqr",
+  "aba_transfer",
+  "acleda_transfer",
+  "wing",
+  "bank_transfer",
+  "credit_card",
+  "other",
+] as const;
 export const PAYMENT_METHOD_LABELS: Record<(typeof PAYMENT_METHODS)[number], string> = {
   cash: "Cash",
-  bank_transfer: "Bank Transfer",
   khqr: "KHQR",
+  aba_transfer: "ABA Transfer",
+  acleda_transfer: "ACLEDA Transfer",
+  wing: "Wing",
+  bank_transfer: "Bank Transfer",
+  credit_card: "Credit Card",
+  other: "Other",
+};
+
+export const INVOICE_STATUSES = [
+  "draft",
+  "pending",
+  "unpaid",
+  "partially_paid",
+  "paid",
+  "overdue",
+  "cancelled",
+  "refunded",
+] as const;
+export type InvoiceStatusValue = (typeof INVOICE_STATUSES)[number];
+export const INVOICE_STATUS_LABELS: Record<InvoiceStatusValue, string> = {
+  draft: "Draft",
+  pending: "Pending",
+  unpaid: "Unpaid",
+  partially_paid: "Partially paid",
+  paid: "Paid",
+  overdue: "Overdue",
+  cancelled: "Cancelled",
+  refunded: "Refunded",
 };
 
 export const invoiceItemSchema = z.object({

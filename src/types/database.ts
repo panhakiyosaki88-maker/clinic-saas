@@ -45,8 +45,27 @@ export type AppointmentStatus =
   | "cancelled"
   | "no_show";
 export type InventoryReason = "purchase" | "dispense" | "adjustment" | "expiry" | "return";
-export type InvoiceStatus = "unpaid" | "partially_paid" | "paid" | "cancelled";
-export type PaymentMethod = "cash" | "bank_transfer" | "khqr";
+export type InvoiceStatus =
+  | "unpaid"
+  | "partially_paid"
+  | "paid"
+  | "cancelled"
+  | "draft"
+  | "pending"
+  | "overdue"
+  | "refunded";
+export type PaymentMethod =
+  | "cash"
+  | "bank_transfer"
+  | "khqr"
+  | "aba_transfer"
+  | "acleda_transfer"
+  | "wing"
+  | "credit_card"
+  | "other";
+export type PaymentKind = "payment" | "refund";
+export type InvoiceSource = "manual" | "appointment" | "lab" | "pharmacy" | "prescription";
+export type ServiceCategory = "consultation" | "lab" | "pharmacy" | "procedure" | "other";
 export type LabStatus = "requested" | "collected" | "processing" | "completed" | "cancelled";
 export type NotificationChannel = "email" | "telegram";
 export type NotificationStatus = "pending" | "sent" | "failed" | "skipped";
@@ -1106,6 +1125,15 @@ export interface Database {
           amount_paid: number;
           balance: number;
           notes: string | null;
+          source: InvoiceSource;
+          source_id: string | null;
+          doctor_id: string | null;
+          service_type: string | null;
+          due_date: string | null;
+          voided_at: string | null;
+          refunded_total: number;
+          invoice_year: number | null;
+          year_seq: number | null;
           issued_at: string;
           created_at: string;
           updated_at: string;
@@ -1127,6 +1155,15 @@ export interface Database {
           amount_paid?: number;
           balance?: number;
           notes?: string | null;
+          source?: InvoiceSource;
+          source_id?: string | null;
+          doctor_id?: string | null;
+          service_type?: string | null;
+          due_date?: string | null;
+          voided_at?: string | null;
+          refunded_total?: number;
+          invoice_year?: number | null;
+          year_seq?: number | null;
           issued_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -1171,6 +1208,7 @@ export interface Database {
           receipt_number: string;
           amount: number;
           method: PaymentMethod;
+          kind: PaymentKind;
           reference: string | null;
           note: string | null;
           paid_at: string;
@@ -1185,6 +1223,7 @@ export interface Database {
           receipt_number?: string;
           amount: number;
           method?: PaymentMethod;
+          kind?: PaymentKind;
           reference?: string | null;
           note?: string | null;
           paid_at?: string;
@@ -1192,6 +1231,64 @@ export interface Database {
           created_by?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["payments"]["Insert"]>;
+        Relationships: [];
+      };
+      service_prices: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          branch_id: string | null;
+          category: ServiceCategory;
+          name: string;
+          code: string | null;
+          unit_price: number;
+          effective_from: string;
+          archived_at: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          branch_id?: string | null;
+          category?: ServiceCategory;
+          name: string;
+          code?: string | null;
+          unit_price?: number;
+          effective_from?: string;
+          archived_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["service_prices"]["Insert"]>;
+        Relationships: [];
+      };
+      billing_settings: {
+        Row: {
+          clinic_id: string;
+          khqr_merchant_name: string | null;
+          khqr_merchant_account: string | null;
+          khqr_merchant_city: string | null;
+          currency: string;
+          tax_rate: number;
+          invoice_due_days: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          clinic_id: string;
+          khqr_merchant_name?: string | null;
+          khqr_merchant_account?: string | null;
+          khqr_merchant_city?: string | null;
+          currency?: string;
+          tax_rate?: number;
+          invoice_due_days?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["billing_settings"]["Insert"]>;
         Relationships: [];
       };
       lab_categories: {
@@ -1429,6 +1526,9 @@ export interface Database {
       inventory_reason: InventoryReason;
       invoice_status: InvoiceStatus;
       payment_method: PaymentMethod;
+      payment_kind: PaymentKind;
+      invoice_source: InvoiceSource;
+      service_category: ServiceCategory;
       lab_status: LabStatus;
       notification_channel: NotificationChannel;
       notification_status: NotificationStatus;
