@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npm view *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(git commit *)",
+      "Bash(rm -f .git/COMMIT_EDITMSG_TMP)",
+      "Bash(cd \"c:\\\\Users\\\\ttd2a\\\\Downloads\\\\Compressed\\\\Clinic Saas App\" && git commit --amend -F .git/COMMIT_PATIENTS.txt && rm .git/COMMIT_PATIENTS.txt && git log -1 --pretty=%s)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\ttd2a\\Downloads\\Compressed\\Clinic Saas App\\.git"
     ]
   }
 }

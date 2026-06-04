@@ -4,7 +4,7 @@ import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getCurrentClinic, getCurrentSubscription } from "@/lib/db/queries/clinic";
 import { getRolePermissionKeys } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { startOfDay, startOfWeek, addDays } from "@/lib/date";
+import { startOfDay, startOfWeek, addDays, ymd } from "@/lib/date";
 import {
   listAppointmentsInRange,
   listQueue,
@@ -32,6 +32,7 @@ import { QuickActions } from "@/components/dashboard/widgets/quick-actions";
 import { StatCard } from "@/components/dashboard/widgets/stat-card";
 import { TodaySchedule } from "@/components/dashboard/widgets/today-schedule";
 import { MiniCalendar } from "@/components/dashboard/widgets/mini-calendar";
+import type { CalendarDay } from "@/server/actions/appointments";
 import { DoctorAvailability } from "@/components/dashboard/widgets/doctor-availability";
 import { PatientStatsWidget } from "@/components/dashboard/widgets/patient-stats";
 import { PatientIntelligence } from "@/components/dashboard/widgets/patient-intelligence";
@@ -175,6 +176,18 @@ export default async function DashboardPage() {
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const userName = typeof meta.full_name === "string" ? meta.full_name : "";
 
+  // Per-day appointment summary (count + doctors on duty) for the calendar's
+  // first (current) month. Later months are fetched on demand as you navigate.
+  const calDays: Record<string, CalendarDay> = {};
+  for (const a of monthAppts) {
+    const key = ymd(new Date(a.scheduled_at));
+    const day = (calDays[key] ??= { count: 0, doctors: [] });
+    day.count += 1;
+    if (a.doctor_name && !day.doctors.some((d) => d.name === a.doctor_name)) {
+      day.doctors.push({ name: a.doctor_name, avatarPath: a.doctor_avatar_path });
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
       <BrandingHeader
@@ -243,7 +256,13 @@ export default async function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {canAppts && <TodaySchedule items={scheduleItems} title={scheduleTitle} canBook={quickFlags.appointment} />}
-          {canAppts && <MiniCalendar appointments={monthAppts} monthStart={monthStart} />}
+          {canAppts && (
+            <MiniCalendar
+              initialYear={monthStart.getFullYear()}
+              initialMonth={monthStart.getMonth()}
+              initialDays={calDays}
+            />
+          )}
         </div>
         <div className="space-y-6">
           <AiInsights insights={insights} />

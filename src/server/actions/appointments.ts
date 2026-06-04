@@ -13,9 +13,53 @@ import {
   type ChangeStatusInput,
 } from "@/lib/validations/appointment";
 import { ok, fail, type ActionResult } from "./types";
+import { ymd } from "@/lib/date";
 import type { Database } from "@/types/database";
 
 type AppointmentWrite = Database["public"]["Tables"]["appointments"]["Update"];
+
+/** One calendar day's appointment load + the doctors booked that day. */
+export interface CalendarDay {
+  count: number;
+  doctors: { name: string; avatarPath: string | null }[];
+}
+
+/**
+ * Per-day appointment summary within [fromISO, toISO): a count plus the
+ * (deduped) doctors booked each day. Powers the dashboard calendar's month
+ * navigation without reloading the whole page.
+ */
+export async function getAppointmentCalendar(
+  fromISO: string,
+  toISO: string
+): Promise<ActionResult<{ days: Record<string, CalendarDay> }>> {
+  await requirePermission(PERMISSIONS.APPOINTMENTS_READ);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("scheduled_at, doctors ( full_name, avatar_path )")
+    .is("deleted_at", null)
+    .gte("scheduled_at", fromISO)
+    .lt("scheduled_at", toISO);
+  if (error) return fail(error.message);
+
+  const rows = (data ?? []) as unknown as {
+    scheduled_at: string;
+    doctors: { full_name: string; avatar_path: string | null } | null;
+  }[];
+
+  const days: Record<string, CalendarDay> = {};
+  for (const r of rows) {
+    const key = ymd(new Date(r.scheduled_at));
+    const day = (days[key] ??= { count: 0, doctors: [] });
+    day.count += 1;
+    const doc = r.doctors;
+    if (doc && !day.doctors.some((d) => d.name === doc.full_name)) {
+      day.doctors.push({ name: doc.full_name, avatarPath: doc.avatar_path });
+    }
+  }
+  return ok({ days });
+}
 
 function combineDateTime(date: string, time: string): string {
   return new Date(`${date}T${time}:00`).toISOString();
