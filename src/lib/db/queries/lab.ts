@@ -57,6 +57,50 @@ export async function listPatientLabRequests(patientId: string): Promise<LabRequ
   return map((data ?? []) as unknown as Joined[]);
 }
 
+export interface PatientLabReport {
+  id: string;
+  file_name: string | null;
+  result_at: string;
+  test_name: string;
+  signedUrl: string | null;
+}
+
+/** Uploaded report files across all of a patient's lab tests, newest first. */
+export async function listPatientLabReports(patientId: string): Promise<PatientLabReport[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("lab_results")
+    .select("id, file_path, file_name, result_at, lab_requests!inner ( test_name, patient_id, deleted_at )")
+    .eq("lab_requests.patient_id", patientId)
+    .is("lab_requests.deleted_at", null)
+    .not("file_path", "is", null)
+    .order("result_at", { ascending: false });
+  if (error) throw error;
+
+  const rows = (data ?? []) as unknown as {
+    id: string;
+    file_path: string | null;
+    file_name: string | null;
+    result_at: string;
+    lab_requests: { test_name: string } | null;
+  }[];
+
+  const paths = rows.map((r) => r.file_path).filter((p): p is string => !!p);
+  const signed = new Map<string, string | null>();
+  if (paths.length > 0) {
+    const res = await supabase.storage.from("lab-results").createSignedUrls(paths, 60 * 10);
+    (res.data ?? []).forEach((s, i) => signed.set(paths[i], s.signedUrl ?? null));
+  }
+
+  return rows.map((r) => ({
+    id: r.id,
+    file_name: r.file_name,
+    result_at: r.result_at,
+    test_name: r.lab_requests?.test_name ?? "—",
+    signedUrl: r.file_path ? signed.get(r.file_path) ?? null : null,
+  }));
+}
+
 export async function listLabCategories(): Promise<LabCategory[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
