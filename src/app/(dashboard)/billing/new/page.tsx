@@ -23,7 +23,7 @@ export default async function NewInvoicePage({
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href="/billing" className="text-sm text-[var(--muted-foreground)] hover:underline">← Billing</Link>
+        <Link href="/billing/invoices" className="text-sm text-[var(--muted-foreground)] hover:underline">← Invoices</Link>
         <h1 className="mt-1 text-2xl font-bold">New invoice</h1>
       </header>
       <InvoiceForm patients={patients} defaultPatientId={sp.patientId} />

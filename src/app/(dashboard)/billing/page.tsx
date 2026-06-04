@@ -1,93 +1,151 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
-import { listInvoices } from "@/lib/db/queries/billing";
+import { getBillingDashboard } from "@/lib/db/queries/billing-analytics";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { Receipt, Plus } from "lucide-react";
-import { PageHeader, HeaderAction } from "@/components/page-header";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { Receipt, TrendingUp, Wallet, CircleDollarSign, Users } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { BillingTabs } from "@/components/billing/billing-tabs";
+import { StatCard } from "@/components/dashboard/widgets/stat-card";
+import { AreaTrendChart, BarSeriesChart } from "@/components/dashboard/widgets/charts";
+import { MethodDonut } from "@/components/billing/billing-charts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const metadata = { title: "Billing" };
+export const metadata = { title: "Billing dashboard" };
 
-const STATUS_TONE: Record<string, string> = {
-  unpaid: "bg-[var(--destructive)]/10 text-[var(--destructive)]",
-  partially_paid: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  paid: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  cancelled: "bg-[var(--muted)] text-[var(--muted-foreground)]",
-};
+const money = (n: number) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export default async function BillingPage() {
+export default async function BillingDashboardPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
-  if (!(await hasPermission(PERMISSIONS.BILLING_READ))) {
-    return (
-      <main className="mx-auto max-w-2xl p-6">
-        <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view billing.
-        </p>
-      </main>
-    );
-  }
+  if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
-  const canWrite = await hasPermission(PERMISSIONS.BILLING_WRITE);
-  const invoices = await listInvoices();
-  const outstanding = invoices.filter((i) => i.status !== "paid" && i.status !== "cancelled").length;
+  const d = await getBillingDashboard();
+  const k = d.kpis;
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
-      <PageHeader
-        icon={Receipt}
-        title="Billing"
-        subtitle={`${invoices.length} ${invoices.length === 1 ? "invoice" : "invoices"} · ${outstanding} outstanding`}
-        actions={
-          canWrite && (
-            <HeaderAction href="/billing/new">
-              <Plus /> New invoice
-            </HeaderAction>
-          )
-        }
-      />
+    <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
+      <PageHeader icon={Receipt} title="Billing" subtitle="Revenue, collections and outstanding balances" />
+      <BillingTabs />
 
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          {invoices.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400">No invoices yet.</p>
-          ) : (
-            <Table>
-              <THead>
-                <tr>
-                  <TH>Invoice</TH>
-                  <TH>Patient</TH>
-                  <TH className="text-right">Total</TH>
-                  <TH className="text-right">Balance</TH>
-                  <TH>Status</TH>
-                </tr>
-              </THead>
-              <TBody>
-                {invoices.map((inv) => (
-                  <TR key={inv.id}>
-                    <TD>
-                      <Link href={`/billing/${inv.id}`} className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400">
-                        {inv.invoice_number}
-                      </Link>
-                    </TD>
-                    <TD>{inv.patient_name ?? "—"}</TD>
-                    <TD className="text-right tabular-nums">{Number(inv.total).toFixed(2)}</TD>
-                    <TD className="text-right tabular-nums">{Number(inv.balance).toFixed(2)}</TD>
-                    <TD>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_TONE[inv.status]}`}>
-                        {inv.status.replace("_", " ")}
-                      </span>
-                    </TD>
-                  </TR>
+      {/* KPI grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Revenue today" value={money(k.revenueToday)} icon={CircleDollarSign} tint="emerald" />
+        <StatCard title="This week" value={money(k.revenueWeek)} icon={TrendingUp} tint="blue" />
+        <StatCard title="This month" value={money(k.revenueMonth)} icon={TrendingUp} tint="violet" />
+        <StatCard title="Outstanding" value={money(k.outstanding)} icon={Wallet} tint="rose" />
+        <StatCard title="Collection rate" value={`${(k.collectionRate * 100).toFixed(0)}%`} icon={TrendingUp} tint="emerald" />
+        <StatCard title="Avg revenue / patient" value={money(k.arpp)} icon={Users} tint="blue" />
+        <StatCard title="Paid invoices" value={k.paidCount} icon={Receipt} tint="emerald" />
+        <StatCard title="Unpaid / partial" value={`${k.unpaidCount} / ${k.partialCount}`} icon={Receipt} tint="amber" />
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader><CardTitle>Revenue trend (30 days)</CardTitle></CardHeader>
+          <CardContent><AreaTrendChart data={d.revenueTrend} color="#10b981" /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Payment methods</CardTitle></CardHeader>
+          <CardContent><MethodDonut data={d.methodBreakdown} /></CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader><CardTitle>Daily collections (14 days)</CardTitle></CardHeader>
+          <CardContent><BarSeriesChart data={d.dailyCollections} color="#3b82f6" /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Monthly collections</CardTitle></CardHeader>
+          <CardContent><BarSeriesChart data={d.monthlyCollections} color="#8b5cf6" /></CardContent>
+        </Card>
+      </div>
+
+      {/* Widgets */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader><CardTitle>Recent payments</CardTitle></CardHeader>
+          <CardContent>
+            {d.recentPayments.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No payments yet.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)] text-sm">
+                {d.recentPayments.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between gap-3 py-2">
+                    <span className="min-w-0 truncate">
+                      {p.patient}
+                      <span className="ml-2 text-xs text-[var(--muted-foreground)]">{p.method}</span>
+                    </span>
+                    <span className={`shrink-0 tabular-nums ${p.kind === "refund" ? "text-[var(--destructive)]" : ""}`}>
+                      {p.kind === "refund" ? "-" : ""}{money(p.amount)}
+                    </span>
+                  </li>
                 ))}
-              </TBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Outstanding invoices</CardTitle></CardHeader>
+          <CardContent>
+            {d.outstandingInvoices.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">Nothing outstanding.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)] text-sm">
+                {d.outstandingInvoices.map((i) => (
+                  <li key={i.id} className="flex items-center justify-between gap-3 py-2">
+                    <Link href={`/billing/${i.id}`} className="min-w-0 truncate text-[var(--primary)] hover:underline">
+                      <span className="font-mono text-xs">{i.invoice_number}</span>
+                      <span className="ml-2">{i.patient}</span>
+                    </Link>
+                    <span className="shrink-0 tabular-nums">{money(i.balance)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Revenue by service type</CardTitle></CardHeader>
+          <CardContent>
+            {d.revenueByService.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No invoices yet.</p>
+            ) : (
+              <ul className="space-y-1.5 text-sm">
+                {d.revenueByService.map((s) => (
+                  <li key={s.label} className="flex items-center justify-between gap-3">
+                    <span className="capitalize">{s.label}</span>
+                    <span className="tabular-nums text-[var(--muted-foreground)]">{money(s.value)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Top paying patients</CardTitle></CardHeader>
+          <CardContent>
+            {d.topPatients.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No payments yet.</p>
+            ) : (
+              <ul className="space-y-1.5 text-sm">
+                {d.topPatients.map((p) => (
+                  <li key={p.patient} className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 truncate">{p.patient}</span>
+                    <span className="tabular-nums text-[var(--muted-foreground)]">{money(p.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </main>
   );
 }

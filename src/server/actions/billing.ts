@@ -62,6 +62,7 @@ export async function createInvoice(
   }
 
   revalidatePath("/billing");
+  revalidatePath("/billing/invoices");
   return ok({ invoiceId: invoice.id });
 }
 
@@ -100,6 +101,7 @@ export async function recordPayment(input: RecordPaymentInput): Promise<ActionRe
 
   revalidatePath(`/billing/${v.invoiceId}`);
   revalidatePath("/billing");
+  revalidatePath("/billing/invoices");
   return ok(undefined);
 }
 
@@ -116,5 +118,6 @@ export async function cancelInvoice(invoiceId: string): Promise<ActionResult> {
 
   revalidatePath(`/billing/${invoiceId}`);
   revalidatePath("/billing");
+  revalidatePath("/billing/invoices");
   return ok(undefined);
 }

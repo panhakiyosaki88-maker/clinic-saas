@@ -37,7 +37,7 @@ export default async function InvoiceDetailPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
       <div className="flex items-center justify-between print:hidden">
-        <Link href="/billing" className="text-sm text-[var(--muted-foreground)] hover:underline">← Billing</Link>
+        <Link href="/billing/invoices" className="text-sm text-[var(--muted-foreground)] hover:underline">← Invoices</Link>
         <div className="flex items-center gap-2">
           <PrintButton label="Invoice PDF" />
           {inv.payments.length > 0 && (
