@@ -2,6 +2,9 @@
  * Standard lab test panel, grouped by section. Used by the New Lab Request form
  * to let users tick the tests to order. Labels are display strings; the test
  * name is stored verbatim on each lab_request (one request per ticked test).
+ *
+ * Transcribed verbatim from the clinic's laboratory requisition sheet
+ * (medical_test_form_template.md) — kept faithful to the printed form.
  */
 export interface LabTestGroup {
   title: string;
@@ -10,7 +13,7 @@ export interface LabTestGroup {
 
 export const LAB_TEST_PANEL: LabTestGroup[] = [
   {
-    title: "Hématologie",
+    title: "HEMATOLOGIE",
     tests: [
       "Hg (CBC)",
       "Cytologie sanguine (Morphology)",
@@ -21,14 +24,14 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
     ],
   },
   {
-    title: "Biochimie sanguine",
+    title: "BIOCHIMIE SANGUINE",
     tests: [
       "Acide urique",
       "Albumine",
       "APO A-I",
       "APO B",
       "Bilirubine T & D",
-      "CO₂",
+      "CO2",
       "Calcémie",
       "Cholestérol totale",
       "Cholestérol HDL",
@@ -43,7 +46,7 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
       "Glycémie",
       "HbA1C",
       "C-peptide",
-      "Ionogramme (Na⁺, K⁺, Cl⁻)",
+      "Ionogramme (Na+, K+, Cl-)",
       "Magnésium",
       "Lactate",
       "CRP",
@@ -52,7 +55,7 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
     ],
   },
   {
-    title: "Enzymologie",
+    title: "ENZYMOLOGIE",
     tests: [
       "Amylasémie",
       "Lipase",
@@ -66,7 +69,7 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
     ],
   },
   {
-    title: "Marqueurs tumoraux",
+    title: "MARQUEURS TUMORAUX",
     tests: [
       "AFP",
       "ACE",
@@ -80,26 +83,26 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
     ],
   },
   {
-    title: "Recherche du B.K",
+    title: "RECHERCH DU B.K",
     tests: [
-      "Crachat (Sputum)",
+      "Grachat (Sputum)",
       "ECBC",
       "Sérologie Tuberculose (B.K) IgM+IgG",
     ],
   },
   {
-    title: "Hémostase",
+    title: "HEMOSTASE",
     tests: [
       "Taux de Prothrombine (PT)",
       "TCA (APTT)",
-      "Fibrinogène",
-      "Facteur V",
+      "Fibrinogéne",
+      "Factor V",
     ],
   },
   {
-    title: "Hépatites A, B, C",
+    title: "HEPATITES A, B, C",
     tests: [
-      "Ac Anti-HAV (IgM)",
+      "Ac Anti-HAV(IgM)",
       "Ag-HBs (ELISA)",
       "Ag-HBs (CLIA)",
       "Ag-HBs IU (quantitative)",
@@ -108,30 +111,30 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
       "Ag-HBe",
       "Ac Anti-HBe",
       "Ac Anti-HBc totale",
-      "Ac Anti-HCV (ELISA)",
-      "Ac Anti-HCV (CLIA)",
+      "Ac Anti-HCV(ELISA)",
+      "Ac Anti-HCV(CLIA)",
     ],
   },
   {
-    title: "Sérologie H.I.V",
+    title: "SEROLOGIE H.I.V",
     tests: [
       "H.I.V 1+2 (ELISA)",
       "H.I.V 1+2 (CLIA)",
     ],
   },
   {
-    title: "PCR de l'hépatites B, C",
+    title: "PCR DE L'HEPATITES B, C",
     tests: [
       "VHB-ADN (quantitative)",
-      "VHB-ADN génotype",
+      "VHB -AND GENOTYPE",
       "HCV-ARN (quantitative)",
-      "HCV-ARN génotype",
+      "HCV-ARN GENOTYPE",
     ],
   },
   {
-    title: "Sérologie et immunologie",
+    title: "SEROLOGIE ET IMMULOGIE",
     tests: [
-      "ASLO (Antistreptolysine O)",
+      "ASLO (Antistreptolisine O)",
       "Facteur Rhumatoïde",
       "Ig E totale",
       "Syphilis (TPHA + RPR)",
@@ -142,46 +145,46 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
     ],
   },
   {
-    title: "Hormonologie",
+    title: "HORMONOLOGIE",
     tests: [
       "FT3",
       "FT4",
       "TSH",
-      "Ac Anti-Récepteur TSH (TRAb)",
+      "Ac Anti-Recepteur TSH (TRAb)",
       "Anti-TPO",
-      "Anti-Thyroglobuline",
+      "Anti Thyroglobuline",
       "Thyroglobuline",
-      "Cortisol à 8h",
-      "Bêta HCG (quantitative)",
+      "Cortisol á 8h",
+      "Béta HCG (quantitative)",
     ],
   },
   {
-    title: "Sérologie des parasites",
+    title: "SEROLOGIE DES PARASITES",
     tests: [
       "Toxoplasmose IgM",
-      "Toxoplasmose IgG",
+      "Toxoplasmose Ig G",
       "Rubéole IgM",
       "Rubéole IgG",
     ],
   },
   {
-    title: "LCR, pleurale, ascite",
+    title: "LCR, PLEURALE, ASCITE",
     tests: [
       "Protéine, Glucose, Cytologie",
       "Culture",
     ],
   },
   {
-    title: "Parasitologie des selles",
+    title: "PARASITOLOGIE DES SELLES",
     tests: [
       "Parasitologie (KOPI)",
       "Coproculture",
     ],
   },
   {
-    title: "Biochimie urinaire",
+    title: "BIOCHIMIE URINAIRE",
     tests: [
-      "Protéine, Sucre",
+      "Protéine Sucre",
       "Cytologie urinaire",
       "Uroculture (ECBU)",
       "Protéine 24h (urine)",
@@ -189,7 +192,7 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
     ],
   },
   {
-    title: "Anémie / métabolique",
+    title: "ANEMIE / METABOLIQUE",
     tests: [
       "Vitamine B12",
       "Vitamine D (25-OH)",
@@ -197,7 +200,7 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
     ],
   },
   {
-    title: "Others",
+    title: "OTHERS",
     tests: [
       "Dengue (Ag-NS1, IgM, IgG)",
       "Dengue (IgM, IgG)",
@@ -207,10 +210,10 @@ export const LAB_TEST_PANEL: LabTestGroup[] = [
       "Procalcitonine",
       "Amphétamine (urine)",
       "Méthamphétamine (urine)",
-      "Électrophorèse d'Hémoglobine (EHb)",
-      "Électrophorèse Protéine",
+      "Électrophorése d'Hémoglobine (EHb)",
+      "Électrophorése Protéine",
       "Anti GAD65",
-      "Anti-IA₂",
+      "Anti-IA2",
       "IAA",
     ],
   },
