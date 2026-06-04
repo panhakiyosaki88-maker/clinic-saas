@@ -146,9 +146,11 @@ export function MiniCalendar({
               title={
                 doctors.length > 0
                   ? `${count} appt${count === 1 ? "" : "s"} · ${doctors.map((x) => x.name).join(", ")}`
-                  : undefined
+                  : count > 0
+                    ? `${count} appt${count === 1 ? "" : "s"}`
+                    : undefined
               }
-              className={`flex aspect-square flex-col items-center justify-center gap-0.5 rounded-lg border p-1 text-sm transition ${
+              className={`relative flex aspect-square flex-col items-center justify-center gap-0.5 rounded-lg border p-1 text-sm transition ${
                 isToday
                   ? "border-blue-500 bg-blue-50 font-semibold text-blue-700 dark:border-blue-500 dark:bg-blue-500/15 dark:text-blue-300"
                   : "border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800"
@@ -158,8 +160,19 @@ export function MiniCalendar({
                   : "text-slate-300 dark:text-slate-600"
               }`}
             >
+              {count > 0 && (
+                <span
+                  className={`absolute right-0.5 top-0.5 inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-4 ${
+                    isToday
+                      ? "bg-blue-600 text-white"
+                      : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
               <span className="leading-none">{d.getDate()}</span>
-              {doctors.length > 0 ? (
+              {doctors.length > 0 && (
                 <span className="flex -space-x-1.5">
                   {doctors.slice(0, 3).map((doc, i) => (
                     <DoctorAvatar
@@ -176,17 +189,7 @@ export function MiniCalendar({
                     </span>
                   )}
                 </span>
-              ) : count > 0 ? (
-                <span
-                  className={`inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-4 ${
-                    isToday
-                      ? "bg-blue-600 text-white"
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
-                  }`}
-                >
-                  {count}
-                </span>
-              ) : null}
+              )}
             </Link>
           );
         })}
