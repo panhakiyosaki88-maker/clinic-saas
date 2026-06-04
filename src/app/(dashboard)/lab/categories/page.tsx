@@ -5,7 +5,7 @@ import { listLabCategoryTree } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { CategoryForm } from "@/components/lab/category-form";
-import { DeleteCategoryButton, ImportPanelButton } from "@/components/lab/lab-category-controls";
+import { AddSubgroupForm, DeleteCategoryButton, ImportPanelButton } from "@/components/lab/lab-category-controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Lab categories" };
@@ -30,9 +30,9 @@ export default async function LabCategoriesPage() {
 
       {canWrite && (
         <Card>
-          <CardHeader><CardTitle>Add group or subgroup</CardTitle></CardHeader>
+          <CardHeader><CardTitle>New group</CardTitle></CardHeader>
           <CardContent>
-            <CategoryForm groups={groups.map((g) => ({ id: g.id, name: g.name }))} />
+            <CategoryForm />
           </CardContent>
         </Card>
       )}
@@ -55,9 +55,9 @@ export default async function LabCategoriesPage() {
               </CardHeader>
               <CardContent className="p-0">
                 {g.children.length === 0 ? (
-                  <p className="px-4 pb-4 text-sm text-[var(--muted-foreground)]">No subgroups.</p>
+                  <p className="px-4 text-sm text-[var(--muted-foreground)]">No subgroups.</p>
                 ) : (
-                  <ul className="divide-y divide-[var(--border)]">
+                  <ul className="divide-y divide-[var(--border)] border-b border-[var(--border)]">
                     {g.children.map((c) => (
                       <li key={c.id} className="flex items-center justify-between px-4 py-2 text-sm">
                         <span>{c.name}</span>
@@ -66,6 +66,7 @@ export default async function LabCategoriesPage() {
                     ))}
                   </ul>
                 )}
+                {canWrite && <AddSubgroupForm groupId={g.id} />}
               </CardContent>
             </Card>
           ))}

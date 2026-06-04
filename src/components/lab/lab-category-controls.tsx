@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Download } from "lucide-react";
-import { deleteLabCategory, seedLabPanelCategories } from "@/server/actions/lab";
+import { Trash2, Download, Plus } from "lucide-react";
+import { createLabCategory, deleteLabCategory, seedLabPanelCategories } from "@/server/actions/lab";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 /** Deletes a group (cascades to its subgroups) or a single subgroup. */
 export function DeleteCategoryButton({
@@ -42,6 +43,36 @@ export function DeleteCategoryButton({
     >
       <Trash2 className="h-4 w-4" />
     </Button>
+  );
+}
+
+/** Inline input to add a subgroup directly under a group. */
+export function AddSubgroupForm({ groupId }: { groupId: string }) {
+  const router = useRouter();
+  const [pending, startTransition] = React.useTransition();
+  const [error, setError] = React.useState<string | null>(null);
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const form = e.currentTarget;
+    const name = String(new FormData(form).get("name") ?? "");
+    startTransition(async () => {
+      const res = await createLabCategory({ name, description: "", parentId: groupId });
+      if (!res.ok) return setError(res.error);
+      form.reset();
+      router.refresh();
+    });
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="flex items-center gap-2 px-4 py-2">
+      <Input name="name" placeholder="Add subgroup…" className="h-8 max-w-xs" required />
+      <Button type="submit" size="sm" variant="outline" disabled={pending}>
+        <Plus className="h-4 w-4" /> {pending ? "Adding…" : "Add"}
+      </Button>
+      {error && <span className="text-xs text-[var(--destructive)]">{error}</span>}
+    </form>
   );
 }
 
