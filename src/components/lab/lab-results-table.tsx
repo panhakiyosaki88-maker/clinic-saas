@@ -58,37 +58,22 @@ export function LabResultsTable({ clinicId, tests }: { clinicId: string; tests: 
     try {
       for (const t of tests) {
         if (t.status === "cancelled") continue;
-        const value = String(f.get(`value:${t.id}`) ?? "").trim();
-        const unit = String(f.get(`unit:${t.id}`) ?? "").trim();
-        const ref = String(f.get(`ref:${t.id}`) ?? "").trim();
-        const notes = String(f.get(`notes:${t.id}`) ?? "").trim();
         const file = (f.get(`file:${t.id}`) as File) || null;
-        const hasFile = !!file && file.size > 0;
-        if (!value && !unit && !ref && !notes && !hasFile) continue;
+        if (!file || file.size === 0) continue;
 
-        let filePath: string | undefined;
-        let fileName: string | undefined;
-        if (hasFile) {
-          const path = `${clinicId}/${t.id}/${crypto.randomUUID()}-${safeName(file.name)}`;
-          const { error: upErr } = await supabase.storage
-            .from("lab-results")
-            .upload(path, file, { contentType: file.type || undefined });
-          if (upErr) {
-            setError(`${t.test_name}: ${upErr.message}`);
-            return;
-          }
-          filePath = path;
-          fileName = file.name;
+        const path = `${clinicId}/${t.id}/${crypto.randomUUID()}-${safeName(file.name)}`;
+        const { error: upErr } = await supabase.storage
+          .from("lab-results")
+          .upload(path, file, { contentType: file.type || undefined });
+        if (upErr) {
+          setError(`${t.test_name}: ${upErr.message}`);
+          return;
         }
 
         const res = await addLabResult({
           requestId: t.id,
-          resultValue: value,
-          unit,
-          referenceRange: ref,
-          resultText: notes,
-          filePath,
-          fileName,
+          filePath: path,
+          fileName: file.name,
         });
         if (!res.ok) {
           setError(`${t.test_name}: ${res.error}`);
@@ -117,10 +102,6 @@ export function LabResultsTable({ clinicId, tests }: { clinicId: string; tests: 
           <tr>
             <TH>Test</TH>
             <TH>Status</TH>
-            <TH>Value</TH>
-            <TH>Unit</TH>
-            <TH>Reference</TH>
-            <TH>Notes</TH>
             <TH>Report file</TH>
           </tr>
         </THead>
@@ -133,18 +114,11 @@ export function LabResultsTable({ clinicId, tests }: { clinicId: string; tests: 
                 <TD className="min-w-[12rem]">
                   <div className="font-medium">{t.test_name}</div>
                   {t.category_name && <div className="text-xs text-slate-400">{t.category_name}</div>}
-                  {latest && (
+                  {latest?.signedUrl && (
                     <div className="mt-0.5 text-xs text-[var(--muted-foreground)]">
-                      Last: {latest.result_value ?? "—"}{latest.unit ? ` ${latest.unit}` : ""}
-                      {latest.reference_range ? ` (ref ${latest.reference_range})` : ""}
-                      {latest.signedUrl && (
-                        <>
-                          {" · "}
-                          <a href={latest.signedUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline">
-                            {latest.file_name ?? "Report"}
-                          </a>
-                        </>
-                      )}
+                      <a href={latest.signedUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline">
+                        {latest.file_name ?? "Report"}
+                      </a>
                     </div>
                   )}
                 </TD>
@@ -157,15 +131,9 @@ export function LabResultsTable({ clinicId, tests }: { clinicId: string; tests: 
                   )}
                 </TD>
                 {active ? (
-                  <>
-                    <TD><Input name={`value:${t.id}`} className={`${inputClass} w-24`} /></TD>
-                    <TD><Input name={`unit:${t.id}`} className={`${inputClass} w-20`} /></TD>
-                    <TD><Input name={`ref:${t.id}`} className={`${inputClass} w-28`} /></TD>
-                    <TD><Input name={`notes:${t.id}`} className={`${inputClass} w-40`} /></TD>
-                    <TD><Input name={`file:${t.id}`} type="file" className={`${inputClass} w-44 text-xs`} /></TD>
-                  </>
+                  <TD><Input name={`file:${t.id}`} type="file" className={`${inputClass} w-44 text-xs`} /></TD>
                 ) : (
-                  <TD colSpan={5} className="text-xs text-slate-400">Cancelled</TD>
+                  <TD className="text-xs text-slate-400">Cancelled</TD>
                 )}
               </TR>
             );
@@ -175,9 +143,9 @@ export function LabResultsTable({ clinicId, tests }: { clinicId: string; tests: 
       </div>
 
       {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
-      {saved > 0 && <p className="text-sm text-emerald-600 dark:text-emerald-400">Saved {saved} result{saved === 1 ? "" : "s"}.</p>}
+      {saved > 0 && <p className="text-sm text-emerald-600 dark:text-emerald-400">Uploaded {saved} report{saved === 1 ? "" : "s"}.</p>}
 
-      <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Save results"}</Button>
+      <Button type="submit" disabled={pending}>{pending ? "Uploading…" : "Upload reports"}</Button>
     </form>
   );
 }
