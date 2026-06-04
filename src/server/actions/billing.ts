@@ -313,6 +313,23 @@ export async function createInvoiceFromSources(
   return ok({ invoiceId: invoice.id });
 }
 
+/** Bulk-voids invoices (skips ones already paid). Used by the invoice table. */
+export async function voidInvoices(invoiceIds: string[]): Promise<ActionResult<{ voided: number }>> {
+  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  if (invoiceIds.length === 0) return ok({ voided: 0 });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("invoices")
+    .update({ status: "cancelled", voided_at: new Date().toISOString() })
+    .in("id", invoiceIds)
+    .eq("clinic_id", clinicId)
+    .neq("status", "paid")
+    .select("id");
+  if (error) return fail(error.message);
+  revalidateBilling();
+  return ok({ voided: data?.length ?? 0 });
+}
+
 /** Records a payment against an invoice. Triggers recompute the balance/status. */
 export async function recordPayment(input: RecordPaymentInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
