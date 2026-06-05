@@ -55,6 +55,23 @@ export async function createPrescription(
     return fail(itemsErr.message);
   }
 
+  // Best-effort: register any newly prescribed medicines in the pharmacy
+  // catalog so they're suggested next time. Needs pharmacy.write — silently
+  // skipped for users without it, and never blocks the prescription.
+  const names = Array.from(
+    new Set(v.items.map((it) => it.medicineName.trim()).filter((n) => n.length > 0))
+  );
+  if (names.length > 0) {
+    const { data: existing } = await supabase.from("medicines").select("name").is("deleted_at", null);
+    const known = new Set((existing ?? []).map((m) => m.name.trim().toLowerCase()));
+    const toAdd = names.filter((n) => !known.has(n.toLowerCase()));
+    if (toAdd.length > 0) {
+      await supabase
+        .from("medicines")
+        .insert(toAdd.map((name) => ({ clinic_id: clinicId, name, created_by: user.id })));
+    }
+  }
+
   await supabase.from("patient_timeline").insert({
     clinic_id: clinicId,
     patient_id: v.patientId,
@@ -66,6 +83,7 @@ export async function createPrescription(
 
   revalidatePath("/prescriptions");
   revalidatePath(`/patients/${v.patientId}`);
+  revalidatePath("/pharmacy");
   return ok({ prescriptionId: rx.id });
 }
 
