@@ -1,5 +1,5 @@
 -- ============================================================================
--- Migration 0026 — Branch on remaining clinical modules
+-- Migration 0029 — Branch on remaining clinical modules
 -- ----------------------------------------------------------------------------
 -- Extends the per-branch dimension (already on patients/doctors/appointments/
 -- visits/invoices) to prescriptions, lab requests and pharmacy stock movements.
