@@ -26,7 +26,7 @@ export default async function MedicineDetailPage({
   if (!medicine) notFound();
 
   const canWrite = await hasPermission(PERMISSIONS.PHARMACY_WRITE);
-  const { branches, activeId } = await getActiveBranchContext();
+  const { branches, activeId, primaryId } = await getActiveBranchContext();
   const transactions = await listTransactions(id);
   const low = medicine.is_active && medicine.stock_quantity <= medicine.reorder_level;
 
@@ -82,7 +82,7 @@ export default async function MedicineDetailPage({
             <TransactionForm
               medicineId={id}
               branches={branches.map((b) => ({ id: b.id, name: b.name }))}
-              defaultBranchId={activeId}
+              defaultBranchId={activeId ?? primaryId}
             />
           </CardContent>
         </Card>

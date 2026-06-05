@@ -19,7 +19,7 @@ export default async function NewRecordPage({
   if (!(await hasPermission(PERMISSIONS.EMR_WRITE))) redirect(`/patients/${(await params).id}`);
 
   const { id } = await params;
-  const [patient, { branches, activeId }] = await Promise.all([
+  const [patient, { branches, activeId, primaryId }] = await Promise.all([
     getPatient(id),
     getActiveBranchContext(),
   ]);
@@ -36,7 +36,7 @@ export default async function NewRecordPage({
       <RecordForm
         patientId={id}
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
-        defaultBranchId={activeId}
+        defaultBranchId={activeId ?? primaryId}
       />
     </main>
   );

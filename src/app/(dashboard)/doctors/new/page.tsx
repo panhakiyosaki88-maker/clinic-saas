@@ -13,7 +13,7 @@ export default async function NewDoctorPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.DOCTORS_WRITE))) redirect("/doctors");
 
-  const { branches, activeId } = await getActiveBranchContext();
+  const { branches, activeId, primaryId } = await getActiveBranchContext();
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -25,7 +25,7 @@ export default async function NewDoctorPage() {
       </header>
       <DoctorForm
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
-        defaultBranchId={activeId}
+        defaultBranchId={activeId ?? primaryId}
       />
     </main>
   );

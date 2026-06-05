@@ -20,7 +20,7 @@ export default async function NewAppointmentPage({
   if (!(await hasPermission(PERMISSIONS.APPOINTMENTS_WRITE))) redirect("/appointments");
 
   const sp = await searchParams;
-  const [patients, doctors, { branches, activeId }] = await Promise.all([
+  const [patients, doctors, { branches, activeId, primaryId }] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     getActiveBranchContext(),
@@ -39,7 +39,7 @@ export default async function NewAppointmentPage({
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
         defaultPatientId={sp.patientId}
-        defaultBranchId={activeId}
+        defaultBranchId={activeId ?? primaryId}
         defaultDate={sp.date}
         defaultWalkIn={sp.walkin === "1"}
       />

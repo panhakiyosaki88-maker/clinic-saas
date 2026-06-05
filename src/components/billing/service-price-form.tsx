@@ -17,9 +17,11 @@ export interface BranchOption { id: string; name: string }
 export function ServicePriceForm({
   branches,
   service,
+  defaultBranchId,
 }: {
   branches: BranchOption[];
   service?: ServicePrice;
+  defaultBranchId?: string | null;
 }) {
   const router = useRouter();
   const isEdit = !!service;
@@ -78,7 +80,7 @@ export function ServicePriceForm({
       {branches.length > 0 && (
         <div className="space-y-1">
           <Label htmlFor="branchId" className="text-xs">Branch (optional)</Label>
-          <select id="branchId" name="branchId" className={selectClass} defaultValue={service?.branch_id ?? ""}>
+          <select id="branchId" name="branchId" className={selectClass} defaultValue={service?.branch_id ?? defaultBranchId ?? ""}>
             <option value="">All branches</option>
             {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>

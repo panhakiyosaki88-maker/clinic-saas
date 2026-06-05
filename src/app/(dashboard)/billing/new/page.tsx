@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
+import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
@@ -19,10 +20,10 @@ export default async function NewInvoicePage({
   if (!(await hasPermission(PERMISSIONS.BILLING_WRITE))) redirect("/billing");
 
   const sp = await searchParams;
-  const [patients, doctors, branches] = await Promise.all([
+  const [patients, doctors, { branches, activeId, primaryId }] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
-    listBranches(),
+    getActiveBranchContext(),
   ]);
 
   return (
@@ -36,6 +37,7 @@ export default async function NewInvoicePage({
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
         defaultPatientId={sp.patientId}
+        defaultBranchId={activeId ?? primaryId}
       />
     </main>
   );

@@ -36,12 +36,14 @@ export function InvoiceForm({
   doctors,
   branches,
   defaultPatientId,
+  defaultBranchId,
   invoice,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
   branches: BranchOption[];
   defaultPatientId?: string;
+  defaultBranchId?: string | null;
   invoice?: InvoiceFormData;
 }) {
   const router = useRouter();
@@ -109,7 +111,7 @@ export function InvoiceForm({
         {branches.length > 0 && (
           <div className="space-y-2">
             <Label htmlFor="branchId">Branch (optional)</Label>
-            <select id="branchId" name="branchId" className={selectClass} defaultValue={invoice?.branch_id ?? ""}>
+            <select id="branchId" name="branchId" className={selectClass} defaultValue={invoice?.branch_id ?? defaultBranchId ?? ""}>
               <option value="">No branch</option>
               {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>

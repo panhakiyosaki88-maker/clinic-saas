@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
+import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listServicePrices, getServicePrice } from "@/lib/db/queries/service-prices";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -27,9 +28,9 @@ export default async function CatalogPage({
   const sp = await searchParams;
   const showArchived = sp.archived === "1";
 
-  const [prices, branches, editing] = await Promise.all([
+  const [prices, { branches, activeId }, editing] = await Promise.all([
     listServicePrices(showArchived),
-    listBranches(),
+    getActiveBranchContext(),
     canWrite && sp.edit ? getServicePrice(sp.edit) : Promise.resolve(null),
   ]);
   const branchOpts = branches.map((b) => ({ id: b.id, name: b.name }));
@@ -43,7 +44,7 @@ export default async function CatalogPage({
         <Card>
           <CardHeader><CardTitle>{editing ? "Edit price" : "Add price"}</CardTitle></CardHeader>
           <CardContent>
-            <ServicePriceForm branches={branchOpts} service={editing ?? undefined} />
+            <ServicePriceForm branches={branchOpts} service={editing ?? undefined} defaultBranchId={activeId} />
           </CardContent>
         </Card>
       )}

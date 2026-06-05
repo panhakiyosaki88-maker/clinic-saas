@@ -22,7 +22,7 @@ export default async function NewLabRequestPage({
   if (!(await hasPermission(PERMISSIONS.LAB_WRITE))) redirect("/lab");
 
   const sp = await searchParams;
-  const [patients, doctors, tree, { branches, activeId }] = await Promise.all([
+  const [patients, doctors, tree, { branches, activeId, primaryId }] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     listLabCategoryTree(),
@@ -52,7 +52,7 @@ export default async function NewLabRequestPage({
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
         defaultPatientId={sp.patientId}
-        defaultBranchId={activeId}
+        defaultBranchId={activeId ?? primaryId}
         panel={panel}
       />
     </main>
