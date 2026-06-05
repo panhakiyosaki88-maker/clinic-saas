@@ -43,8 +43,27 @@ const blankRow = (): Row => ({
   quantity: "",
 });
 
+/** Parse a dose amount that may be a whole number, a decimal, a fraction
+ *  ("1/2", "3/4") or a mixed number ("1 1/2"). Invalid input counts as 0. */
+function parseAmount(raw: string): number {
+  const s = raw.trim();
+  if (!s) return 0;
+  const mixed = s.match(/^(\d+)\s+(\d+)\/(\d+)$/); // "1 1/2"
+  if (mixed) {
+    const d = Number(mixed[3]);
+    return d ? Number(mixed[1]) + Number(mixed[2]) / d : Number(mixed[1]);
+  }
+  const frac = s.match(/^(\d+)\/(\d+)$/); // "1/2"
+  if (frac) {
+    const d = Number(frac[2]);
+    return d ? Number(frac[1]) / d : 0;
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
 /** Units taken per day = sum of the four time-of-day amounts. */
-const perDay = (r: Row) => TIMES_OF_DAY.reduce((s, t) => s + (Number(r.amounts[t]) || 0), 0);
+const perDay = (r: Row) => TIMES_OF_DAY.reduce((s, t) => s + parseAmount(r.amounts[t]), 0);
 /** Auto quantity = per-day amount × duration in days. */
 const autoQty = (r: Row) => perDay(r) * (Number(r.durationDays) || 0);
 /** Effective quantity: the manual override when set, otherwise the auto value. */
@@ -121,12 +140,15 @@ export function PrescriptionForm({
         branchId: String(f.get("branchId") ?? ""),
         notes: String(f.get("notes") ?? ""),
         items: rows.map((r) => {
-          const filled = TIMES_OF_DAY.filter((t) => (Number(r.amounts[t]) || 0) > 0);
+          const filled = TIMES_OF_DAY.filter((t) => parseAmount(r.amounts[t]) > 0);
           const qty = effectiveQty(r);
           return {
             medicineName: r.medicineName,
-            // Dosage as the standard morning-afternoon-evening-night pattern, e.g. "1-0-1-0".
-            dosage: filled.length ? TIMES_OF_DAY.map((t) => Number(r.amounts[t]) || 0).join("-") : "",
+            // Dosage as the standard morning-afternoon-evening-night pattern, e.g.
+            // "1-0-1-0" or "1/2-0-1/2-0" (raw amounts kept so fractions print).
+            dosage: filled.length
+              ? TIMES_OF_DAY.map((t) => (r.amounts[t].trim() === "" ? "0" : r.amounts[t].trim())).join("-")
+              : "",
             frequency: filled.length ? `${filled.length}×/day` : "",
             duration: r.durationDays
               ? `${r.durationDays} ${Number(r.durationDays) === 1 ? "day" : "days"}`
@@ -218,10 +240,8 @@ export function PrescriptionForm({
                   <label key={time} className="space-y-1">
                     <span className="text-xs text-[var(--muted-foreground)]">{time}</span>
                     <Input
-                      type="number"
-                      min="0"
-                      step="any"
-                      inputMode="decimal"
+                      type="text"
+                      inputMode="text"
                       placeholder="0"
                       value={r.amounts[time]}
                       onChange={(e) => updateAmount(r.key, time, e.target.value)}
@@ -229,6 +249,9 @@ export function PrescriptionForm({
                   </label>
                 ))}
               </div>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Whole numbers or fractions — e.g. 1/4, 1/2, 3/4, 1, 1 1/2.
+              </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_2fr]">
               <div className="space-y-1">

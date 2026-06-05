@@ -19,14 +19,13 @@ function withDoctorTitle(name: string): string {
 /** The four dosing times, in printed-column order. */
 const DOSE_TIMES = ["Morning", "Afternoon", "Evening", "Night"] as const;
 
-/** Parse a stored dosage pattern "M-A-E-N" (e.g. "1-0-1-0") into four numbers.
- *  Returns null for legacy / free-text dosage so it can be shown as-is. */
-function parseDose(dosage: string | null): number[] | null {
+/** Parse a stored dosage pattern "M-A-E-N" into its four slot amounts. Slots may
+ *  be whole numbers or fractions (e.g. "1-0-1-0" or "1/2-0-1/2-0"). Returns null
+ *  for legacy / free-text dosage so it can be shown as-is. */
+function parseDose(dosage: string | null): string[] | null {
   if (!dosage) return null;
   const parts = dosage.trim().split("-");
-  if (parts.length !== 4) return null;
-  const nums = parts.map((p) => Number(p));
-  return nums.some((n) => Number.isNaN(n)) ? null : nums;
+  return parts.length === 4 ? parts.map((p) => p.trim()) : null;
 }
 
 export default async function PrescriptionDetailPage({
@@ -101,8 +100,8 @@ export default async function PrescriptionDetailPage({
                     )}
                   </td>
                   {dose ? (
-                    dose.map((n, i) => (
-                      <td key={i} className="py-2 text-center tabular-nums">{n > 0 ? n : "—"}</td>
+                    dose.map((v, i) => (
+                      <td key={i} className="py-2 text-center tabular-nums">{v && v !== "0" ? v : "—"}</td>
                     ))
                   ) : (
                     <td colSpan={4} className="py-2 text-center text-xs text-[var(--muted-foreground)]">
