@@ -10,11 +10,13 @@ import {
   recordPaymentSchema,
   refundPaymentSchema,
   billFromSourcesSchema,
+  billFromVisitSchema,
   type CreateInvoiceInput,
   type EditInvoiceInput,
   type RecordPaymentInput,
   type RefundPaymentInput,
   type BillFromSourcesInput,
+  type BillFromVisitInput,
 } from "@/lib/validations/invoice";
 import { ok, fail, type ActionResult } from "./types";
 
@@ -310,6 +312,97 @@ export async function createInvoiceFromSources(
 
   revalidateBilling();
   revalidatePath(`/patients/${v.patientId}`);
+  return ok({ invoiceId: invoice.id });
+}
+
+/**
+ * Billing Workspace → invoice. Takes the reviewed, category-tagged lines for a
+ * patient/visit (detected charges plus any manual ones, with edits/overrides
+ * already applied) and creates one invoice: category-tagged line items + a
+ * source link per detected line so each charge is billed at most once. The
+ * passed discount already folds in any membership benefit. Drops any line whose
+ * source is already billed (dedupe guard).
+ */
+export async function createInvoiceFromVisit(
+  input: BillFromVisitInput
+): Promise<ActionResult<{ invoiceId: string }>> {
+  const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const parsed = billFromVisitSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail(parsed.error.flatten().formErrors[0] ?? "Please fix the highlighted fields.");
+  }
+  const v = parsed.data;
+  const supabase = await createClient();
+
+  // Dedupe: drop detected lines whose source is already linked to an invoice.
+  const sourced = v.lines.filter((l) => l.source !== "manual" && l.sourceId);
+  let billed = new Set<string>();
+  if (sourced.length > 0) {
+    const { data: links } = await supabase
+      .from("invoice_source_links")
+      .select("source, source_id")
+      .in("source", [...new Set(sourced.map((l) => l.source))]);
+    billed = new Set((links ?? []).map((l) => `${l.source}:${l.source_id}`));
+  }
+  const lines = v.lines.filter((l) => l.source === "manual" || !l.sourceId || !billed.has(`${l.source}:${l.sourceId}`));
+  if (lines.length === 0) return fail("Those charges are already billed.");
+
+  const { data: invoice, error } = await supabase
+    .from("invoices")
+    .insert({
+      clinic_id: clinicId,
+      patient_id: v.patientId,
+      visit_id: v.visitId || null,
+      source: "visit",
+      service_type: "Visit",
+      status: v.asDraft ? "draft" : "unpaid",
+      discount: v.discount,
+      tax: v.tax,
+      notes: v.notes || null,
+      created_by: user.id,
+    })
+    .select("id")
+    .single();
+  if (error || !invoice) return fail(error?.message ?? "Could not create invoice.");
+
+  const { error: itemsErr } = await supabase.from("invoice_items").insert(
+    lines.map((l, i) => ({
+      clinic_id: clinicId,
+      invoice_id: invoice.id,
+      description: l.description,
+      quantity: l.quantity,
+      unit_price: l.unitPrice,
+      category: l.category,
+      sort_order: i,
+    }))
+  );
+  if (itemsErr) {
+    await supabase.from("invoices").delete().eq("id", invoice.id);
+    return fail(itemsErr.message);
+  }
+
+  // Link each detected source so it can never be billed again.
+  const linkRows = lines
+    .filter((l) => l.source !== "manual" && l.sourceId)
+    .map((l) => ({ clinic_id: clinicId, invoice_id: invoice.id, source: l.source, source_id: l.sourceId as string }));
+  if (linkRows.length > 0) {
+    await supabase
+      .from("invoice_source_links")
+      .upsert(linkRows, { onConflict: "clinic_id,source,source_id", ignoreDuplicates: true });
+  }
+
+  await supabase.from("patient_timeline").insert({
+    clinic_id: clinicId,
+    patient_id: v.patientId,
+    event_type: "invoice",
+    title: v.asDraft ? "Draft invoice created" : "Invoice created",
+    description: `${lines.length} item${lines.length === 1 ? "" : "s"}`,
+    created_by: user.id,
+  });
+
+  revalidateBilling();
+  revalidatePath(`/patients/${v.patientId}`);
+  if (v.visitId) revalidatePath(`/visits/${v.visitId}`);
   return ok({ invoiceId: invoice.id });
 }
 
