@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createPrescription } from "@/server/actions/prescriptions";
+import { createPrescription, dismissMedicineSuggestion } from "@/server/actions/prescriptions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +65,14 @@ export function PrescriptionForm({
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [rows, setRows] = React.useState<Row[]>([blankRow()]);
+  // Live copy of the suggestions so dismissing a "Used before" name removes it
+  // from every medicine row's typeahead immediately.
+  const [suggestions, setSuggestions] = React.useState<MedicineSuggestion[]>(medicineSuggestions);
+
+  function dismissSuggestion(name: string) {
+    setSuggestions((ss) => ss.filter((s) => s.name.toLowerCase() !== name.toLowerCase()));
+    void dismissMedicineSuggestion(name);
+  }
 
   const [patientId, setPatientId] = React.useState(defaultPatientId ?? "");
   const [doctorId, setDoctorId] = React.useState(
@@ -201,10 +209,11 @@ export function PrescriptionForm({
                 <span className="text-xs font-medium text-[var(--muted-foreground)]">Medicine *</span>
                 <MedicineCombobox
                   value={r.medicineName}
-                  suggestions={medicineSuggestions}
+                  suggestions={suggestions}
                   required
                   onType={(v) => update(r.key, "medicineName", v)}
                   onPick={(s) => pickMedicine(r.key, s)}
+                  onDismiss={dismissSuggestion}
                 />
               </div>
               <div className="space-y-1">
@@ -278,12 +287,15 @@ function MedicineCombobox({
   suggestions,
   onType,
   onPick,
+  onDismiss,
   required,
 }: {
   value: string;
   suggestions: MedicineSuggestion[];
   onType: (v: string) => void;
   onPick: (s: MedicineSuggestion) => void;
+  /** Permanently hide a "Used before" suggestion (history-only names). */
+  onDismiss?: (name: string) => void;
   required?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
@@ -340,13 +352,14 @@ function MedicineCombobox({
       {open && matches.length > 0 && (
         <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-[var(--border)] bg-[var(--card)] py-1 text-sm shadow-lg">
           {matches.map((s, i) => (
-            <li key={s.name}>
+            <li
+              key={s.name}
+              className={`flex items-center ${i === highlight ? "bg-slate-100 dark:bg-slate-800" : ""}`}
+              onMouseEnter={() => setHighlight(i)}
+            >
               <button
                 type="button"
-                className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left ${
-                  i === highlight ? "bg-slate-100 dark:bg-slate-800" : ""
-                }`}
-                onMouseEnter={() => setHighlight(i)}
+                className="flex flex-1 items-center justify-between gap-2 px-3 py-1.5 text-left"
                 onClick={() => choose(s)}
               >
                 <span>
@@ -359,6 +372,17 @@ function MedicineCombobox({
                   {s.inCatalog ? "Pharmacy" : "Used before"}
                 </span>
               </button>
+              {!s.inCatalog && onDismiss && (
+                <button
+                  type="button"
+                  aria-label={`Remove “${s.name}” from suggestions`}
+                  title="Remove from suggestions"
+                  className="px-2 py-1.5 text-[var(--muted-foreground)] hover:text-[var(--destructive)]"
+                  onClick={() => onDismiss(s.name)}
+                >
+                  ✕
+                </button>
+              )}
             </li>
           ))}
         </ul>

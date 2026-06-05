@@ -1608,6 +1608,24 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["patient_visits"]["Insert"]>;
         Relationships: [];
       };
+      dismissed_medicine_names: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          name: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          name: string;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["dismissed_medicine_names"]["Insert"]>;
+        Relationships: [];
+      };
       procedures: {
         Row: {
           id: string;

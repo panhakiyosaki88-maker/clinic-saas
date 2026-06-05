@@ -29,7 +29,7 @@ export interface MedicineSuggestion {
  *  their strength). */
 export async function listMedicineSuggestions(): Promise<MedicineSuggestion[]> {
   const supabase = await createClient();
-  const [catalog, history] = await Promise.all([
+  const [catalog, history, dismissed] = await Promise.all([
     supabase
       .from("medicines")
       .select("name, strength")
@@ -41,9 +41,13 @@ export async function listMedicineSuggestions(): Promise<MedicineSuggestion[]> {
       .select("medicine_name")
       .order("created_at", { ascending: false })
       .limit(2000),
+    supabase.from("dismissed_medicine_names").select("name"),
   ]);
   if (catalog.error) throw catalog.error;
   if (history.error) throw history.error;
+  if (dismissed.error) throw dismissed.error;
+
+  const dismissedKeys = new Set((dismissed.data ?? []).map((d) => d.name.trim().toLowerCase()));
 
   const byKey = new Map<string, MedicineSuggestion>();
   for (const m of catalog.data ?? []) {
@@ -54,7 +58,10 @@ export async function listMedicineSuggestions(): Promise<MedicineSuggestion[]> {
   for (const it of history.data ?? []) {
     const name = (it.medicine_name ?? "").trim();
     const key = name.toLowerCase();
-    if (key && !byKey.has(key)) byKey.set(key, { name, strength: null, inCatalog: false });
+    // Skip history-only names the clinic has dismissed from the typeahead.
+    if (key && !byKey.has(key) && !dismissedKeys.has(key)) {
+      byKey.set(key, { name, strength: null, inCatalog: false });
+    }
   }
   return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
 }

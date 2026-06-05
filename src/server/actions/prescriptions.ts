@@ -92,6 +92,27 @@ export async function createPrescription(
   return ok({ prescriptionId: rx.id });
 }
 
+/**
+ * Hides a "Used before" name from the prescription medicine typeahead,
+ * clinic-wide. Only affects suggestions (history names are derived from past
+ * prescriptions) — it never touches the prescriptions themselves. Idempotent.
+ */
+export async function dismissMedicineSuggestion(name: string): Promise<ActionResult> {
+  const { clinicId, user } = await requirePermission(PERMISSIONS.PRESCRIPTIONS_WRITE);
+  const trimmed = name.trim();
+  if (!trimmed) return fail("Nothing to dismiss.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("dismissed_medicine_names")
+    .insert({ clinic_id: clinicId, name: trimmed, created_by: user.id });
+  // 23505 = already dismissed (unique on clinic_id, lower(name)); that's fine.
+  if (error && error.code !== "23505") return fail(error.message);
+
+  revalidatePath("/prescriptions/new");
+  return ok(undefined);
+}
+
 /** Soft delete (void) — clinical records are retained. */
 export async function deletePrescription(
   prescriptionId: string,
