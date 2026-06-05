@@ -184,14 +184,29 @@ export function PrescriptionForm({
         {rows.map((r) => (
           <div key={r.key} className="space-y-2 rounded-lg border border-[var(--border)] p-3">
             <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_1fr_0.7fr]">
-              <Input placeholder="Medicine *" value={r.medicineName} onChange={(e) => update(r.key, "medicineName", e.target.value)} required />
-              <Input placeholder="Dosage" value={r.dosage} onChange={(e) => update(r.key, "dosage", e.target.value)} />
-              <Input placeholder="Frequency" value={r.frequency} onChange={(e) => update(r.key, "frequency", e.target.value)} />
-              <div className="flex items-center gap-1.5">
-                <Input placeholder="Duration" type="number" min="0" value={r.durationDays} onChange={(e) => update(r.key, "durationDays", e.target.value)} />
-                <span className="text-sm text-[var(--muted-foreground)]">days</span>
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Medicine *</span>
+                <Input value={r.medicineName} onChange={(e) => update(r.key, "medicineName", e.target.value)} required />
               </div>
-              <Input placeholder="Qty" type="number" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} />
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Dosage</span>
+                <Input value={r.dosage} onChange={(e) => update(r.key, "dosage", e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Frequency</span>
+                <Input value={r.frequency} onChange={(e) => update(r.key, "frequency", e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Duration</span>
+                <div className="flex items-center gap-1.5">
+                  <Input type="number" min="0" value={r.durationDays} onChange={(e) => update(r.key, "durationDays", e.target.value)} />
+                  <span className="text-sm text-[var(--muted-foreground)]">days</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Qty</span>
+                <Input type="number" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} />
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
               <span className="text-xs font-medium text-[var(--muted-foreground)]">When to take</span>
@@ -207,8 +222,11 @@ export function PrescriptionForm({
                 </label>
               ))}
             </div>
-            <div className="flex gap-2">
-              <Input placeholder="Instructions" value={r.instructions} onChange={(e) => update(r.key, "instructions", e.target.value)} />
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-1">
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Instructions</span>
+                <Input value={r.instructions} onChange={(e) => update(r.key, "instructions", e.target.value)} />
+              </div>
               <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>
                 Remove
               </Button>
