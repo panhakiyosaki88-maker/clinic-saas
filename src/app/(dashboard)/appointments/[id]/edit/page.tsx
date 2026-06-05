@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getAppointment } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
@@ -19,7 +19,11 @@ export default async function EditAppointmentPage({
   const { id } = await params;
   if (!(await hasPermission(PERMISSIONS.APPOINTMENTS_WRITE))) redirect(`/appointments/${id}`);
 
-  const [appointment, doctors] = await Promise.all([getAppointment(id), listDoctors()]);
+  const [appointment, doctors, branches] = await Promise.all([
+    getAppointment(id),
+    listDoctors(),
+    listBranches(),
+  ]);
   if (!appointment) notFound();
 
   return (
@@ -33,6 +37,7 @@ export default async function EditAppointmentPage({
       <AppointmentForm
         patients={[]}
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
+        branches={branches.map((b) => ({ id: b.id, name: b.name }))}
         appointment={appointment}
       />
     </main>

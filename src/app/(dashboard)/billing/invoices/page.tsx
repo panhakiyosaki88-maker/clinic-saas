@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listInvoices } from "@/lib/db/queries/billing";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -17,7 +18,8 @@ export default async function InvoicesPage() {
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
   const canWrite = await hasPermission(PERMISSIONS.BILLING_WRITE);
-  const invoices = await listInvoices(500);
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const invoices = await listInvoices(500, { activeId, primaryId });
   const outstanding = invoices.filter((i) => i.status !== "paid" && i.status !== "cancelled").length;
 
   return (

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { listLabCategoryTree } from "@/lib/db/queries/lab";
@@ -21,10 +22,11 @@ export default async function NewLabRequestPage({
   if (!(await hasPermission(PERMISSIONS.LAB_WRITE))) redirect("/lab");
 
   const sp = await searchParams;
-  const [patients, doctors, tree] = await Promise.all([
+  const [patients, doctors, tree, { branches, activeId }] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     listLabCategoryTree(),
+    getActiveBranchContext(),
   ]);
 
   // Drive the test picker from the clinic's own Lab Categories so the two stay
@@ -48,7 +50,9 @@ export default async function NewLabRequestPage({
       <LabRequestForm
         patients={patients}
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
+        branches={branches.map((b) => ({ id: b.id, name: b.name }))}
         defaultPatientId={sp.patientId}
+        defaultBranchId={activeId}
         panel={panel}
       />
     </main>

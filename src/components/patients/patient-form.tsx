@@ -34,7 +34,17 @@ function Field({
   );
 }
 
-export function PatientForm({ patient }: { patient?: Patient }) {
+export interface BranchOption { id: string; name: string }
+
+export function PatientForm({
+  patient,
+  branches = [],
+  defaultBranchId,
+}: {
+  patient?: Patient;
+  branches?: BranchOption[];
+  defaultBranchId?: string | null;
+}) {
   const router = useRouter();
   const isEdit = !!patient;
   const [pending, startTransition] = React.useTransition();
@@ -48,6 +58,7 @@ export function PatientForm({ patient }: { patient?: Patient }) {
     const f = new FormData(e.currentTarget);
     const payload = {
       fullName: String(f.get("fullName") ?? ""),
+      branchId: String(f.get("branchId") ?? ""),
       gender: String(f.get("gender") ?? "") as never,
       dateOfBirth: String(f.get("dateOfBirth") ?? ""),
       phone: String(f.get("phone") ?? ""),
@@ -109,6 +120,16 @@ export function PatientForm({ patient }: { patient?: Patient }) {
           <Field label="Occupation" htmlFor="occupation">
             <Input id="occupation" name="occupation" defaultValue={patient?.occupation ?? ""} />
           </Field>
+          {branches.length > 0 && (
+            <Field label="Branch (optional)" htmlFor="branchId">
+              <select id="branchId" name="branchId" className={selectClass} defaultValue={patient?.branch_id ?? defaultBranchId ?? ""}>
+                <option value="">No branch</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </Field>
+          )}
           <Field label="Phone" htmlFor="phone">
             <Input id="phone" name="phone" defaultValue={patient?.phone ?? ""} />
           </Field>

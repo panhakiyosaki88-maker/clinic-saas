@@ -30,6 +30,7 @@ function toColumns(v: Partial<CreateDoctorInput>): DoctorWrite {
   const enumOrNull = <T>(s: string | undefined) => (s && s.length > 0 ? (s as T) : null);
   const out: DoctorWrite = {};
   if (v.fullName !== undefined) out.full_name = v.fullName;
+  if (v.branchId !== undefined) out.branch_id = orNull(v.branchId);
   if (v.title !== undefined) out.title = orNull(v.title);
   if (v.specialization !== undefined) out.specialization = orNull(v.specialization);
   if (v.subSpecialty !== undefined) out.sub_specialty = orNull(v.subSpecialty);

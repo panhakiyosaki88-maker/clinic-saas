@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatients, listClinicTags, patientAge } from "@/lib/db/queries/patients";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -38,6 +39,7 @@ export default async function PatientsPage({
 
   const { q, page, gender, blood, tag } = await searchParams;
   const canWrite = await hasPermission(PERMISSIONS.PATIENTS_WRITE);
+  const { activeId, primaryId } = await getActiveBranchContext();
   const [{ rows, total, page: current, pageCount }, clinicTags] = await Promise.all([
     listPatients({
       search: q,
@@ -45,6 +47,7 @@ export default async function PatientsPage({
       gender,
       bloodType: blood,
       tagId: tag,
+      branch: { activeId, primaryId },
     }),
     listClinicTags(),
   ]);

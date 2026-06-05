@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PatientForm } from "@/components/patients/patient-form";
@@ -12,6 +13,8 @@ export default async function NewPatientPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.PATIENTS_WRITE))) redirect("/patients");
 
+  const { branches, activeId } = await getActiveBranchContext();
+
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
@@ -20,7 +23,10 @@ export default async function NewPatientPage() {
         </Link>
         <h1 className="mt-1 text-2xl font-bold">New patient</h1>
       </header>
-      <PatientForm />
+      <PatientForm
+        branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+        defaultBranchId={activeId}
+      />
     </main>
   );
 }

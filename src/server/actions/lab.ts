@@ -168,6 +168,7 @@ export async function createLabRequest(
         clinic_id: clinicId,
         patient_id: v.patientId,
         doctor_id: v.doctorId || null,
+        branch_id: v.branchId || null,
         category_id: categoryByTest.get(testName) ?? null,
         test_name: testName,
         notes: v.notes || null,

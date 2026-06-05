@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import type { Database } from "@/types/database";
 import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 
@@ -34,14 +35,22 @@ function map(rows: Joined[]): LabRequestWithNames[] {
   }));
 }
 
-export async function listLabRequests(limit = 50): Promise<LabRequestWithNames[]> {
+export async function listLabRequests(
+  limit = 50,
+  scope?: BranchScope
+): Promise<LabRequestWithNames[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("lab_requests")
-    .select(SELECT)
-    .is("deleted_at", null)
+  const query = applyBranchFilter(
+    supabase
+      .from("lab_requests")
+      .select(SELECT)
+      .is("deleted_at", null),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  )
     .order("requested_at", { ascending: false })
     .limit(limit);
+  const { data, error } = await query;
   if (error) throw error;
   return map((data ?? []) as unknown as Joined[]);
 }

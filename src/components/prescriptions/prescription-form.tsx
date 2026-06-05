@@ -13,6 +13,7 @@ const selectClass =
 
 export interface PatientOption { id: string; label: string }
 export interface DoctorOption { id: string; full_name: string }
+export interface BranchOption { id: string; name: string }
 
 interface Row {
   key: number;
@@ -38,11 +39,15 @@ const blankRow = (): Row => ({
 export function PrescriptionForm({
   patients,
   doctors,
+  branches = [],
   defaultPatientId,
+  defaultBranchId,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
+  branches?: BranchOption[];
   defaultPatientId?: string;
+  defaultBranchId?: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
@@ -67,6 +72,7 @@ export function PrescriptionForm({
       const result = await createPrescription({
         patientId: String(f.get("patientId") ?? ""),
         doctorId: String(f.get("doctorId") ?? ""),
+        branchId: String(f.get("branchId") ?? ""),
         notes: String(f.get("notes") ?? ""),
         items: rows.map((r) => ({
           medicineName: r.medicineName,
@@ -107,6 +113,17 @@ export function PrescriptionForm({
             ))}
           </select>
         </div>
+        {branches.length > 0 && (
+          <div className="space-y-2">
+            <Label htmlFor="branchId">Branch (optional)</Label>
+            <select id="branchId" name="branchId" className={selectClass} defaultValue={defaultBranchId ?? ""}>
+              <option value="">No branch</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">

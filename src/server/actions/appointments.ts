@@ -85,6 +85,7 @@ export async function createAppointment(
       clinic_id: clinicId,
       patient_id: v.patientId,
       doctor_id: v.doctorId || null,
+      branch_id: v.branchId || null,
       scheduled_at: scheduledAt,
       duration_minutes: v.durationMinutes,
       is_walk_in: isWalkIn,
@@ -123,6 +124,7 @@ export async function updateAppointment(
   const v = parsed.data;
   const patch: AppointmentWrite = {};
   if (v.doctorId !== undefined) patch.doctor_id = v.doctorId || null;
+  if (v.branchId !== undefined) patch.branch_id = v.branchId || null;
   if (v.durationMinutes !== undefined) patch.duration_minutes = v.durationMinutes;
   if (v.reason !== undefined) patch.reason = v.reason || null;
   if (v.notes !== undefined) patch.notes = v.notes || null;

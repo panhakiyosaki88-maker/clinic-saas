@@ -1090,6 +1090,7 @@ export interface Database {
           expiry_date: string | null;
           unit_cost: number | null;
           note: string | null;
+          branch_id: string | null;
           created_at: string;
           created_by: string | null;
         };
@@ -1103,6 +1104,7 @@ export interface Database {
           expiry_date?: string | null;
           unit_cost?: number | null;
           note?: string | null;
+          branch_id?: string | null;
           created_at?: string;
           created_by?: string | null;
         };
@@ -1348,6 +1350,7 @@ export interface Database {
           test_name: string;
           status: LabStatus;
           notes: string | null;
+          branch_id: string | null;
           requested_at: string;
           completed_at: string | null;
           created_at: string;
@@ -1365,6 +1368,7 @@ export interface Database {
           test_name: string;
           status?: LabStatus;
           notes?: string | null;
+          branch_id?: string | null;
           requested_at?: string;
           completed_at?: string | null;
           created_at?: string;
@@ -1454,6 +1458,7 @@ export interface Database {
           medical_record_id: string | null;
           prescribed_at: string;
           notes: string | null;
+          branch_id: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -1467,6 +1472,7 @@ export interface Database {
           medical_record_id?: string | null;
           prescribed_at?: string;
           notes?: string | null;
+          branch_id?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;

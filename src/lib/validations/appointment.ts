@@ -28,6 +28,7 @@ export const createAppointmentSchema = z
   .object({
     patientId: z.string().uuid("Choose a patient"),
     doctorId: z.string().uuid().optional().or(z.literal("")),
+    branchId: z.string().uuid().optional().or(z.literal("")),
     scheduledDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD").optional().or(z.literal("")),
     scheduledTime: z.string().regex(/^\d{2}:\d{2}$/, "Use HH:MM").optional().or(z.literal("")),
     durationMinutes: z.coerce.number().int().min(5).max(480).default(30),
@@ -42,6 +43,7 @@ export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
 
 export const updateAppointmentSchema = z.object({
   doctorId: z.string().uuid().optional().or(z.literal("")),
+  branchId: z.string().uuid().optional().or(z.literal("")),
   scheduledDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
   scheduledTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   durationMinutes: z.coerce.number().int().min(5).max(480).optional(),

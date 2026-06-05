@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import type { Database } from "@/types/database";
 
 export type Invoice = Database["public"]["Tables"]["invoices"]["Row"];
@@ -23,14 +24,22 @@ function mapList(rows: ListJoined[]): InvoiceWithPatient[] {
   }));
 }
 
-export async function listInvoices(limit = 50): Promise<InvoiceWithPatient[]> {
+export async function listInvoices(
+  limit = 50,
+  scope?: BranchScope
+): Promise<InvoiceWithPatient[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("invoices")
-    .select(LIST_SELECT)
-    .is("deleted_at", null)
+  const query = applyBranchFilter(
+    supabase
+      .from("invoices")
+      .select(LIST_SELECT)
+      .is("deleted_at", null),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  )
     .order("issued_at", { ascending: false })
     .limit(limit);
+  const { data, error } = await query;
   if (error) throw error;
   return mapList((data ?? []) as unknown as ListJoined[]);
 }

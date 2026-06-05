@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPrescriptions } from "@/lib/db/queries/prescriptions";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -25,7 +26,8 @@ export default async function PrescriptionsPage() {
   }
 
   const canWrite = await hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE);
-  const prescriptions = await listPrescriptions();
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const prescriptions = await listPrescriptions(50, { activeId, primaryId });
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">

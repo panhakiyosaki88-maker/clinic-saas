@@ -31,6 +31,7 @@ export const ADDING_REASONS = ["purchase", "return"] as const;
 
 export const recordTransactionSchema = z.object({
   medicineId: z.string().uuid(),
+  branchId: z.string().uuid().optional().or(z.literal("")),
   reason: z.enum(INVENTORY_REASONS),
   quantity: z.coerce.number().int().positive("Enter a quantity"),
   // For 'adjustment' only: increase vs decrease.

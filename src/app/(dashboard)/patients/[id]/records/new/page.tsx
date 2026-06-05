@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { getPatient } from "@/lib/db/queries/patients";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -18,7 +19,10 @@ export default async function NewRecordPage({
   if (!(await hasPermission(PERMISSIONS.EMR_WRITE))) redirect(`/patients/${(await params).id}`);
 
   const { id } = await params;
-  const patient = await getPatient(id);
+  const [patient, { branches, activeId }] = await Promise.all([
+    getPatient(id),
+    getActiveBranchContext(),
+  ]);
   if (!patient) notFound();
 
   return (
@@ -29,7 +33,11 @@ export default async function NewRecordPage({
         </Link>
         <h1 className="mt-1 text-2xl font-bold">New visit</h1>
       </header>
-      <RecordForm patientId={id} />
+      <RecordForm
+        patientId={id}
+        branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+        defaultBranchId={activeId}
+      />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Calendar, Clock, CheckCircle2, DollarSign, Users, TrendingUp, TrendingDown } from "lucide-react";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getCurrentClinic, getCurrentSubscription } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { getRolePermissionKeys } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { startOfDay, startOfWeek, addDays, ymd } from "@/lib/date";
@@ -80,6 +81,11 @@ export default async function DashboardPage() {
   const canBilling = has(PERMISSIONS.BILLING_READ);
   const canPharmacy = has(PERMISSIONS.PHARMACY_READ);
 
+  // Scope the appointment-driven widgets (today, queue, calendar) to the active
+  // branch. Financial/patient aggregate reports stay clinic-wide.
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const apptScope = { activeId, primaryId };
+
   const todayStart = startOfDay(new Date());
   const tomorrow = addDays(todayStart, 1);
   const yesterday = addDays(todayStart, -1);
@@ -116,9 +122,9 @@ export default async function DashboardPage() {
     monthAppts,
   ] = await Promise.all([
     safe("subscription", getCurrentSubscription(), null),
-    canAppts ? safe("todays", listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString()), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
-    canAppts ? safe("queue", listQueue(), []) : Promise.resolve([]),
-    canAppts ? safe("yesterdays", listAppointmentsInRange(yesterday.toISOString(), todayStart.toISOString()), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
+    canAppts ? safe("todays", listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString(), apptScope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
+    canAppts ? safe("queue", listQueue(apptScope), []) : Promise.resolve([]),
+    canAppts ? safe("yesterdays", listAppointmentsInRange(yesterday.toISOString(), todayStart.toISOString(), apptScope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
     canAppts ? safe("weekly", getWeeklyAppointmentCounts(7), []) : Promise.resolve([]),
     canDoctors ? safe("availability", getDoctorAvailabilityToday(), []) : Promise.resolve([]),
     canPatients ? safe("patientStats", getPatientStats(), null) : Promise.resolve(null),
@@ -137,7 +143,7 @@ export default async function DashboardPage() {
     canPatients ? safe("highRisk", getHighRiskPatients(), { count: 0, rows: [] }) : Promise.resolve({ count: 0, rows: [] }),
     canAppts ? safe("followUps", getUpcomingFollowUps(7), []) : Promise.resolve([]),
     canDoctors ? safe("doctorActivity", getDoctorActivity(monthStart.toISOString(), tomorrow.toISOString()), []) : Promise.resolve([]),
-    canAppts ? safe("monthAppts", listAppointmentsInRange(calStart.toISOString(), calEnd.toISOString()), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
+    canAppts ? safe("monthAppts", listAppointmentsInRange(calStart.toISOString(), calEnd.toISOString(), apptScope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
   ]);
 
   // Doctor view: their own appointments ("My Day").

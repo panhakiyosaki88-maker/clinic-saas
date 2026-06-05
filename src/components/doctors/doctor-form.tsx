@@ -24,7 +24,17 @@ function Field({ label, htmlFor, errors, children }: { label: string; htmlFor: s
   );
 }
 
-export function DoctorForm({ doctor }: { doctor?: Doctor }) {
+export interface BranchOption { id: string; name: string }
+
+export function DoctorForm({
+  doctor,
+  branches = [],
+  defaultBranchId,
+}: {
+  doctor?: Doctor;
+  branches?: BranchOption[];
+  defaultBranchId?: string | null;
+}) {
   const router = useRouter();
   const isEdit = !!doctor;
   const [pending, startTransition] = React.useTransition();
@@ -57,6 +67,7 @@ export function DoctorForm({ doctor }: { doctor?: Doctor }) {
       licenseExpiry: String(f.get("licenseExpiry") ?? ""),
       licenseVerified: f.get("licenseVerified") === "on",
       isActive: f.get("isActive") === "on",
+      branchId: String(f.get("branchId") ?? ""),
     };
 
     startTransition(async () => {
@@ -159,6 +170,16 @@ export function DoctorForm({ doctor }: { doctor?: Doctor }) {
           <Field label="Room / office" htmlFor="room">
             <Input id="room" name="room" defaultValue={doctor?.room ?? ""} />
           </Field>
+          {branches.length > 0 && (
+            <Field label="Branch (optional)" htmlFor="branchId">
+              <select id="branchId" name="branchId" className={selectClass} defaultValue={doctor?.branch_id ?? defaultBranchId ?? ""}>
+                <option value="">No branch</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </Field>
+          )}
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="isActive" defaultChecked={doctor?.is_active ?? true} className="h-4 w-4 rounded border-slate-300" />

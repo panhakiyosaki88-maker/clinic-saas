@@ -17,6 +17,7 @@ const dateString = z
 
 export const createPatientSchema = z.object({
   fullName: z.string().trim().min(2, "Patient name is required").max(160),
+  branchId: z.string().uuid().optional().or(z.literal("")),
   gender: genderSchema.optional().or(z.literal("")),
   dateOfBirth: dateString,
   phone: optionalShort,

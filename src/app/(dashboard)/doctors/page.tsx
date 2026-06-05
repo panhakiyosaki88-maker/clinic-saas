@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -41,10 +42,12 @@ export default async function DoctorsPage({
 
   const { q, active, employment } = await searchParams;
   const canWrite = await hasPermission(PERMISSIONS.DOCTORS_WRITE);
+  const { activeId, primaryId } = await getActiveBranchContext();
   const doctors = await listDoctors({
     search: q,
     active: active === "active" || active === "inactive" ? active : undefined,
     employmentType: employment,
+    branch: { activeId, primaryId },
   });
   const activeCount = doctors.filter((d) => d.is_active).length;
   const hasFilters = !!(q || active || employment);

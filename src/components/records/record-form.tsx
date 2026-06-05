@@ -27,12 +27,21 @@ function Num({ label, name, defaultValue, step }: { label: string; name: string;
   );
 }
 
+const selectClass =
+  "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20";
+
+export interface BranchOption { id: string; name: string }
+
 export function RecordForm({
   patientId,
   record,
+  branches = [],
+  defaultBranchId,
 }: {
   patientId: string;
   record?: MedicalRecord;
+  branches?: BranchOption[];
+  defaultBranchId?: string | null;
 }) {
   const router = useRouter();
   const isEdit = !!record;
@@ -45,6 +54,7 @@ export function RecordForm({
     const f = new FormData(e.currentTarget);
     const fields = {
       visitDate: String(f.get("visitDate") ?? ""),
+      branchId: String(f.get("branchId") ?? ""),
       chiefComplaint: String(f.get("chiefComplaint") ?? ""),
       subjective: String(f.get("subjective") ?? ""),
       objective: String(f.get("objective") ?? ""),
@@ -88,14 +98,27 @@ export function RecordForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
-      <div className="space-y-2 sm:max-w-xs">
-        <Label htmlFor="visitDate">Visit date</Label>
-        <Input
-          id="visitDate"
-          name="visitDate"
-          type="date"
-          defaultValue={(record?.visit_date ?? new Date().toISOString()).slice(0, 10)}
-        />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="visitDate">Visit date</Label>
+          <Input
+            id="visitDate"
+            name="visitDate"
+            type="date"
+            defaultValue={(record?.visit_date ?? new Date().toISOString()).slice(0, 10)}
+          />
+        </div>
+        {branches.length > 0 && (
+          <div className="space-y-2">
+            <Label htmlFor="branchId">Branch (optional)</Label>
+            <select id="branchId" name="branchId" className={selectClass} defaultValue={record?.branch_id ?? defaultBranchId ?? ""}>
+              <option value="">No branch</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <Area label="Chief complaint" name="chiefComplaint" defaultValue={record?.chief_complaint} />

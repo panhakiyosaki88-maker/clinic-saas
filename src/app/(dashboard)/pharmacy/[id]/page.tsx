@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { getMedicine, listTransactions } from "@/lib/db/queries/pharmacy";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -25,6 +26,7 @@ export default async function MedicineDetailPage({
   if (!medicine) notFound();
 
   const canWrite = await hasPermission(PERMISSIONS.PHARMACY_WRITE);
+  const { branches, activeId } = await getActiveBranchContext();
   const transactions = await listTransactions(id);
   const low = medicine.is_active && medicine.stock_quantity <= medicine.reorder_level;
 
@@ -76,7 +78,13 @@ export default async function MedicineDetailPage({
       {canWrite && (
         <Card>
           <CardHeader><CardTitle>Record stock movement</CardTitle></CardHeader>
-          <CardContent><TransactionForm medicineId={id} /></CardContent>
+          <CardContent>
+            <TransactionForm
+              medicineId={id}
+              branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+              defaultBranchId={activeId}
+            />
+          </CardContent>
         </Card>
       )}
 

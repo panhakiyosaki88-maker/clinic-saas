@@ -22,6 +22,7 @@ import { signOut } from "@/server/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccentToggle } from "@/components/accent-toggle";
 import { NAV } from "@/components/dashboard/nav-config";
+import { BranchSwitcher, type BranchOption } from "@/components/dashboard/branch-switcher";
 
 export interface QuickActions {
   appointment: boolean;
@@ -38,6 +39,8 @@ export function DashboardShell({
   userEmail,
   isSuperAdmin,
   quick,
+  branches,
+  activeBranchId,
   children,
 }: {
   navKeys: string[];
@@ -48,6 +51,8 @@ export function DashboardShell({
   userEmail: string;
   isSuperAdmin: boolean;
   quick: QuickActions;
+  branches: BranchOption[];
+  activeBranchId: string | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -167,6 +172,10 @@ export function DashboardShell({
           <button className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
             <Menu className="size-6" />
           </button>
+
+          {branches.length > 1 && (
+            <BranchSwitcher branches={branches} activeId={activeBranchId} />
+          )}
 
           <form onSubmit={onSearch} className="relative hidden flex-1 sm:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />

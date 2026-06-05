@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import type { Database } from "@/types/database";
 
 export type Appointment = Database["public"]["Tables"]["appointments"]["Row"];
@@ -31,16 +32,21 @@ function map(rows: Joined[]): AppointmentWithNames[] {
 /** Appointments whose start falls in [fromISO, toISO). Powers all calendar views. */
 export async function listAppointmentsInRange(
   fromISO: string,
-  toISO: string
+  toISO: string,
+  scope?: BranchScope
 ): Promise<AppointmentWithNames[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("appointments")
-    .select(SELECT)
-    .is("deleted_at", null)
-    .gte("scheduled_at", fromISO)
-    .lt("scheduled_at", toISO)
-    .order("scheduled_at", { ascending: true });
+  const query = applyBranchFilter(
+    supabase
+      .from("appointments")
+      .select(SELECT)
+      .is("deleted_at", null)
+      .gte("scheduled_at", fromISO)
+      .lt("scheduled_at", toISO),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  ).order("scheduled_at", { ascending: true });
+  const { data, error } = await query;
   if (error) throw error;
   return map((data ?? []) as unknown as Joined[]);
 }
@@ -50,14 +56,18 @@ export interface QueueEntry extends AppointmentWithNames {
 }
 
 /** The current waiting queue (status = waiting), longest wait first. */
-export async function listQueue(): Promise<QueueEntry[]> {
+export async function listQueue(scope?: BranchScope): Promise<QueueEntry[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("appointments")
-    .select(SELECT)
-    .is("deleted_at", null)
-    .eq("status", "waiting")
-    .order("checked_in_at", { ascending: true });
+  const query = applyBranchFilter(
+    supabase
+      .from("appointments")
+      .select(SELECT)
+      .is("deleted_at", null)
+      .eq("status", "waiting"),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  ).order("checked_in_at", { ascending: true });
+  const { data, error } = await query;
   if (error) throw error;
   return map((data ?? []) as unknown as Joined[]).map((a, i) => ({ ...a, position: i + 1 }));
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getMedicalRecord } from "@/lib/db/queries/medical-records";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -18,7 +18,7 @@ export default async function EditRecordPage({
   const { id, recordId } = await params;
   if (!(await hasPermission(PERMISSIONS.EMR_WRITE))) redirect(`/patients/${id}/records/${recordId}`);
 
-  const detail = await getMedicalRecord(recordId);
+  const [detail, branches] = await Promise.all([getMedicalRecord(recordId), listBranches()]);
   if (!detail) notFound();
 
   return (
@@ -29,7 +29,7 @@ export default async function EditRecordPage({
         </Link>
         <h1 className="mt-1 text-2xl font-bold">Edit visit</h1>
       </header>
-      <RecordForm patientId={id} record={detail.record} />
+      <RecordForm patientId={id} record={detail.record} branches={branches.map((b) => ({ id: b.id, name: b.name }))} />
     </main>
   );
 }

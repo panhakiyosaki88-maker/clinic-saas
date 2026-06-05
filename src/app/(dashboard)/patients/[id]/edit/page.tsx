@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getPatient } from "@/lib/db/queries/patients";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -18,7 +18,7 @@ export default async function EditPatientPage({
   if (!(await hasPermission(PERMISSIONS.PATIENTS_WRITE))) redirect("/patients");
 
   const { id } = await params;
-  const patient = await getPatient(id);
+  const [patient, branches] = await Promise.all([getPatient(id), listBranches()]);
   if (!patient) notFound();
 
   return (
@@ -29,7 +29,7 @@ export default async function EditPatientPage({
         </Link>
         <h1 className="mt-1 text-2xl font-bold">Edit patient</h1>
       </header>
-      <PatientForm patient={patient} />
+      <PatientForm patient={patient} branches={branches.map((b) => ({ id: b.id, name: b.name }))} />
     </main>
   );
 }

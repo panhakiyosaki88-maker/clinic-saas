@@ -24,6 +24,7 @@ function toRecordColumns(v: Partial<UpdateMedicalRecordInput>): RecordWrite {
   const orNull = (s: string | undefined) => (s && s.length > 0 ? s : null);
   const out: RecordWrite = {};
   if (v.visitDate !== undefined && v.visitDate) out.visit_date = v.visitDate;
+  if (v.branchId !== undefined) out.branch_id = orNull(v.branchId);
   if (v.status !== undefined) out.status = v.status;
   if (v.chiefComplaint !== undefined) out.chief_complaint = orNull(v.chiefComplaint);
   if (v.subjective !== undefined) out.subjective = orNull(v.subjective);

@@ -14,16 +14,21 @@ const selectClass =
 
 export interface PatientOption { id: string; label: string }
 export interface DoctorOption { id: string; full_name: string }
+export interface BranchOption { id: string; name: string }
 
 export function LabRequestForm({
   patients,
   doctors,
+  branches = [],
   defaultPatientId,
+  defaultBranchId,
   panel,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
+  branches?: BranchOption[];
   defaultPatientId?: string;
+  defaultBranchId?: string | null;
   panel: LabTestGroup[];
 }) {
   const router = useRouter();
@@ -62,6 +67,7 @@ export function LabRequestForm({
       const result = await createLabRequest({
         patientId,
         doctorId: String(f.get("doctorId") ?? ""),
+        branchId: String(f.get("branchId") ?? ""),
         testNames,
         notes: String(f.get("notes") ?? ""),
       });
@@ -93,6 +99,16 @@ export function LabRequestForm({
           {doctors.map((d) => <option key={d.id} value={d.id}>{d.full_name}</option>)}
         </select>
       </div>
+
+      {branches.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="branchId">Branch (optional)</Label>
+          <select id="branchId" name="branchId" className={selectClass} defaultValue={defaultBranchId ?? ""}>
+            <option value="">No branch</option>
+            {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </div>
+      )}
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">

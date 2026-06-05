@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listAppointmentsInRange, listQueue } from "@/lib/db/queries/appointments";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -68,9 +69,11 @@ export default async function AppointmentsPage({
     label = anchor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   }
 
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const scope = { activeId, primaryId };
   const [appointments, queue] = await Promise.all([
-    listAppointmentsInRange(from.toISOString(), to.toISOString()),
-    listQueue(),
+    listAppointmentsInRange(from.toISOString(), to.toISOString(), scope),
+    listQueue(scope),
   ]);
 
   return (

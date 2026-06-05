@@ -27,6 +27,7 @@ export async function createPrescription(
       clinic_id: clinicId,
       patient_id: v.patientId,
       doctor_id: v.doctorId || null,
+      branch_id: v.branchId || null,
       medical_record_id: v.medicalRecordId || null,
       notes: v.notes || null,
       created_by: user.id,

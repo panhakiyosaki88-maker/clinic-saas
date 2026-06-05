@@ -14,19 +14,24 @@ const selectClass =
 
 export interface PatientOption { id: string; label: string }
 export interface DoctorOption { id: string; full_name: string }
+export interface BranchOption { id: string; name: string }
 
 export function AppointmentForm({
   patients,
   doctors,
+  branches,
   appointment,
   defaultPatientId,
+  defaultBranchId,
   defaultDate,
   defaultWalkIn,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
+  branches: BranchOption[];
   appointment?: AppointmentWithNames;
   defaultPatientId?: string;
+  defaultBranchId?: string | null;
   defaultDate?: string;
   defaultWalkIn?: boolean;
 }) {
@@ -52,6 +57,7 @@ export function AppointmentForm({
       if (isEdit) {
         const result = await updateAppointment(appointment!.id, {
           doctorId: String(f.get("doctorId") ?? ""),
+          branchId: String(f.get("branchId") ?? ""),
           scheduledDate: String(f.get("scheduledDate") ?? ""),
           scheduledTime: String(f.get("scheduledTime") ?? ""),
           durationMinutes: Number(f.get("durationMinutes") ?? 30),
@@ -70,6 +76,7 @@ export function AppointmentForm({
       const result = await createAppointment({
         patientId: String(f.get("patientId") ?? ""),
         doctorId: String(f.get("doctorId") ?? ""),
+        branchId: String(f.get("branchId") ?? ""),
         scheduledDate: String(f.get("scheduledDate") ?? ""),
         scheduledTime: String(f.get("scheduledTime") ?? ""),
         durationMinutes: Number(f.get("durationMinutes") ?? 30),
@@ -117,6 +124,18 @@ export function AppointmentForm({
           ))}
         </select>
       </div>
+
+      {branches.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="branchId">Branch (optional)</Label>
+          <select id="branchId" name="branchId" className={selectClass} defaultValue={appointment?.branch_id ?? defaultBranchId ?? ""}>
+            <option value="">No branch</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {!isEdit && (
         <label className="flex items-center gap-2 text-sm">

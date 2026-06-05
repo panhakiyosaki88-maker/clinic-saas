@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { sanitizeSearch } from "@/lib/validations/patient";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import type { Database, Gender, BloodType } from "@/types/database";
 
 export type Patient = Database["public"]["Tables"]["patients"]["Row"];
@@ -49,6 +50,7 @@ export async function listPatients(opts: {
   gender?: string;
   bloodType?: string;
   tagId?: string;
+  branch?: BranchScope;
 }): Promise<PatientListResult> {
   const supabase = await createClient();
   const page = Math.max(1, opts.page ?? 1);
@@ -88,6 +90,10 @@ export async function listPatients(opts: {
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"];
   if (opts.bloodType && bloodTypes.includes(opts.bloodType)) {
     query = query.eq("blood_type", opts.bloodType as BloodType);
+  }
+
+  if (opts.branch) {
+    query = applyBranchFilter(query, opts.branch.activeId, opts.branch.primaryId);
   }
 
   const { data, error, count } = await query

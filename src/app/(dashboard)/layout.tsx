@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getAccountStatus } from "@/lib/auth/account";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { clinicLogoUrl } from "@/lib/clinic-logo";
 import { getRolePermissionKeys } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -26,6 +27,7 @@ export default async function DashboardLayout({
     redirect("/account-pending");
   }
   const clinic = await getCurrentClinic();
+  const { activeId: activeBranchId, branches } = await getActiveBranchContext();
 
   // One query for the role's permissions. Super admins implicitly hold every
   // permission, so `can` short-circuits for them (matches the dashboard page).
@@ -49,6 +51,8 @@ export default async function DashboardLayout({
       userName={userName}
       userEmail={user.email ?? ""}
       isSuperAdmin={isSuperAdmin}
+      branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+      activeBranchId={activeBranchId}
       quick={{
         appointment: can(PERMISSIONS.APPOINTMENTS_WRITE),
         patient: can(PERMISSIONS.PATIENTS_WRITE),

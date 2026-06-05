@@ -10,7 +10,17 @@ import { Label } from "@/components/ui/label";
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20";
 
-export function TransactionForm({ medicineId }: { medicineId: string }) {
+export interface BranchOption { id: string; name: string }
+
+export function TransactionForm({
+  medicineId,
+  branches = [],
+  defaultBranchId,
+}: {
+  medicineId: string;
+  branches?: BranchOption[];
+  defaultBranchId?: string | null;
+}) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -27,6 +37,7 @@ export function TransactionForm({ medicineId }: { medicineId: string }) {
     startTransition(async () => {
       const result = await recordTransaction({
         medicineId,
+        branchId: String(f.get("branchId") ?? ""),
         reason: reason as never,
         quantity: Number(f.get("quantity") ?? 0),
         direction: isAdjustment ? (String(f.get("direction") ?? "increase") as never) : undefined,
@@ -69,6 +80,18 @@ export function TransactionForm({ medicineId }: { medicineId: string }) {
           </div>
         )}
       </div>
+
+      {branches.length > 0 && (
+        <div className="space-y-1">
+          <Label htmlFor="branchId" className="text-xs">Branch (optional)</Label>
+          <select id="branchId" name="branchId" className={selectClass} defaultValue={defaultBranchId ?? ""}>
+            <option value="">No branch</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {isPurchase && (
         <div className="grid gap-3 sm:grid-cols-3">

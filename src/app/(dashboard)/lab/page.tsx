@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -27,7 +28,8 @@ export default async function LabPage() {
   }
 
   const canWrite = await hasPermission(PERMISSIONS.LAB_WRITE);
-  const requests = await listLabRequests();
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const requests = await listLabRequests(50, { activeId, primaryId });
 
   // Group requests by patient — the table lists one row per patient, with a
   // single collective status, earliest start date and (when finished) finish date.

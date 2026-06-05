@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { sanitizeSearch } from "@/lib/validations/patient";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import type { Database, EmploymentType } from "@/types/database";
 
 export type Doctor = Database["public"]["Tables"]["doctors"]["Row"];
@@ -16,6 +17,7 @@ export async function listDoctors(opts: {
   search?: string;
   active?: "active" | "inactive";
   employmentType?: string;
+  branch?: BranchScope;
 } = {}): Promise<Doctor[]> {
   const supabase = await createClient();
   let query = supabase.from("doctors").select("*").is("deleted_at", null);
@@ -28,6 +30,9 @@ export async function listDoctors(opts: {
   if (opts.active === "inactive") query = query.eq("is_active", false);
   if (opts.employmentType && EMPLOYMENT_TYPES.includes(opts.employmentType)) {
     query = query.eq("employment_type", opts.employmentType as EmploymentType);
+  }
+  if (opts.branch) {
+    query = applyBranchFilter(query, opts.branch.activeId, opts.branch.primaryId);
   }
 
   const { data, error } = await query.order("full_name", { ascending: true });

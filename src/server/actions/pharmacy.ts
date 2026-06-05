@@ -224,6 +224,7 @@ export async function recordTransaction(input: RecordTransactionInput): Promise<
   const { error } = await supabase.from("inventory_transactions").insert({
     clinic_id: clinicId,
     medicine_id: v.medicineId,
+    branch_id: v.branchId || null,
     change,
     reason: v.reason,
     batch_number: v.batchNumber || null,

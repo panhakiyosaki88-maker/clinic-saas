@@ -30,6 +30,7 @@ const recordFields = {
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
     .optional()
     .or(z.literal("")),
+  branchId: z.string().uuid().optional().or(z.literal("")),
   status: z.enum(["draft", "finalized"]).optional(),
   chiefComplaint: optionalText,
   subjective: optionalText,

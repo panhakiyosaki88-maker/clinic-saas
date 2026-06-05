@@ -19,6 +19,7 @@ export const employmentTypeSchema = z.enum([
 
 export const createDoctorSchema = z.object({
   fullName: z.string().trim().min(2, "Doctor name is required").max(160),
+  branchId: z.string().uuid().optional().or(z.literal("")),
   title: optionalShort,
   specialization: optionalShort,
   subSpecialty: optionalShort,

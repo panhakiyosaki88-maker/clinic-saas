@@ -16,6 +16,7 @@ export type PrescriptionItemInput = z.infer<typeof prescriptionItemSchema>;
 export const createPrescriptionSchema = z.object({
   patientId: z.string().uuid("Choose a patient"),
   doctorId: z.string().uuid().optional().or(z.literal("")),
+  branchId: z.string().uuid().optional().or(z.literal("")),
   medicalRecordId: z.string().uuid().optional().or(z.literal("")),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
   items: z.array(prescriptionItemSchema).min(1, "Add at least one medicine"),
