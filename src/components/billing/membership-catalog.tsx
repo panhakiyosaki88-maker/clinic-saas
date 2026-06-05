@@ -8,10 +8,11 @@ import type { MembershipPlan } from "@/lib/db/queries/memberships";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatUSD } from "@/lib/billing/currency";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20";
-const money = (n: number) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n: number) => formatUSD(n);
 
 export function MembershipCatalog({ plans }: { plans: MembershipPlan[] }) {
   const router = useRouter();
@@ -93,7 +94,7 @@ export function MembershipCatalog({ plans }: { plans: MembershipPlan[] }) {
               <tr key={p.id} className="border-b border-[var(--border)]">
                 <td className="py-2 font-medium">{p.name}{!p.is_active && <span className="ml-2 text-xs text-[var(--muted-foreground)]">(inactive)</span>}</td>
                 <td className="py-2 text-right tabular-nums">{money(Number(p.price))}</td>
-                <td className="py-2">{p.benefit_type === "percent" ? `${money(Number(p.benefit_value))}%` : money(Number(p.benefit_value))}</td>
+                <td className="py-2">{p.benefit_type === "percent" ? `${Number(p.benefit_value)}%` : money(Number(p.benefit_value))}</td>
                 <td className="py-2">{p.duration_days ? `${p.duration_days} days` : "No expiry"}</td>
                 <td className="py-2 text-right">
                   <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(p.id)} disabled={pending}>Delete</Button>

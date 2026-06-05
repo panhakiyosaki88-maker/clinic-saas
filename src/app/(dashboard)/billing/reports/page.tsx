@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getBillingBreakdowns, type BreakdownRow } from "@/lib/db/queries/billing-reports";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ymd, parseYmd, startOfMonth, addDays } from "@/lib/date";
@@ -14,9 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Billing reports" };
 
-const money = (n: number) => Number(n).toFixed(2);
-
-function BreakdownCard({ title, name, rows }: { title: string; name: string; rows: BreakdownRow[] }) {
+function BreakdownCard({ title, name, rows, fmt }: { title: string; name: string; rows: BreakdownRow[]; fmt: (n: number) => string }) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
@@ -32,7 +32,7 @@ function BreakdownCard({ title, name, rows }: { title: string; name: string; row
               {rows.map((r) => (
                 <tr key={r.label} className="border-b border-[var(--border)] last:border-0">
                   <td className="py-1">{r.label}</td>
-                  <td className="py-1 text-right tabular-nums">{money(r.amount)}</td>
+                  <td className="py-1 text-right tabular-nums">{fmt(r.amount)}</td>
                 </tr>
               ))}
             </tbody>
@@ -55,7 +55,12 @@ export default async function BillingReportsPage({
   const sp = await searchParams;
   const fromDate = sp.from ? parseYmd(sp.from) : startOfMonth(new Date());
   const toDate = sp.to ? addDays(parseYmd(sp.to), 1) : addDays(new Date(), 1);
-  const d = await getBillingBreakdowns(fromDate.toISOString(), toDate.toISOString());
+  const [d, settings] = await Promise.all([
+    getBillingBreakdowns(fromDate.toISOString(), toDate.toISOString()),
+    getBillingSettings(),
+  ]);
+  const ctx = currencyContext(settings);
+  const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 print:max-w-none print:p-0">
@@ -68,11 +73,11 @@ export default async function BillingReportsPage({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <BreakdownCard title="Revenue by category" name="revenue-by-category" rows={d.byCategory} />
-        <BreakdownCard title="Revenue by doctor" name="revenue-by-doctor" rows={d.byDoctor} />
-        <BreakdownCard title="Revenue by branch" name="revenue-by-branch" rows={d.byBranch} />
-        <BreakdownCard title="Revenue by service" name="revenue-by-service" rows={d.byService} />
-        <BreakdownCard title="Revenue by method" name="revenue-by-method" rows={d.byMethod} />
+        <BreakdownCard title="Revenue by category" name="revenue-by-category" rows={d.byCategory} fmt={money} />
+        <BreakdownCard title="Revenue by doctor" name="revenue-by-doctor" rows={d.byDoctor} fmt={money} />
+        <BreakdownCard title="Revenue by branch" name="revenue-by-branch" rows={d.byBranch} fmt={money} />
+        <BreakdownCard title="Revenue by service" name="revenue-by-service" rows={d.byService} fmt={money} />
+        <BreakdownCard title="Revenue by method" name="revenue-by-method" rows={d.byMethod} fmt={money} />
       </div>
     </main>
   );

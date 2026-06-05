@@ -5,6 +5,7 @@ import { listServicePrices, getServicePrice } from "@/lib/db/queries/service-pri
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/service-price";
+import { formatUSD } from "@/lib/billing/currency";
 import { Tags } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { BillingTabs } from "@/components/billing/billing-tabs";
@@ -72,7 +73,7 @@ export default async function CatalogPage({
                       <TD>{p.name}{p.archived_at && <span className="ml-2 text-xs text-[var(--muted-foreground)]">archived</span>}</TD>
                       <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.code ?? "—"}</TD>
                       <TD className="text-slate-500 dark:text-slate-400">{p.branch_name ?? "All"}</TD>
-                      <TD className="text-right tabular-nums">{Number(p.unit_price).toFixed(2)}</TD>
+                      <TD className="text-right tabular-nums">{formatUSD(Number(p.unit_price))}</TD>
                       {canWrite && (
                         <TD className="text-right">
                           <CatalogRowActions id={p.id} archived={!!p.archived_at} />

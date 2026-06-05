@@ -3,11 +3,12 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { assignMembership } from "@/server/actions/memberships";
+import { formatUSD } from "@/lib/billing/currency";
 import { Button } from "@/components/ui/button";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm";
-const money = (n: number) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n: number) => formatUSD(n);
 
 export interface PlanOption { id: string; name: string; price: number }
 

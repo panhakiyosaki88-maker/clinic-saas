@@ -7,8 +7,9 @@ import type { Procedure } from "@/lib/db/queries/procedures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatUSD } from "@/lib/billing/currency";
 
-const money = (n: number) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n: number) => formatUSD(n);
 
 export function ProcedureCatalog({ procedures }: { procedures: Procedure[] }) {
   const router = useRouter();

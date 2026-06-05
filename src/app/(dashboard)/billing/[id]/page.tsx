@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
-import { currencyContext, formatIn } from "@/lib/billing/currency";
+import { currencyContext, formatIn, usdToKhr } from "@/lib/billing/currency";
 import { Money } from "@/components/billing/money";
 import { buildKhqr } from "@/lib/billing/khqr";
 import { KhqrPanel } from "@/components/billing/khqr-panel";
@@ -53,7 +53,8 @@ export default async function InvoiceDetailPage({
           merchantAccount: settings.khqr_merchant_account,
           merchantName: settings.khqr_merchant_name || inv.clinic_name,
           merchantCity: settings.khqr_merchant_city || "Phnom Penh",
-          amount: Number(inv.balance),
+          // KHQR encodes the amount in the chosen currency (convert when KHR).
+          amount: currency === "KHR" ? usdToKhr(Number(inv.balance), ctx.rate) : Number(inv.balance),
           currency: currency === "KHR" ? "KHR" : "USD",
           billNumber: inv.invoice_number,
         })
@@ -143,6 +144,7 @@ export default async function InvoiceDetailPage({
                 amount={Number(inv.balance)}
                 reference={inv.invoice_number}
                 currency={currency}
+                rate={ctx.rate}
               />
             )}
           </CardContent>

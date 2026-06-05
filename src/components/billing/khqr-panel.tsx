@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { recordPayment } from "@/server/actions/billing";
+import { formatUSD, formatKHR, usdToKhr } from "@/lib/billing/currency";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -16,12 +17,15 @@ export function KhqrPanel({
   amount,
   reference,
   currency,
+  rate = 4100,
 }: {
   invoiceId: string;
   payload: string;
+  /** USD balance — what gets recorded as the payment. */
   amount: number;
   reference: string;
   currency: string;
+  rate?: number;
 }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -41,7 +45,9 @@ export function KhqrPanel({
   return (
     <div className="rounded-md border border-[var(--border)] p-4 text-center">
       <p className="text-sm font-medium">Scan to pay</p>
-      <p className="text-xs text-[var(--muted-foreground)]">{reference} · {currency} {amount.toFixed(2)}</p>
+      <p className="text-xs text-[var(--muted-foreground)]">
+        {reference} · {currency === "KHR" ? formatKHR(usdToKhr(amount, rate)) : formatUSD(amount)}
+      </p>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element -- generated QR data URL, not a static asset
         <img src={src} alt="KHQR" className="mx-auto my-3 h-60 w-60" />
