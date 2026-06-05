@@ -94,6 +94,59 @@ export const billFromSourcesSchema = z
   });
 export type BillFromSourcesInput = z.infer<typeof billFromSourcesSchema>;
 
+export const SERVICE_CATEGORIES = [
+  "consultation",
+  "lab",
+  "pharmacy",
+  "procedure",
+  "membership",
+  "other",
+] as const;
+export type ServiceCategoryValue = (typeof SERVICE_CATEGORIES)[number];
+export const SERVICE_CATEGORY_LABELS: Record<ServiceCategoryValue, string> = {
+  consultation: "Consultation",
+  lab: "Laboratory",
+  pharmacy: "Pharmacy",
+  procedure: "Procedures",
+  membership: "Membership",
+  other: "Other Services",
+};
+
+export const BILL_SOURCES = [
+  "manual",
+  "appointment",
+  "lab",
+  "pharmacy",
+  "prescription",
+  "procedure",
+  "membership",
+] as const;
+
+/** A reviewed line on the Billing Workspace: a detected charge (with its source
+ *  for de-duplication) or a manually added one (source = manual, no sourceId). */
+export const visitBillLineSchema = z.object({
+  source: z.enum(BILL_SOURCES).default("manual"),
+  sourceId: z.string().uuid().optional().or(z.literal("")),
+  category: z.enum(SERVICE_CATEGORIES).default("other"),
+  description: z.string().trim().min(1, "Description is required").max(255),
+  quantity: z.preprocess(emptyToUndef, z.coerce.number().min(0.01).max(100000).default(1)),
+  unitPrice: z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).default(0)),
+});
+export type VisitBillLineInput = z.infer<typeof visitBillLineSchema>;
+
+/** Turns the reviewed Billing Workspace into one invoice: category-tagged line
+ *  items + source links (so each detected charge is billed at most once). */
+export const billFromVisitSchema = z.object({
+  patientId: z.string().uuid(),
+  visitId: z.string().uuid().optional().or(z.literal("")),
+  discount: money,
+  tax: money,
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
+  asDraft: z.boolean().optional(),
+  lines: z.array(visitBillLineSchema).min(1, "Add at least one charge"),
+});
+export type BillFromVisitInput = z.infer<typeof billFromVisitSchema>;
+
 export const refundPaymentSchema = z.object({
   invoiceId: z.string().uuid(),
   amount: z.coerce.number().positive("Enter an amount"),
