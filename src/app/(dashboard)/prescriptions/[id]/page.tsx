@@ -16,6 +16,19 @@ function withDoctorTitle(name: string): string {
   return /^dr\.?\s/i.test(trimmed) ? trimmed : `Dr. ${trimmed}`;
 }
 
+/** The four dosing times, in printed-column order. */
+const DOSE_TIMES = ["Morning", "Afternoon", "Evening", "Night"] as const;
+
+/** Parse a stored dosage pattern "M-A-E-N" (e.g. "1-0-1-0") into four numbers.
+ *  Returns null for legacy / free-text dosage so it can be shown as-is. */
+function parseDose(dosage: string | null): number[] | null {
+  if (!dosage) return null;
+  const parts = dosage.trim().split("-");
+  if (parts.length !== 4) return null;
+  const nums = parts.map((p) => Number(p));
+  return nums.some((n) => Number.isNaN(n)) ? null : nums;
+}
+
 export default async function PrescriptionDetailPage({
   params,
 }: {
@@ -69,29 +82,38 @@ export default async function PrescriptionDetailPage({
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
             <tr>
               <th className="pb-2">Medicine</th>
-              <th className="pb-2">Dosage</th>
-              <th className="pb-2">Frequency</th>
+              {DOSE_TIMES.map((t) => (
+                <th key={t} className="pb-2 text-center">{t}</th>
+              ))}
               <th className="pb-2">Duration</th>
-              <th className="pb-2">When</th>
               <th className="pb-2 text-right">Qty</th>
             </tr>
           </thead>
           <tbody>
-            {rx.items.map((it) => (
-              <tr key={it.id} className="border-b border-[var(--border)] align-top">
-                <td className="py-2 font-medium">
-                  {it.medicine_name}
-                  {it.instructions && (
-                    <span className="block text-xs font-normal text-[var(--muted-foreground)]">{it.instructions}</span>
+            {rx.items.map((it) => {
+              const dose = parseDose(it.dosage);
+              return (
+                <tr key={it.id} className="border-b border-[var(--border)] align-top">
+                  <td className="py-2 font-medium">
+                    {it.medicine_name}
+                    {it.instructions && (
+                      <span className="block text-xs font-normal text-[var(--muted-foreground)]">{it.instructions}</span>
+                    )}
+                  </td>
+                  {dose ? (
+                    dose.map((n, i) => (
+                      <td key={i} className="py-2 text-center tabular-nums">{n > 0 ? n : "—"}</td>
+                    ))
+                  ) : (
+                    <td colSpan={4} className="py-2 text-center text-xs text-[var(--muted-foreground)]">
+                      {it.dosage ?? "—"}
+                    </td>
                   )}
-                </td>
-                <td className="py-2">{it.dosage ?? "—"}</td>
-                <td className="py-2">{it.frequency ?? "—"}</td>
-                <td className="py-2">{it.duration ?? "—"}</td>
-                <td className="py-2">{it.timing ?? "—"}</td>
-                <td className="py-2 text-right">{it.quantity ?? "—"}</td>
-              </tr>
-            ))}
+                  <td className="py-2">{it.duration ?? "—"}</td>
+                  <td className="py-2 text-right tabular-nums">{it.quantity ?? "—"}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
