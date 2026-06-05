@@ -1492,6 +1492,7 @@ export interface Database {
           dosage: string | null;
           frequency: string | null;
           duration: string | null;
+          timing: string | null;
           instructions: string | null;
           quantity: number | null;
           sort_order: number;
@@ -1505,6 +1506,7 @@ export interface Database {
           dosage?: string | null;
           frequency?: string | null;
           duration?: string | null;
+          timing?: string | null;
           instructions?: string | null;
           quantity?: number | null;
           sort_order?: number;

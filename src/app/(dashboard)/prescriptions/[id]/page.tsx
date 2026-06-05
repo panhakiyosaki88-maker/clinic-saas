@@ -70,6 +70,7 @@ export default async function PrescriptionDetailPage({
               <th className="pb-2">Medicine</th>
               <th className="pb-2">Dosage</th>
               <th className="pb-2">Frequency</th>
+              <th className="pb-2">Duration</th>
               <th className="pb-2">When</th>
               <th className="pb-2 text-right">Qty</th>
             </tr>
@@ -86,6 +87,7 @@ export default async function PrescriptionDetailPage({
                 <td className="py-2">{it.dosage ?? "—"}</td>
                 <td className="py-2">{it.frequency ?? "—"}</td>
                 <td className="py-2">{it.duration ?? "—"}</td>
+                <td className="py-2">{it.timing ?? "—"}</td>
                 <td className="py-2 text-right">{it.quantity ?? "—"}</td>
               </tr>
             ))}

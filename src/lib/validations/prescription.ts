@@ -8,6 +8,7 @@ export const prescriptionItemSchema = z.object({
   dosage: optionalShort,
   frequency: optionalShort,
   duration: optionalShort,
+  timing: optionalShort,
   instructions: z.string().trim().max(1000).optional().or(z.literal("")),
   quantity: z.preprocess(emptyToUndef, z.coerce.number().int().min(0).max(100000).optional()),
 });

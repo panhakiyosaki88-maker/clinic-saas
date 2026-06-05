@@ -43,6 +43,7 @@ export async function createPrescription(
     dosage: it.dosage || null,
     frequency: it.frequency || null,
     duration: it.duration || null,
+    timing: it.timing || null,
     instructions: it.instructions || null,
     quantity: it.quantity ?? null,
     sort_order: i,
