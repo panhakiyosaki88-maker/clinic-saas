@@ -254,9 +254,16 @@ export function BillingWorkspace({
                   </div>
                 )}
               </div>
+              <div className="hidden grid-cols-[1.5rem_1fr_4.5rem_6rem_2rem] gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] sm:grid">
+                <span aria-hidden />
+                <span>Description</span>
+                <span>Quantity</span>
+                <span>Unit price</span>
+                <span aria-hidden />
+              </div>
               {labOverallMode ? (
                 <div className="space-y-2">
-                  <div className="grid items-center gap-2 sm:grid-cols-[auto_1fr_4.5rem_6rem_auto]">
+                  <div className="grid items-center gap-2 sm:grid-cols-[1.5rem_1fr_4.5rem_6rem_2rem]">
                     <span aria-hidden className="h-4 w-4" />
                     <Input
                       value={labDescription}
@@ -280,7 +287,7 @@ export function BillingWorkspace({
               ) : (
                 <div className="space-y-2">
                   {group.map((r) => (
-                    <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[auto_1fr_4.5rem_6rem_auto]">
+                    <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1.5rem_1fr_4.5rem_6rem_2rem]">
                       <input type="checkbox" checked={r.selected} onChange={(e) => patch(r.key, { selected: e.target.checked })} />
                       <Input value={r.description} placeholder="Description" onChange={(e) => patch(r.key, { description: e.target.value })} />
                       <Input type="number" step="0.01" value={r.quantity} onChange={(e) => patch(r.key, { quantity: e.target.value })} title="Quantity" />
@@ -292,7 +299,7 @@ export function BillingWorkspace({
                         title="Unit price (override)"
                         className={r.needsPrice && num(r.unitPrice) === 0 ? "border-amber-400" : undefined}
                       />
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(r.key)}>✕</Button>
+                      <Button type="button" variant="ghost" size="sm" className="w-full px-0" onClick={() => removeRow(r.key)}>✕</Button>
                     </div>
                   ))}
                 </div>

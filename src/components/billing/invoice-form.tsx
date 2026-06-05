@@ -173,13 +173,20 @@ export function InvoiceForm({
                   {SERVICE_CATEGORY_LABELS[cat]}
                 </h3>
                 <div className="space-y-2">
+                  <div className="hidden grid-cols-[1fr_5rem_7rem_5rem_2.5rem] gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] sm:grid">
+                    <span>Description</span>
+                    <span>Quantity</span>
+                    <span>Unit price</span>
+                    <span className="text-right">Amount</span>
+                    <span aria-hidden />
+                  </div>
                   {group.map((r) => (
-                    <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1fr_4.5rem_6rem_4rem_auto]">
+                    <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1fr_5rem_7rem_5rem_2.5rem]">
                       <Input placeholder="Description *" value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
-                      <Input type="number" step="0.01" placeholder="Qty" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} title="Quantity" />
+                      <Input type="number" step="0.01" placeholder="Quantity" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} title="Quantity" />
                       <Input type="number" step="0.01" placeholder="Unit price" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} title="Unit price" />
                       <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>✕</Button>
+                      <Button type="button" variant="ghost" size="sm" className="w-full px-0" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>✕</Button>
                     </div>
                   ))}
                 </div>
