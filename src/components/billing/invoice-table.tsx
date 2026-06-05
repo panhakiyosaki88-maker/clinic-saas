@@ -16,6 +16,7 @@ import {
 } from "@tanstack/react-table";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { voidInvoices } from "@/server/actions/billing";
+import { formatIn, type CurrencyCode } from "@/lib/billing/currency";
 import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, type InvoiceStatusValue } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,11 +43,21 @@ const STATUS_TONE: Record<string, string> = {
 };
 const selectClass =
   "h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
-const money = (n: number) => Number(n).toFixed(2);
 const col = createColumnHelper<InvoiceTableRow>();
 
-export function InvoiceTable({ rows, canWrite }: { rows: InvoiceTableRow[]; canWrite: boolean }) {
+export function InvoiceTable({
+  rows,
+  canWrite,
+  currency = "USD",
+  rate = 4100,
+}: {
+  rows: InvoiceTableRow[];
+  canWrite: boolean;
+  currency?: CurrencyCode;
+  rate?: number;
+}) {
   const router = useRouter();
+  const money = React.useCallback((n: number) => formatIn(n, currency, rate), [currency, rate]);
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "issued_at", desc: true }]);
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -98,7 +109,7 @@ export function InvoiceTable({ rows, canWrite }: { rows: InvoiceTableRow[]; canW
         filterFn: "equals",
       }),
     ],
-    [canWrite]
+    [canWrite, money]
   );
 
   const table = useReactTable({

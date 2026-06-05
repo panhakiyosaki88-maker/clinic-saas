@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getDebtReport } from "@/lib/db/queries/billing-debt";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Wallet, Users } from "lucide-react";
@@ -13,14 +15,14 @@ import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export const metadata = { title: "Patient debt" };
 
-const money = (n: number) => Number(n).toFixed(2);
-
 export default async function DebtPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
-  const d = await getDebtReport();
+  const [d, settings] = await Promise.all([getDebtReport(), getBillingSettings()]);
+  const ctx = currencyContext(settings);
+  const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   const b = d.buckets;
   const buckets = [
     { label: "0–30 days", value: b.d0_30 },

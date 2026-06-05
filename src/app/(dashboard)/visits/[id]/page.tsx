@@ -7,6 +7,8 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getVisit, getVisitTimeline, type TimelineKind } from "@/lib/db/queries/visits";
 import { listProcedureOptions } from "@/lib/db/queries/procedures";
 import { listMedicineOptions, listPrescribedDispenseOptions } from "@/lib/db/queries/pharmacy";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
 import { RecordProcedureForm } from "@/components/billing/record-procedure-form";
 import { DispenseForm } from "@/components/billing/dispense-form";
 import {
@@ -33,7 +35,6 @@ const ICON: Record<TimelineKind, React.ComponentType<{ className?: string }>> = 
   payment: Wallet,
 };
 
-const money = (n: number) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default async function VisitPage({ params }: { params: Promise<{ id: string }> }) {
   const clinic = await getCurrentClinic();
@@ -52,11 +53,14 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
     hasPermission(PERMISSIONS.EMR_WRITE),
     hasPermission(PERMISSIONS.PHARMACY_WRITE),
   ]);
-  const [procedures, prescribedMeds, allMeds] = await Promise.all([
+  const [procedures, prescribedMeds, allMeds, settings] = await Promise.all([
     canProc ? listProcedureOptions() : Promise.resolve([]),
     canDispense ? listPrescribedDispenseOptions(id) : Promise.resolve([]),
     canDispense ? listMedicineOptions() : Promise.resolve([]),
+    getBillingSettings(),
   ]);
+  const ctx = currencyContext(settings);
+  const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   // When this visit has a prescription, restrict the dispense picker to the
   // prescribed medicines that are stocked (with qty/price pre-filled); otherwise
   // offer the full catalog.

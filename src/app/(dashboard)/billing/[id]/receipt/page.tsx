@@ -2,6 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
+import { Money } from "@/components/billing/money";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
@@ -19,10 +22,11 @@ export default async function ReceiptPage({
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
   const { id } = await params;
-  const inv = await getInvoice(id);
+  const [inv, settings] = await Promise.all([getInvoice(id), getBillingSettings()]);
   if (!inv) notFound();
 
-  const fmt = (n: number) => Number(n).toFixed(2);
+  const ctx = currencyContext(settings);
+  const one = (n: number) => formatIn(n, ctx.primary, ctx.rate);
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6 print:max-w-none print:p-0">
@@ -50,15 +54,15 @@ export default async function ReceiptPage({
               <tr key={p.id} className="border-b border-[var(--border)]">
                 <td className="py-1 font-mono text-xs">{p.receipt_number}</td>
                 <td className="py-1">{PAYMENT_METHOD_LABELS[p.method]}</td>
-                <td className="py-1 text-right tabular-nums">{fmt(p.amount)}</td>
+                <td className="py-1 text-right tabular-nums">{one(p.amount)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         <div className="space-y-1 text-sm">
-          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Total paid</span><span className="tabular-nums">{fmt(inv.amount_paid)}</span></div>
-          <div className="flex justify-between font-semibold"><span>Balance</span><span className="tabular-nums">{fmt(inv.balance)}</span></div>
+          <div className="flex items-baseline justify-between gap-2"><span className="text-[var(--muted-foreground)]">Total paid</span><Money usd={Number(inv.amount_paid)} ctx={ctx} /></div>
+          <div className="flex items-baseline justify-between gap-2 font-semibold"><span>Balance</span><Money usd={Number(inv.balance)} ctx={ctx} /></div>
         </div>
 
         <p className="mt-6 text-xs text-[var(--muted-foreground)]">Thank you.</p>

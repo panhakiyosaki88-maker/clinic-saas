@@ -21,6 +21,8 @@ import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
 import { listPatientInvoices } from "@/lib/db/queries/billing";
 import { getUnbilledForPatient } from "@/lib/db/queries/billing-suggestions";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
 import { listPatientVisits } from "@/lib/db/queries/visits";
 import { listPatientMemberships, listMembershipPlanOptions } from "@/lib/db/queries/memberships";
 import { EnrolMembershipForm } from "@/components/billing/enrol-membership-form";
@@ -126,6 +128,8 @@ export default async function PatientProfilePage({
     listPatientMemberships(id),
     canWrite ? listMembershipPlanOptions() : Promise.resolve([]),
   ]);
+  const billingSettings = await getBillingSettings();
+  const currencyCtx = currencyContext(billingSettings);
   const unbilled = canBillWrite
     ? await getUnbilledForPatient(id)
     : { appointments: [], labs: [] };
@@ -384,7 +388,7 @@ export default async function PatientProfilePage({
                     <span className="text-sm">
                       <span className="capitalize text-[var(--muted-foreground)]">{inv.status.replace("_", " ")}</span>
                       {" · "}
-                      <span className="tabular-nums">{Number(inv.balance).toFixed(2)} due</span>
+                      <span className="tabular-nums">{formatIn(Number(inv.balance), currencyCtx.primary, currencyCtx.rate)} due</span>
                     </span>
                   </li>
                 ))}

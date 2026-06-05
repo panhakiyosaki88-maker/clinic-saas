@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listPayments } from "@/lib/db/queries/billing";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
@@ -13,14 +15,14 @@ import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 export const metadata = { title: "Payments" };
 
-const money = (n: number) => Number(n).toFixed(2);
-
 export default async function PaymentsPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
-  const payments = await listPayments();
+  const [payments, settings] = await Promise.all([listPayments(), getBillingSettings()]);
+  const ctx = currencyContext(settings);
+  const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   const net = payments.reduce((s, p) => s + (p.kind === "refund" ? -p.amount : p.amount), 0);
 
   return (

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getBillingDashboard } from "@/lib/db/queries/billing-analytics";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Receipt, TrendingUp, Wallet, CircleDollarSign, Users } from "lucide-react";
@@ -14,15 +16,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Billing dashboard" };
 
-const money = (n: number) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 export default async function BillingDashboardPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
-  const d = await getBillingDashboard();
+  const [d, settings] = await Promise.all([getBillingDashboard(), getBillingSettings()]);
   const k = d.kpis;
+  const ctx = currencyContext(settings);
+  const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">

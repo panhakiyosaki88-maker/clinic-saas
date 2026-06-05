@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listInvoices } from "@/lib/db/queries/billing";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext } from "@/lib/billing/currency";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Receipt, Plus } from "lucide-react";
@@ -19,7 +21,11 @@ export default async function InvoicesPage() {
 
   const canWrite = await hasPermission(PERMISSIONS.BILLING_WRITE);
   const { activeId, primaryId } = await getActiveBranchContext();
-  const invoices = await listInvoices(500, { activeId, primaryId });
+  const [invoices, settings] = await Promise.all([
+    listInvoices(500, { activeId, primaryId }),
+    getBillingSettings(),
+  ]);
+  const ctx = currencyContext(settings);
   const outstanding = invoices.filter((i) => i.status !== "paid" && i.status !== "cancelled").length;
 
   return (
@@ -42,6 +48,8 @@ export default async function InvoicesPage() {
         <CardContent className="pt-6">
           <InvoiceTable
             canWrite={canWrite}
+            currency={ctx.primary}
+            rate={ctx.rate}
             rows={invoices.map((i) => ({
               id: i.id,
               invoice_number: i.invoice_number,

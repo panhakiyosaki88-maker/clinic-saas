@@ -4,6 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext, formatIn } from "@/lib/billing/currency";
+import { Money } from "@/components/billing/money";
 import { buildKhqr } from "@/lib/billing/khqr";
 import { KhqrPanel } from "@/components/billing/khqr-panel";
 import { hasPermission } from "@/lib/auth/guard";
@@ -38,12 +40,13 @@ export default async function InvoiceDetailPage({
     hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
     getBillingSettings(),
   ]);
-  const fmt = (n: number) => Number(n).toFixed(2);
+  const ctx = currencyContext(settings);
+  const one = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   const active = inv.status !== "cancelled";
   const editable = active && Number(inv.amount_paid) === 0;
   const isDraft = inv.status === "draft";
 
-  const currency = settings?.currency ?? "USD";
+  const currency = ctx.primary;
   const khqrPayload =
     settings?.khqr_merchant_account && active && !isDraft && Number(inv.balance) > 0
       ? buildKhqr({
@@ -106,21 +109,24 @@ export default async function InvoiceDetailPage({
               <tr key={it.id} className="border-b border-[var(--border)]">
                 <td className="py-2">{it.description}</td>
                 <td className="py-2 text-right tabular-nums">{Number(it.quantity)}</td>
-                <td className="py-2 text-right tabular-nums">{fmt(it.unit_price)}</td>
-                <td className="py-2 text-right tabular-nums">{fmt(it.line_total)}</td>
+                <td className="py-2 text-right tabular-nums">{one(it.unit_price)}</td>
+                <td className="py-2 text-right tabular-nums">{one(it.line_total)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         <div className="ml-auto mt-4 max-w-xs space-y-1 text-sm">
-          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{fmt(inv.subtotal)}</span></div>
-          {Number(inv.discount) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Discount</span><span className="tabular-nums">−{fmt(inv.discount)}</span></div>}
-          {Number(inv.tax) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Tax</span><span className="tabular-nums">{fmt(inv.tax)}</span></div>}
-          <div className="flex justify-between border-t border-[var(--border)] pt-1 font-semibold"><span>Total</span><span className="tabular-nums">{fmt(inv.total)}</span></div>
-          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Paid</span><span className="tabular-nums">{fmt(inv.amount_paid)}</span></div>
-          <div className="flex justify-between font-semibold"><span>Balance</span><span className="tabular-nums">{fmt(inv.balance)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{one(inv.subtotal)}</span></div>
+          {Number(inv.discount) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Discount</span><span className="tabular-nums">−{one(inv.discount)}</span></div>}
+          {Number(inv.tax) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Tax</span><span className="tabular-nums">{one(inv.tax)}</span></div>}
+          <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-1 font-semibold"><span>Total</span><Money usd={Number(inv.total)} ctx={ctx} /></div>
+          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Paid</span><span className="tabular-nums">{one(inv.amount_paid)}</span></div>
+          <div className="flex items-baseline justify-between gap-2 font-semibold"><span>Balance</span><Money usd={Number(inv.balance)} ctx={ctx} /></div>
         </div>
+        <p className="ml-auto mt-1 max-w-xs text-right text-[10px] text-[var(--muted-foreground)]">
+          1 USD = {ctx.rate.toLocaleString()} KHR
+        </p>
 
         {inv.notes && <p className="mt-6 whitespace-pre-wrap text-sm text-[var(--muted-foreground)]">{inv.notes}</p>}
       </article>
@@ -165,7 +171,7 @@ export default async function InvoiceDetailPage({
                       {p.reference ? ` · ${p.reference}` : ""}
                     </span>
                     <span className={`tabular-nums ${refund ? "text-[var(--destructive)]" : ""}`}>
-                      {refund ? "−" : ""}{fmt(p.amount)}
+                      {refund ? "−" : ""}{one(p.amount)}
                     </span>
                   </li>
                 );
