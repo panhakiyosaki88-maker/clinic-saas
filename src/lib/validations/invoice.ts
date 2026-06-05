@@ -127,6 +127,10 @@ export const BILL_SOURCES = [
 export const visitBillLineSchema = z.object({
   source: z.enum(BILL_SOURCES).default("manual"),
   sourceId: z.string().uuid().optional().or(z.literal("")),
+  /** Extra source ids of the same `source` that this one line bills as a bundle
+   *  (e.g. a single "Laboratory Test" line covering many lab requests). Each is
+   *  linked for de-duplication just like the primary sourceId. */
+  linkSourceIds: z.array(z.string().uuid()).optional(),
   category: z.enum(SERVICE_CATEGORIES).default("other"),
   description: z.string().trim().min(1, "Description is required").max(255),
   quantity: z.preprocess(emptyToUndef, z.coerce.number().min(0.01).max(100000).default(1)),

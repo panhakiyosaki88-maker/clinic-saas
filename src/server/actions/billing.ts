@@ -334,17 +334,27 @@ export async function createInvoiceFromVisit(
   const v = parsed.data;
   const supabase = await createClient();
 
-  // Dedupe: drop detected lines whose source is already linked to an invoice.
-  const sourced = v.lines.filter((l) => l.source !== "manual" && l.sourceId);
+  // All source ids a line touches (primary + any bundled ids, e.g. a single
+  // "Laboratory Test" line that covers many lab requests).
+  const lineSourceIds = (l: (typeof v.lines)[number]): string[] =>
+    l.source === "manual" ? [] : [l.sourceId ?? "", ...(l.linkSourceIds ?? [])].filter(Boolean);
+
+  // Dedupe: drop detected lines whose source(s) are already linked to an invoice.
+  const sourcedTypes = [...new Set(v.lines.filter((l) => lineSourceIds(l).length > 0).map((l) => l.source))];
   let billed = new Set<string>();
-  if (sourced.length > 0) {
+  if (sourcedTypes.length > 0) {
     const { data: links } = await supabase
       .from("invoice_source_links")
       .select("source, source_id")
-      .in("source", [...new Set(sourced.map((l) => l.source))]);
+      .in("source", sourcedTypes);
     billed = new Set((links ?? []).map((l) => `${l.source}:${l.source_id}`));
   }
-  const lines = v.lines.filter((l) => l.source === "manual" || !l.sourceId || !billed.has(`${l.source}:${l.sourceId}`));
+  // Keep a line if it is manual, has no source, or still has at least one
+  // un-billed source id.
+  const lines = v.lines.filter((l) => {
+    const ids = lineSourceIds(l);
+    return ids.length === 0 || ids.some((id) => !billed.has(`${l.source}:${id}`));
+  });
   if (lines.length === 0) return fail("Those charges are already billed.");
 
   const { data: invoice, error } = await supabase
@@ -381,10 +391,13 @@ export async function createInvoiceFromVisit(
     return fail(itemsErr.message);
   }
 
-  // Link each detected source so it can never be billed again.
-  const linkRows = lines
-    .filter((l) => l.source !== "manual" && l.sourceId)
-    .map((l) => ({ clinic_id: clinicId, invoice_id: invoice.id, source: l.source, source_id: l.sourceId as string }));
+  // Link every source each line touches (primary + bundled) so none can be
+  // billed again. Skip ids already billed (race guard).
+  const linkRows = lines.flatMap((l) =>
+    lineSourceIds(l)
+      .filter((id) => !billed.has(`${l.source}:${id}`))
+      .map((id) => ({ clinic_id: clinicId, invoice_id: invoice.id, source: l.source, source_id: id }))
+  );
   if (linkRows.length > 0) {
     await supabase
       .from("invoice_source_links")

@@ -66,15 +66,17 @@ export function BillingWorkspace({
   const [tax, setTax] = React.useState("0");
   const [notes, setNotes] = React.useState("");
 
-  // Laboratory pricing mode: "individual" prices each test; "overall" charges a
-  // single total for the whole lab panel, split evenly across the lab lines (so
-  // every lab source is still linked and can't be re-billed).
+  // Laboratory pricing mode: "individual" prices each test; "overall" replaces
+  // every lab test with a single bundled "Laboratory Test" line at one price (on
+  // screen and on the printed invoice). All lab sources are still linked, so
+  // nothing can be re-billed.
   const [labMode, setLabMode] = React.useState<"individual" | "overall">("individual");
   const initialLabTotal = React.useMemo(
     () => lines.filter((l) => l.category === "lab").reduce((s, l) => s + l.quantity * l.unitPrice, 0),
     [lines]
   );
   const [labOverall, setLabOverall] = React.useState(String(initialLabTotal));
+  const [labDescription, setLabDescription] = React.useState("Laboratory Test");
 
   function patch(key: number, p: Partial<Row>) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...p } : r)));
@@ -89,32 +91,16 @@ export function BillingWorkspace({
     setRows((rs) => rs.filter((r) => r.key !== key));
   }
 
+  const labRows = rows.filter((r) => r.category === "lab");
+  const overallLab = labMode === "overall" && labRows.length > 0;
   const selected = rows.filter((r) => r.selected);
-  const selectedLabKeys = selected.filter((r) => r.category === "lab").map((r) => r.key);
 
-  // Even split of the overall lab total across selected lab lines (remainder on
-  // the first cents), so the per-line prices always sum back to the overall.
-  const labSplit = React.useMemo(() => {
-    const m = new Map<number, number>();
-    const n = selectedLabKeys.length;
-    if (labMode !== "overall" || n === 0) return m;
-    const cents = Math.max(0, Math.round(num(labOverall) * 100));
-    const base = Math.floor(cents / n);
-    const rem = cents - base * n;
-    selectedLabKeys.forEach((k, i) => m.set(k, (base + (i < rem ? 1 : 0)) / 100));
-    return m;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [labMode, labOverall, selectedLabKeys.join(",")]);
-
-  const effectiveLine = (r: Row) =>
-    labMode === "overall" && r.category === "lab" && labSplit.has(r.key)
-      ? { quantity: 1, unitPrice: labSplit.get(r.key) as number }
-      : { quantity: num(r.quantity), unitPrice: num(r.unitPrice) };
-
-  const subtotal = selected.reduce((s, r) => {
-    const e = effectiveLine(r);
-    return s + e.quantity * e.unitPrice;
-  }, 0);
+  // In overall mode the labs are billed as one bundled line, so they don't count
+  // individually toward the subtotal.
+  const subtotal =
+    selected
+      .filter((r) => !(overallLab && r.category === "lab"))
+      .reduce((s, r) => s + num(r.quantity) * num(r.unitPrice), 0) + (overallLab ? num(labOverall) : 0);
   const membershipDiscount =
     applyMembership && membership
       ? Math.max(
@@ -130,19 +116,34 @@ export function BillingWorkspace({
 
   function submit(asDraft: boolean) {
     setError(null);
+    // Non-lab rows (and, in individual mode, lab rows) bill one item each.
     const payload = selected
       .filter((r) => r.description.trim())
-      .map((r) => {
-        const e = effectiveLine(r);
-        return {
-          source: r.source,
-          sourceId: r.sourceId || undefined,
-          category: r.category,
-          description: r.description,
-          quantity: e.quantity,
-          unitPrice: e.unitPrice,
-        };
+      .filter((r) => !(overallLab && r.category === "lab"))
+      .map((r) => ({
+        source: r.source,
+        sourceId: r.sourceId || undefined,
+        linkSourceIds: undefined as string[] | undefined,
+        category: r.category,
+        description: r.description,
+        quantity: num(r.quantity),
+        unitPrice: num(r.unitPrice),
+      }));
+
+    // Overall mode: one bundled "Laboratory Test" line covering every lab source.
+    if (overallLab) {
+      const labIds = labRows.map((r) => r.sourceId).filter(Boolean);
+      payload.push({
+        source: "lab",
+        sourceId: labIds[0] || undefined,
+        linkSourceIds: labIds.slice(1),
+        category: "lab",
+        description: labDescription.trim() || "Laboratory Test",
+        quantity: 1,
+        unitPrice: num(labOverall),
       });
+    }
+
     if (payload.length === 0) {
       setError("Select at least one charge.");
       return;
@@ -185,64 +186,63 @@ export function BillingWorkspace({
                   {SERVICE_CATEGORY_LABELS[cat]}
                 </h3>
                 {isLab && (
-                  <div className="flex items-center gap-3 text-xs">
-                    <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)]">
-                      {(["individual", "overall"] as const).map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setLabMode(m)}
-                          className={`px-2.5 py-1 ${labMode === m ? "bg-brand-600 text-white" : "text-[var(--muted-foreground)]"}`}
-                        >
-                          {m === "individual" ? "Price each" : "Price overall"}
-                        </button>
-                      ))}
-                    </div>
-                    {labOverallMode && (
-                      <label className="flex items-center gap-1.5">
-                        <span className="text-[var(--muted-foreground)]">Total</span>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={labOverall}
-                          onChange={(e) => setLabOverall(e.target.value)}
-                          className="w-24"
-                          title="Overall laboratory price"
-                        />
-                      </label>
-                    )}
+                  <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)] text-xs">
+                    {(["individual", "overall"] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setLabMode(m)}
+                        className={`px-2.5 py-1 ${labMode === m ? "bg-brand-600 text-white" : "text-[var(--muted-foreground)]"}`}
+                      >
+                        {m === "individual" ? "Price each" : "Price overall"}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
-              <div className="space-y-2">
-                {group.map((r) => {
-                  const split = labOverallMode ? labSplit.get(r.key) ?? 0 : null;
-                  return (
+              {labOverallMode ? (
+                <div className="space-y-2">
+                  <div className="grid items-center gap-2 sm:grid-cols-[auto_1fr_4.5rem_6rem_auto]">
+                    <span aria-hidden className="h-4 w-4" />
+                    <Input
+                      value={labDescription}
+                      placeholder="Laboratory Test"
+                      onChange={(e) => setLabDescription(e.target.value)}
+                    />
+                    <Input type="number" value="1" disabled title="Quantity" />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={labOverall}
+                      onChange={(e) => setLabOverall(e.target.value)}
+                      title="Overall laboratory price"
+                    />
+                    <span aria-hidden />
+                  </div>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Billed as one line covering {group.length} test{group.length === 1 ? "" : "s"}.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {group.map((r) => (
                     <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[auto_1fr_4.5rem_6rem_auto]">
                       <input type="checkbox" checked={r.selected} onChange={(e) => patch(r.key, { selected: e.target.checked })} />
                       <Input value={r.description} placeholder="Description" onChange={(e) => patch(r.key, { description: e.target.value })} />
+                      <Input type="number" step="0.01" value={r.quantity} onChange={(e) => patch(r.key, { quantity: e.target.value })} title="Quantity" />
                       <Input
                         type="number"
                         step="0.01"
-                        value={labOverallMode ? "1" : r.quantity}
-                        onChange={(e) => patch(r.key, { quantity: e.target.value })}
-                        title="Quantity"
-                        disabled={labOverallMode}
-                      />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={labOverallMode ? (r.selected ? (split as number).toFixed(2) : "0.00") : r.unitPrice}
+                        value={r.unitPrice}
                         onChange={(e) => patch(r.key, { unitPrice: e.target.value })}
-                        title={labOverallMode ? "Split from overall total" : "Unit price (override)"}
-                        disabled={labOverallMode}
-                        className={!labOverallMode && r.needsPrice && num(r.unitPrice) === 0 ? "border-amber-400" : undefined}
+                        title="Unit price (override)"
+                        className={r.needsPrice && num(r.unitPrice) === 0 ? "border-amber-400" : undefined}
                       />
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(r.key)}>✕</Button>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              )}
             </section>
           );
         })}
