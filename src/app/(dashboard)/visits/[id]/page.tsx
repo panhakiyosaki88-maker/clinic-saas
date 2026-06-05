@@ -4,6 +4,10 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getVisit, getVisitTimeline, type TimelineKind } from "@/lib/db/queries/visits";
+import { listProcedureOptions } from "@/lib/db/queries/procedures";
+import { listMedicineOptions } from "@/lib/db/queries/pharmacy";
+import { RecordProcedureForm } from "@/components/billing/record-procedure-form";
+import { DispenseForm } from "@/components/billing/dispense-form";
 import {
   CalendarClock,
   Stethoscope,
@@ -40,9 +44,18 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const visit = await getVisit(id);
   if (!visit) notFound();
-  const events = await getVisitTimeline(id);
 
-  const canBill = await hasPermission(PERMISSIONS.BILLING_WRITE);
+  const [events, canBill, canProc, canDispense] = await Promise.all([
+    getVisitTimeline(id),
+    hasPermission(PERMISSIONS.BILLING_WRITE),
+    hasPermission(PERMISSIONS.EMR_WRITE),
+    hasPermission(PERMISSIONS.PHARMACY_WRITE),
+  ]);
+  const [procedures, medicines] = await Promise.all([
+    canProc ? listProcedureOptions() : Promise.resolve([]),
+    canDispense ? listMedicineOptions() : Promise.resolve([]),
+  ]);
+  const isOpen = visit.status === "open";
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -98,6 +111,24 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
           </ol>
         )}
       </section>
+
+      {isOpen && (canProc || canDispense) && (
+        <section className="space-y-4 rounded-xl border border-[var(--border)] p-5">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Add to this visit</h2>
+          {canProc && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium">Procedure</p>
+              <RecordProcedureForm patientId={visit.patient_id} visitId={visit.id} procedures={procedures} />
+            </div>
+          )}
+          {canDispense && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium">Dispense medicine</p>
+              <DispenseForm patientId={visit.patient_id} visitId={visit.id} medicines={medicines} />
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }

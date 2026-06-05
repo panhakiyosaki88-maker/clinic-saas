@@ -21,6 +21,8 @@ import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
 import { listPatientInvoices } from "@/lib/db/queries/billing";
 import { getUnbilledForPatient } from "@/lib/db/queries/billing-suggestions";
 import { listPatientVisits } from "@/lib/db/queries/visits";
+import { listPatientMemberships, listMembershipPlanOptions } from "@/lib/db/queries/memberships";
+import { EnrolMembershipForm } from "@/components/billing/enrol-membership-form";
 import { SuggestedCharges } from "@/components/billing/suggested-charges";
 import { listPatientLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
@@ -101,6 +103,7 @@ export default async function PatientProfilePage({
     allergies, medications, immunizations, conditions,
     consents, communications, patientTags, clinicTags,
     visits, prescriptions, invoices, labRequests, patientVisits,
+    memberships, membershipPlans,
   ] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
@@ -118,6 +121,8 @@ export default async function PatientProfilePage({
     canBillRead ? listPatientInvoices(id) : Promise.resolve([]),
     canLabRead ? listPatientLabRequests(id) : Promise.resolve([]),
     listPatientVisits(id),
+    listPatientMemberships(id),
+    canWrite ? listMembershipPlanOptions() : Promise.resolve([]),
   ]);
   const unbilled = canBillWrite
     ? await getUnbilledForPatient(id)
@@ -290,8 +295,31 @@ export default async function PatientProfilePage({
     </div>
   );
 
+  const activeMembership = memberships.find((m) => m.status === "active");
   const financialPanel = (
     <div className="space-y-6">
+      {(canWrite || memberships.length > 0) && (
+        <Card>
+          <CardHeader><CardTitle>Membership</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {memberships.length > 0 ? (
+              <ul className="space-y-1 text-sm">
+                {memberships.map((m) => (
+                  <li key={m.id} className="flex items-center justify-between gap-2">
+                    <span>{m.plan_name ?? "Plan"}</span>
+                    <span className="text-xs text-[var(--muted-foreground)]">
+                      {m.status}{m.expires_at ? ` · until ${m.expires_at}` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-[var(--muted-foreground)]">Not enrolled in a membership.</p>
+            )}
+            {canWrite && !activeMembership && <EnrolMembershipForm patientId={patient.id} plans={membershipPlans} />}
+          </CardContent>
+        </Card>
+      )}
       {patientVisits.length > 0 && (
         <Card>
           <CardHeader><CardTitle>Visits ({patientVisits.length})</CardTitle></CardHeader>

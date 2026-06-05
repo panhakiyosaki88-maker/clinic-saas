@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { resolveOpenVisitId } from "@/lib/db/open-visit";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -161,6 +162,7 @@ export async function createLabRequest(
     }
   }
 
+  const visitId = await resolveOpenVisitId(supabase, v.patientId);
   const { data, error } = await supabase
     .from("lab_requests")
     .insert(
@@ -169,6 +171,7 @@ export async function createLabRequest(
         patient_id: v.patientId,
         doctor_id: v.doctorId || null,
         branch_id: v.branchId || null,
+        visit_id: visitId,
         category_id: categoryByTest.get(testName) ?? null,
         test_name: testName,
         notes: v.notes || null,

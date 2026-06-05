@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { resolveOpenVisitId } from "@/lib/db/open-visit";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -89,12 +90,13 @@ export async function recordDispense(input: DispenseInput): Promise<ActionResult
   if (med.stock_quantity - v.quantity < 0) return fail(`Only ${med.stock_quantity} in stock.`);
 
   const unitPrice = v.unitPrice ?? Number(med.selling_price ?? 0);
+  const visitId = v.visitId || (await resolveOpenVisitId(supabase, v.patientId));
   const { error } = await supabase.from("inventory_transactions").insert({
     clinic_id: clinicId,
     medicine_id: v.medicineId,
     branch_id: v.branchId || null,
     patient_id: v.patientId,
-    visit_id: v.visitId || null,
+    visit_id: visitId,
     change: -v.quantity,
     reason: "dispense",
     unit_price: unitPrice,
@@ -106,7 +108,7 @@ export async function recordDispense(input: DispenseInput): Promise<ActionResult
   revalidatePath("/pharmacy");
   revalidatePath(`/pharmacy/${v.medicineId}`);
   revalidatePath(`/patients/${v.patientId}`);
-  if (v.visitId) revalidatePath(`/visits/${v.visitId}`);
+  if (visitId) revalidatePath(`/visits/${visitId}`);
   return ok(undefined);
 }
 
@@ -118,9 +120,10 @@ export async function recordProcedure(input: RecordProcedureInput): Promise<Acti
   const v = parsed.data;
 
   const supabase = await createClient();
+  const visitId = v.visitId || (await resolveOpenVisitId(supabase, v.patientId));
   const { error } = await supabase.from("visit_procedures").insert({
     clinic_id: clinicId,
-    visit_id: v.visitId || null,
+    visit_id: visitId,
     patient_id: v.patientId,
     procedure_id: v.procedureId || null,
     doctor_id: v.doctorId || null,
@@ -133,6 +136,6 @@ export async function recordProcedure(input: RecordProcedureInput): Promise<Acti
   if (error) return fail(error.message);
 
   revalidatePath(`/patients/${v.patientId}`);
-  if (v.visitId) revalidatePath(`/visits/${v.visitId}`);
+  if (visitId) revalidatePath(`/visits/${visitId}`);
   return ok(undefined);
 }

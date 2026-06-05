@@ -59,6 +59,26 @@ export async function listMedicineSuggestions(): Promise<MedicineSuggestion[]> {
   return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Active medicines for dispensing pickers: id, name, price and stock. */
+export async function listMedicineOptions(): Promise<
+  { id: string; name: string; selling_price: number; stock_quantity: number }[]
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("medicines")
+    .select("id, name, selling_price, stock_quantity")
+    .is("deleted_at", null)
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((m) => ({
+    id: m.id,
+    name: m.name,
+    selling_price: Number(m.selling_price ?? 0),
+    stock_quantity: m.stock_quantity,
+  }));
+}
+
 export async function getMedicine(id: string): Promise<Medicine | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
