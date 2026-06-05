@@ -166,6 +166,35 @@ export async function changeAppointmentStatus(input: ChangeStatusInput): Promise
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
+  // The encounter begins → ensure this appointment has a visit to hang its
+  // consultation, labs, prescriptions, dispensing and charges off. Best-effort.
+  if (status === "in_consultation") {
+    const { data: appt } = await supabase
+      .from("appointments")
+      .select("patient_id, doctor_id, branch_id, visit_id, scheduled_at, reason")
+      .eq("id", appointmentId)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
+    if (appt && !appt.visit_id) {
+      const { data: visit } = await supabase
+        .from("patient_visits")
+        .insert({
+          clinic_id: clinicId,
+          patient_id: appt.patient_id,
+          branch_id: appt.branch_id,
+          doctor_id: appt.doctor_id,
+          appointment_id: appointmentId,
+          visit_date: appt.scheduled_at,
+          chief_complaint: appt.reason,
+        })
+        .select("id")
+        .single();
+      if (visit) {
+        await supabase.from("appointments").update({ visit_id: visit.id }).eq("id", appointmentId).eq("clinic_id", clinicId);
+      }
+    }
+  }
+
   revalidatePath("/appointments");
   revalidatePath(`/appointments/${appointmentId}`);
   return ok(undefined);

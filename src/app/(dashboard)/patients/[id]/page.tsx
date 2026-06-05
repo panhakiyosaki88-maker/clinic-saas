@@ -20,6 +20,7 @@ import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
 import { listPatientInvoices } from "@/lib/db/queries/billing";
 import { getUnbilledForPatient } from "@/lib/db/queries/billing-suggestions";
+import { listPatientVisits } from "@/lib/db/queries/visits";
 import { SuggestedCharges } from "@/components/billing/suggested-charges";
 import { listPatientLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
@@ -99,7 +100,7 @@ export default async function PatientProfilePage({
     documents, timeline, insurance,
     allergies, medications, immunizations, conditions,
     consents, communications, patientTags, clinicTags,
-    visits, prescriptions, invoices, labRequests,
+    visits, prescriptions, invoices, labRequests, patientVisits,
   ] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
@@ -116,6 +117,7 @@ export default async function PatientProfilePage({
     canRxRead ? listPatientPrescriptions(id) : Promise.resolve([]),
     canBillRead ? listPatientInvoices(id) : Promise.resolve([]),
     canLabRead ? listPatientLabRequests(id) : Promise.resolve([]),
+    listPatientVisits(id),
   ]);
   const unbilled = canBillWrite
     ? await getUnbilledForPatient(id)
@@ -290,6 +292,26 @@ export default async function PatientProfilePage({
 
   const financialPanel = (
     <div className="space-y-6">
+      {patientVisits.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Visits ({patientVisits.length})</CardTitle></CardHeader>
+          <CardContent className="space-y-1">
+            {patientVisits.slice(0, 8).map((vt) => (
+              <Link
+                key={vt.id}
+                href={`/visits/${vt.id}`}
+                className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--muted)]"
+              >
+                <span className="font-medium">{vt.visit_number}</span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  {new Date(vt.visit_date).toLocaleDateString()}
+                  {vt.doctor_name ? ` · ${vt.doctor_name}` : ""} · {vt.status}
+                </span>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
       {canBillWrite && hasUnbilled && (
         <Card>
           <CardHeader><CardTitle>Suggested charges</CardTitle></CardHeader>
@@ -303,9 +325,14 @@ export default async function PatientProfilePage({
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Invoices ({invoices.length})</CardTitle>
             {canBillWrite && (
-              <Button asChild size="sm">
-                <Link href={`/billing/new?patientId=${patient.id}`}>Create invoice</Link>
-              </Button>
+              <div className="flex gap-2">
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/billing/workspace?patientId=${patient.id}`}>Billing workspace</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href={`/billing/new?patientId=${patient.id}`}>Create invoice</Link>
+                </Button>
+              </div>
             )}
           </CardHeader>
           <CardContent>
