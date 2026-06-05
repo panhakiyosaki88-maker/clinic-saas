@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
@@ -58,7 +59,7 @@ export default async function InvoiceDetailPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
       <div className="flex items-center justify-between print:hidden">
-        <Link href="/billing/invoices" className="text-sm text-[var(--muted-foreground)] hover:underline">← Invoices</Link>
+        <BackLink label="← Invoices" fallback="/billing/invoices" />
         <div className="flex flex-wrap items-center gap-2">
           <PrintButton label="Invoice PDF" />
           {inv.payments.length > 0 && (

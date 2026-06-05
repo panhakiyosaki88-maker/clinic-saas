@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getPatient } from "@/lib/db/queries/patients";
@@ -45,9 +46,7 @@ export default async function RecordDetailPage({
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href={`/patients/${id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
-            ← {patient.full_name}
-          </Link>
+          <BackLink label={`← ${patient.full_name}`} fallback={`/patients/${id}`} />
           <h1 className="mt-1 text-2xl font-bold">
             Visit · {new Date(record.visit_date).toLocaleDateString()}
           </h1>

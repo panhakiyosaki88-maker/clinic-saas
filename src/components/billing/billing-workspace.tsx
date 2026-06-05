@@ -91,6 +91,7 @@ export function BillingWorkspace({
           labMode?: "individual" | "overall";
           labOverall?: string;
           labDescription?: string;
+          manualRows?: Omit<Row, "key">[];
         };
         if (s.labMode) setLabMode(s.labMode);
         if (s.labOverall != null) setLabOverall(s.labOverall);
@@ -98,6 +99,10 @@ export function BillingWorkspace({
         if (s.selectedSourceIds) {
           const sel = new Set(s.selectedSourceIds);
           setRows((rs) => rs.map((r) => (r.sourceId ? { ...r, selected: sel.has(r.sourceId) } : r)));
+        }
+        // Re-create any manually-added rows (they aren't part of the detected set).
+        if (s.manualRows?.length) {
+          setRows((rs) => [...rs, ...s.manualRows!.map((m) => ({ ...m, key: keySeq++ }))]);
         }
       }
     } catch {
@@ -110,7 +115,13 @@ export function BillingWorkspace({
     if (!restored.current) return;
     try {
       const selectedSourceIds = rows.filter((r) => r.selected && r.sourceId).map((r) => r.sourceId);
-      sessionStorage.setItem(storageKey, JSON.stringify({ selectedSourceIds, labMode, labOverall, labDescription }));
+      const manualRows = rows
+        .filter((r) => r.source === "manual")
+        .map((r) => ({ source: r.source, sourceId: r.sourceId, category: r.category, description: r.description, quantity: r.quantity, unitPrice: r.unitPrice, selected: r.selected, needsPrice: r.needsPrice }));
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({ selectedSourceIds, labMode, labOverall, labDescription, manualRows })
+      );
     } catch {
       /* ignore */
     }

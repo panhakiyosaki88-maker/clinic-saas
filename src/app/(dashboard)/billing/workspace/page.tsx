@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
@@ -6,7 +5,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { listPatientOptions, getPatient } from "@/lib/db/queries/patients";
 import { getVisitBillables } from "@/lib/db/queries/visit-billing";
 import { BillingWorkspace } from "@/components/billing/billing-workspace";
-import { BackButton } from "@/components/billing/back-button";
+import { BackLink } from "@/components/ui/back-link";
 
 export const metadata = { title: "Billing workspace" };
 
@@ -28,7 +27,7 @@ export default async function BillingWorkspacePage({
     return (
       <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
         <header>
-          <Link href="/billing" className="text-sm text-[var(--muted-foreground)] hover:underline">← Billing</Link>
+          <BackLink label="← Billing" fallback="/billing" />
           <h1 className="mt-1 text-2xl font-bold">Billing workspace</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             Pick a patient to detect every billable activity from their visit.
@@ -62,7 +61,7 @@ export default async function BillingWorkspacePage({
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <BackButton />
+          <BackLink label="← Billing" fallback="/billing" />
           <h1 className="mt-1 text-2xl font-bold">Billing workspace</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {patient.full_name} · {patient.patient_number}

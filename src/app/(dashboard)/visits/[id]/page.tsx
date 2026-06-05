@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
@@ -67,9 +68,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Link href={`/patients/${visit.patient_id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
-            ← {visit.patient_name}
-          </Link>
+          <BackLink label={`← ${visit.patient_name}`} fallback={`/patients/${visit.patient_id}`} />
           <h1 className="mt-1 text-2xl font-bold">Visit {visit.visit_number}</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {new Date(visit.visit_date).toLocaleString()}

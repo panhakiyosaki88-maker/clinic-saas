@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { hasPermission } from "@/lib/auth/guard";
@@ -18,9 +18,7 @@ export default async function NewPatientPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href="/patients" className="text-sm text-[var(--muted-foreground)] hover:underline">
-          ← Patients
-        </Link>
+        <BackLink label="← Patients" fallback="/patients" />
         <h1 className="mt-1 text-2xl font-bold">New patient</h1>
       </header>
       <PatientForm

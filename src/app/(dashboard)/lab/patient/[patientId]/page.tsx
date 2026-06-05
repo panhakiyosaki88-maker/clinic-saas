@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listPatientLabRequests, listPatientLabReports, listLabCategoryTree } from "@/lib/db/queries/lab";
@@ -120,7 +121,7 @@ export default async function PatientLabPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href="/lab" className="text-sm text-[var(--muted-foreground)] hover:underline">← Laboratory</Link>
+        <BackLink label="← Laboratory" fallback="/lab" />
         <h1 className="mt-1 text-2xl font-bold">
           <Link href={`/patients/${patientId}`} className="hover:underline">{patientName}</Link>
         </h1>

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getClinicForAdmin } from "@/lib/db/queries/admin";
 import { ClinicControls } from "@/components/admin/clinic-controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,7 @@ export default async function AdminClinicDetailPage({
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href="/admin/clinics" className="text-sm text-[var(--muted-foreground)] hover:underline">← Clinics</Link>
+        <BackLink label="← Clinics" fallback="/admin/clinics" />
         <h1 className="mt-1 text-2xl font-bold">{clinic.name}</h1>
         <p className="font-mono text-xs text-[var(--muted-foreground)]">/{clinic.slug} · {clinic.contact_email ?? "—"}</p>
       </header>

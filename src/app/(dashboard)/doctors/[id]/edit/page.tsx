@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getDoctor } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
@@ -24,9 +24,7 @@ export default async function EditDoctorPage({
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href={`/doctors/${id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
-          ← {doctor.full_name}
-        </Link>
+        <BackLink label={`← ${doctor.full_name}`} fallback={`/doctors/${id}`} />
         <h1 className="mt-1 text-2xl font-bold">Edit doctor</h1>
       </header>
       <DoctorForm doctor={doctor} branches={branches.map((b) => ({ id: b.id, name: b.name }))} />

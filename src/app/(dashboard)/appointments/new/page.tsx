@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
@@ -29,9 +29,7 @@ export default async function NewAppointmentPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href="/appointments" className="text-sm text-[var(--muted-foreground)] hover:underline">
-          ← Appointments
-        </Link>
+        <BackLink label="← Appointments" fallback="/appointments" />
         <h1 className="mt-1 text-2xl font-bold">New appointment</h1>
       </header>
       <AppointmentForm

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getMedicine } from "@/lib/db/queries/pharmacy";
 import { hasPermission } from "@/lib/auth/guard";
@@ -24,9 +24,7 @@ export default async function EditMedicinePage({
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href={`/pharmacy/${id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
-          ← {medicine.name}
-        </Link>
+        <BackLink label={`← ${medicine.name}`} fallback={`/pharmacy/${id}`} />
         <h1 className="mt-1 text-2xl font-bold">Edit medicine</h1>
       </header>
       <MedicineForm medicine={medicine} />

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getAppointment } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
@@ -29,9 +29,7 @@ export default async function EditAppointmentPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href={`/appointments/${id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
-          ← Appointment
-        </Link>
+        <BackLink label="← Appointment" fallback={`/appointments/${id}`} />
         <h1 className="mt-1 text-2xl font-bold">Edit appointment</h1>
       </header>
       <AppointmentForm

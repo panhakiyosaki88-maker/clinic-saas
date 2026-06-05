@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
 import { hasPermission } from "@/lib/auth/guard";
@@ -27,7 +27,7 @@ export default async function ReceiptPage({
   return (
     <main className="mx-auto max-w-md space-y-6 p-6 print:max-w-none print:p-0">
       <div className="flex items-center justify-between print:hidden">
-        <Link href={`/billing/${inv.id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">← Invoice</Link>
+        <BackLink label="← Invoice" fallback={`/billing/${inv.id}`} />
         <PrintButton label="Receipt PDF" />
       </div>
 

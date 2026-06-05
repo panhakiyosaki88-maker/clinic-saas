@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import {
@@ -472,9 +473,7 @@ export default async function PatientProfilePage({
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/patients" className="text-sm text-[var(--muted-foreground)] hover:underline">
-            ← Patients
-          </Link>
+          <BackLink label="← Patients" fallback="/patients" />
           <h1 className="mt-1 text-2xl font-bold">{patient.full_name}</h1>
           <p className="font-mono text-xs text-[var(--muted-foreground)]">{patient.patient_number}</p>
         </div>

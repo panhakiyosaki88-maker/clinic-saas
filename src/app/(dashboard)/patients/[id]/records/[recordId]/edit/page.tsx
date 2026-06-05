@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getMedicalRecord } from "@/lib/db/queries/medical-records";
 import { hasPermission } from "@/lib/auth/guard";
@@ -24,9 +24,7 @@ export default async function EditRecordPage({
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href={`/patients/${id}/records/${recordId}`} className="text-sm text-[var(--muted-foreground)] hover:underline">
-          ← Visit
-        </Link>
+        <BackLink label="← Visit" fallback={`/patients/${id}/records/${recordId}`} />
         <h1 className="mt-1 text-2xl font-bold">Edit visit</h1>
       </header>
       <RecordForm patientId={id} record={detail.record} branches={branches.map((b) => ({ id: b.id, name: b.name }))} />

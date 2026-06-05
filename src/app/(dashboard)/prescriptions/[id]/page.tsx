@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getPrescription } from "@/lib/db/queries/prescriptions";
@@ -33,9 +34,7 @@ export default async function PrescriptionDetailPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
       <div className="flex items-center justify-between print:hidden">
-        <Link href="/prescriptions" className="text-sm text-[var(--muted-foreground)] hover:underline">
-          ← Prescriptions
-        </Link>
+        <BackLink label="← Prescriptions" fallback="/prescriptions" />
         <div className="flex items-center gap-2">
           <PrintButton />
           {canWrite && <DeletePrescriptionButton prescriptionId={rx.id} patientId={rx.patient_id} />}

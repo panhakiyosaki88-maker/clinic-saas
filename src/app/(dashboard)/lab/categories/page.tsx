@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listLabCategoryTree } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
@@ -22,7 +22,7 @@ export default async function LabCategoriesPage() {
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/lab" className="text-sm text-[var(--muted-foreground)] hover:underline">← Laboratory</Link>
+          <BackLink label="← Laboratory" fallback="/lab" />
           <h1 className="mt-1 text-2xl font-bold">Lab categories</h1>
         </div>
         {canWrite && <ImportPanelButton />}

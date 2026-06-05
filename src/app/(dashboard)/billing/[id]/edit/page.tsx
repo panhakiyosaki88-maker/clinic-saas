@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
 import { listPatientOptions } from "@/lib/db/queries/patients";
@@ -30,7 +30,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <Link href={`/billing/${id}`} className="text-sm text-[var(--muted-foreground)] hover:underline">← Invoice</Link>
+        <BackLink label="← Invoice" fallback={`/billing/${id}`} />
         <h1 className="mt-1 text-2xl font-bold">Edit {inv.invoice_number}</h1>
       </header>
       <InvoiceForm
