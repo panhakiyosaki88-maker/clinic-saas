@@ -14,6 +14,7 @@ const selectClass =
 export interface PatientOption { id: string; label: string }
 export interface DoctorOption { id: string; full_name: string }
 export interface BranchOption { id: string; name: string }
+export interface MedicineSuggestion { name: string; strength: string | null; inCatalog: boolean }
 
 /** When to take a medicine. Stored comma-joined in the item's `timing` field. */
 const TIMES_OF_DAY = ["Morning", "Afternoon", "Evening", "Night"] as const;
@@ -46,6 +47,7 @@ export function PrescriptionForm({
   doctors,
   branches = [],
   consultingByPatient = {},
+  medicineSuggestions = [],
   defaultPatientId,
   defaultBranchId,
 }: {
@@ -54,6 +56,8 @@ export function PrescriptionForm({
   branches?: BranchOption[];
   /** patient id → the doctor they're currently consulting with. */
   consultingByPatient?: Record<string, string>;
+  /** Pharmacy catalog + previously prescribed medicines for the name typeahead. */
+  medicineSuggestions?: MedicineSuggestion[];
   defaultPatientId?: string;
   defaultBranchId?: string | null;
 }) {
@@ -75,6 +79,15 @@ export function PrescriptionForm({
 
   function update(key: number, field: keyof Row, value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
+  }
+  function pickMedicine(key: number, s: MedicineSuggestion) {
+    setRows((rs) =>
+      rs.map((r) =>
+        r.key === key
+          ? { ...r, medicineName: s.name, dosage: r.dosage || (s.strength ?? "") }
+          : r
+      )
+    );
   }
   function toggleTiming(key: number, time: string) {
     setRows((rs) =>
@@ -186,7 +199,13 @@ export function PrescriptionForm({
             <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_1fr_0.7fr]">
               <div className="space-y-1">
                 <span className="text-xs font-medium text-[var(--muted-foreground)]">Medicine *</span>
-                <Input value={r.medicineName} onChange={(e) => update(r.key, "medicineName", e.target.value)} required />
+                <MedicineCombobox
+                  value={r.medicineName}
+                  suggestions={medicineSuggestions}
+                  required
+                  onType={(v) => update(r.key, "medicineName", v)}
+                  onPick={(s) => pickMedicine(r.key, s)}
+                />
               </div>
               <div className="space-y-1">
                 <span className="text-xs font-medium text-[var(--muted-foreground)]">Dosage</span>
@@ -249,5 +268,101 @@ export function PrescriptionForm({
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>Cancel</Button>
       </div>
     </form>
+  );
+}
+
+/** Medicine-name input with a typeahead over the pharmacy catalog + past
+ *  prescriptions. Typing filters; picking fills the name (and dosage). */
+function MedicineCombobox({
+  value,
+  suggestions,
+  onType,
+  onPick,
+  required,
+}: {
+  value: string;
+  suggestions: MedicineSuggestion[];
+  onType: (v: string) => void;
+  onPick: (s: MedicineSuggestion) => void;
+  required?: boolean;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [highlight, setHighlight] = React.useState(0);
+  const boxRef = React.useRef<HTMLDivElement>(null);
+
+  const matches = React.useMemo(() => {
+    const q = value.trim().toLowerCase();
+    const list = q ? suggestions.filter((s) => s.name.toLowerCase().includes(q)) : suggestions;
+    return list.slice(0, 8);
+  }, [value, suggestions]);
+
+  React.useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
+  function choose(s: MedicineSuggestion) {
+    onPick(s);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={boxRef} className="relative">
+      <Input
+        value={value}
+        required={required}
+        autoComplete="off"
+        onChange={(e) => {
+          onType(e.target.value);
+          setOpen(true);
+          setHighlight(0);
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (!open || matches.length === 0) return;
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setHighlight((h) => Math.min(h + 1, matches.length - 1));
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setHighlight((h) => Math.max(h - 1, 0));
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            choose(matches[highlight]);
+          } else if (e.key === "Escape") {
+            setOpen(false);
+          }
+        }}
+      />
+      {open && matches.length > 0 && (
+        <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-[var(--border)] bg-[var(--card)] py-1 text-sm shadow-lg">
+          {matches.map((s, i) => (
+            <li key={s.name}>
+              <button
+                type="button"
+                className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left ${
+                  i === highlight ? "bg-slate-100 dark:bg-slate-800" : ""
+                }`}
+                onMouseEnter={() => setHighlight(i)}
+                onClick={() => choose(s)}
+              >
+                <span>
+                  {s.name}
+                  {s.strength && (
+                    <span className="ml-1 text-xs text-[var(--muted-foreground)]">{s.strength}</span>
+                  )}
+                </span>
+                <span className="shrink-0 text-[10px] uppercase tracking-wide text-[var(--muted-foreground)]">
+                  {s.inCatalog ? "Pharmacy" : "Used before"}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

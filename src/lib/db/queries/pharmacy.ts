@@ -16,6 +16,49 @@ export async function listMedicines(search?: string): Promise<Medicine[]> {
   return data ?? [];
 }
 
+export interface MedicineSuggestion {
+  name: string;
+  /** Catalog strength (e.g. "500mg"), used to prefill dosage. Null for history-only. */
+  strength: string | null;
+  /** Whether the name comes from the pharmacy catalog or only past prescriptions. */
+  inCatalog: boolean;
+}
+
+/** Medicine name suggestions for the prescription form: the pharmacy catalog
+ *  plus names previously prescribed, deduped (catalog entries win and keep
+ *  their strength). */
+export async function listMedicineSuggestions(): Promise<MedicineSuggestion[]> {
+  const supabase = await createClient();
+  const [catalog, history] = await Promise.all([
+    supabase
+      .from("medicines")
+      .select("name, strength")
+      .is("deleted_at", null)
+      .eq("is_active", true)
+      .order("name", { ascending: true }),
+    supabase
+      .from("prescription_items")
+      .select("medicine_name")
+      .order("created_at", { ascending: false })
+      .limit(2000),
+  ]);
+  if (catalog.error) throw catalog.error;
+  if (history.error) throw history.error;
+
+  const byKey = new Map<string, MedicineSuggestion>();
+  for (const m of catalog.data ?? []) {
+    const name = m.name.trim();
+    const key = name.toLowerCase();
+    if (key) byKey.set(key, { name, strength: m.strength, inCatalog: true });
+  }
+  for (const it of history.data ?? []) {
+    const name = (it.medicine_name ?? "").trim();
+    const key = name.toLowerCase();
+    if (key && !byKey.has(key)) byKey.set(key, { name, strength: null, inCatalog: false });
+  }
+  return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export async function getMedicine(id: string): Promise<Medicine | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

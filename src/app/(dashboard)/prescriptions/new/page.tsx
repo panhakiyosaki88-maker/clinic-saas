@@ -4,6 +4,7 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
 import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
+import { listMedicineSuggestions } from "@/lib/db/queries/pharmacy";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -21,12 +22,14 @@ export default async function NewPrescriptionPage({
   if (!(await hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE))) redirect("/prescriptions");
 
   const sp = await searchParams;
-  const [patients, doctors, consultingByPatient, { branches, activeId, primaryId }] = await Promise.all([
-    listPatientOptions(),
-    listDoctors(),
-    getPatientConsultingDoctorMap(),
-    getActiveBranchContext(),
-  ]);
+  const [patients, doctors, consultingByPatient, medicineSuggestions, { branches, activeId, primaryId }] =
+    await Promise.all([
+      listPatientOptions(),
+      listDoctors(),
+      getPatientConsultingDoctorMap(),
+      listMedicineSuggestions(),
+      getActiveBranchContext(),
+    ]);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -41,6 +44,7 @@ export default async function NewPrescriptionPage({
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
         consultingByPatient={consultingByPatient}
+        medicineSuggestions={medicineSuggestions}
         defaultPatientId={sp.patientId}
         defaultBranchId={activeId ?? primaryId}
       />
