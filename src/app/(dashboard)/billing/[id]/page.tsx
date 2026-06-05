@@ -135,7 +135,7 @@ export default async function InvoiceDetailPage({
         <Card className="print:hidden">
           <CardHeader><CardTitle>Record payment</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <PaymentForm invoiceId={inv.id} balance={Number(inv.balance)} />
+            <PaymentForm invoiceId={inv.id} balance={Number(inv.balance)} rate={ctx.rate} />
             {khqrPayload && (
               <KhqrPanel
                 invoiceId={inv.id}

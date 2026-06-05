@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createInvoice, editInvoice } from "@/server/actions/billing";
+import { formatKHR, usdToKhr } from "@/lib/billing/currency";
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ export function InvoiceForm({
   defaultPatientId,
   defaultBranchId,
   invoice,
+  rate = 4100,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
@@ -55,6 +57,8 @@ export function InvoiceForm({
   defaultPatientId?: string;
   defaultBranchId?: string | null;
   invoice?: InvoiceFormData;
+  /** USD→KHR rate for the live equivalent shown under the total. */
+  rate?: number;
 }) {
   const router = useRouter();
   const isEdit = !!invoice;
@@ -217,7 +221,10 @@ export function InvoiceForm({
               <Input id="tax" className="w-24" type="number" step="0.01" value={tax} onChange={(e) => setTax(e.target.value)} />
             </div>
             <div className="flex justify-between border-t border-[var(--border)] pt-2 font-semibold">
-              <span>Total</span><span className="tabular-nums">{total.toFixed(2)}</span>
+              <span>Total (USD)</span><span className="tabular-nums">${total.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-xs text-[var(--muted-foreground)]">
+              <span>≈ KHR</span><span className="tabular-nums">{formatKHR(usdToKhr(total, rate))}</span>
             </div>
           </div>
 

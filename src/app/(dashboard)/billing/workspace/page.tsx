@@ -4,6 +4,8 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { listPatientOptions, getPatient } from "@/lib/db/queries/patients";
 import { getVisitBillables } from "@/lib/db/queries/visit-billing";
+import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { currencyContext } from "@/lib/billing/currency";
 import { BillingWorkspace } from "@/components/billing/billing-workspace";
 import { BackLink } from "@/components/ui/back-link";
 
@@ -51,11 +53,13 @@ export default async function BillingWorkspacePage({
     );
   }
 
-  const [patient, billables] = await Promise.all([
+  const [patient, billables, settings] = await Promise.all([
     getPatient(patientId),
     getVisitBillables(patientId, sp.visitId ?? null),
+    getBillingSettings(),
   ]);
   if (!patient) redirect("/billing/workspace");
+  const ctx = currencyContext(settings);
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
@@ -75,6 +79,7 @@ export default async function BillingWorkspacePage({
         lines={billables.lines}
         membership={billables.membership}
         alerts={billables.alerts}
+        rate={ctx.rate}
       />
     </main>
   );

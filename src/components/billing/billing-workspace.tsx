@@ -9,6 +9,7 @@ import {
   BILL_SOURCES,
   type ServiceCategoryValue,
 } from "@/lib/validations/invoice";
+import { formatKHR, usdToKhr } from "@/lib/billing/currency";
 import type { BillableLine, MembershipBenefit, BillingAlerts } from "@/lib/db/queries/visit-billing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,12 +38,15 @@ export function BillingWorkspace({
   lines,
   membership,
   alerts,
+  rate = 4100,
 }: {
   patientId: string;
   visitId: string | null;
   lines: BillableLine[];
   membership: MembershipBenefit | null;
   alerts: BillingAlerts;
+  /** USD→KHR rate for the live equivalent under the total. */
+  rate?: number;
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
@@ -351,7 +355,10 @@ export function BillingWorkspace({
           </div>
 
           <div className="flex justify-between border-t border-[var(--border)] pt-2 font-semibold">
-            <span>Total</span><span className="tabular-nums">{total.toFixed(2)}</span>
+            <span>Total (USD)</span><span className="tabular-nums">${total.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-xs text-[var(--muted-foreground)]">
+            <span>≈ KHR</span><span className="tabular-nums">{formatKHR(usdToKhr(total, rate))}</span>
           </div>
         </div>
 
