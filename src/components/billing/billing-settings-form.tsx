@@ -28,6 +28,7 @@ export function BillingSettingsForm({ settings }: { settings: BillingSettings | 
         khqrMerchantAccount: String(f.get("khqrMerchantAccount") ?? ""),
         khqrMerchantCity: String(f.get("khqrMerchantCity") ?? ""),
         currency: String(f.get("currency") ?? "USD") as never,
+        usdToKhrRate: Number(f.get("usdToKhrRate") ?? 4100),
         taxRate: Number(f.get("taxRate") ?? 0),
         invoiceDueDays: Number(f.get("invoiceDueDays") ?? 14),
       });
@@ -52,11 +53,15 @@ export function BillingSettingsForm({ settings }: { settings: BillingSettings | 
         <Input id="khqrMerchantCity" name="khqrMerchantCity" defaultValue={settings?.khqr_merchant_city ?? "Phnom Penh"} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="currency" className="text-xs">Currency</Label>
+        <Label htmlFor="currency" className="text-xs">Primary currency</Label>
         <select id="currency" name="currency" className={selectClass} defaultValue={settings?.currency ?? "USD"}>
           <option value="USD">USD</option>
           <option value="KHR">KHR</option>
         </select>
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="usdToKhrRate" className="text-xs">Exchange rate (1 USD = … KHR)</Label>
+        <Input id="usdToKhrRate" name="usdToKhrRate" type="number" step="1" defaultValue={settings?.usd_to_khr_rate ?? 4100} />
       </div>
       <div className="space-y-1">
         <Label htmlFor="invoiceDueDays" className="text-xs">Invoice due (days)</Label>

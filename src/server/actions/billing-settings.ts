@@ -12,6 +12,7 @@ const schema = z.object({
   khqrMerchantAccount: z.string().trim().max(120).optional().or(z.literal("")),
   khqrMerchantCity: z.string().trim().max(60).optional().or(z.literal("")),
   currency: z.enum(["USD", "KHR"]).default("USD"),
+  usdToKhrRate: z.preprocess((v) => (v === "" || v == null ? 4100 : v), z.coerce.number().positive().max(100000).default(4100)),
   taxRate: z.preprocess((v) => (v === "" || v == null ? 0 : v), z.coerce.number().min(0).max(100).default(0)),
   invoiceDueDays: z.preprocess((v) => (v === "" || v == null ? 14 : v), z.coerce.number().int().min(0).max(365).default(14)),
 });
@@ -31,6 +32,7 @@ export async function saveBillingSettings(input: BillingSettingsInput): Promise<
       khqr_merchant_account: v.khqrMerchantAccount || null,
       khqr_merchant_city: v.khqrMerchantCity || null,
       currency: v.currency,
+      usd_to_khr_rate: v.usdToKhrRate,
       tax_rate: v.taxRate,
       invoice_due_days: v.invoiceDueDays,
     },

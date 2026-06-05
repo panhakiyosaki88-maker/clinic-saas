@@ -1327,6 +1327,7 @@ export interface Database {
           khqr_merchant_account: string | null;
           khqr_merchant_city: string | null;
           currency: string;
+          usd_to_khr_rate: number;
           tax_rate: number;
           invoice_due_days: number;
           created_at: string;
@@ -1338,6 +1339,7 @@ export interface Database {
           khqr_merchant_account?: string | null;
           khqr_merchant_city?: string | null;
           currency?: string;
+          usd_to_khr_rate?: number;
           tax_rate?: number;
           invoice_due_days?: number;
           created_at?: string;
