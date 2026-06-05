@@ -5,12 +5,15 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/billing", label: "Dashboard", exact: true },
+  { href: "/billing/workspace", label: "Workspace" },
   { href: "/billing/invoices", label: "Invoices" },
   { href: "/billing/payments", label: "Payments" },
   { href: "/billing/debt", label: "Debt" },
   { href: "/billing/reports", label: "Reports" },
   { href: "/billing/audit", label: "Audit" },
   { href: "/billing/catalog", label: "Price catalog" },
+  { href: "/billing/procedures", label: "Procedures" },
+  { href: "/billing/memberships", label: "Memberships" },
   { href: "/billing/settings", label: "Settings" },
 ];
 
