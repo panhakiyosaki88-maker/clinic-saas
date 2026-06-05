@@ -68,6 +68,7 @@ export default async function BillingReportsPage({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
+        <BreakdownCard title="Revenue by category" name="revenue-by-category" rows={d.byCategory} />
         <BreakdownCard title="Revenue by doctor" name="revenue-by-doctor" rows={d.byDoctor} />
         <BreakdownCard title="Revenue by branch" name="revenue-by-branch" rows={d.byBranch} />
         <BreakdownCard title="Revenue by service" name="revenue-by-service" rows={d.byService} />
