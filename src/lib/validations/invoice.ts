@@ -50,6 +50,10 @@ export const invoiceItemSchema = z.object({
   description: z.string().trim().min(1, "Description is required").max(255),
   quantity: z.preprocess(emptyToUndef, z.coerce.number().min(0.01).max(100000).default(1)),
   unitPrice: z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).default(0)),
+  // Same categories as the Billing Workspace; defaults to "other".
+  category: z
+    .enum(["consultation", "lab", "pharmacy", "procedure", "membership", "other"])
+    .default("other"),
 });
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;
 

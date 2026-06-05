@@ -28,7 +28,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   ]);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <header>
         <BackLink label="← Invoice" fallback={`/billing/${id}`} />
         <h1 className="mt-1 text-2xl font-bold">Edit {inv.invoice_number}</h1>
@@ -51,6 +51,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
             description: it.description,
             quantity: Number(it.quantity),
             unit_price: Number(it.unit_price),
+            category: it.category,
           })),
         }}
       />

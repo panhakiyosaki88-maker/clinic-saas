@@ -29,7 +29,7 @@ export default async function NewInvoicePage({
   ]);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <header>
         <BackLink label="← Invoices" fallback="/billing/invoices" />
         <h1 className="mt-1 text-2xl font-bold">New invoice</h1>

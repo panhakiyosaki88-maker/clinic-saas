@@ -63,6 +63,7 @@ export async function createInvoice(
     description: it.description,
     quantity: it.quantity,
     unit_price: it.unitPrice,
+    category: it.category,
     sort_order: i,
   }));
   const { error: itemsErr } = await supabase.from("invoice_items").insert(items);
@@ -132,6 +133,7 @@ export async function editInvoice(invoiceId: string, input: EditInvoiceInput): P
     description: it.description,
     quantity: it.quantity,
     unit_price: it.unitPrice,
+    category: it.category,
     sort_order: i,
   }));
   const { error: itemsErr } = await supabase.from("invoice_items").insert(items);
@@ -156,7 +158,7 @@ export async function duplicateInvoice(invoiceId: string): Promise<ActionResult<
 
   const { data: srcItems } = await supabase
     .from("invoice_items")
-    .select("description, quantity, unit_price, sort_order")
+    .select("description, quantity, unit_price, category, sort_order")
     .eq("invoice_id", invoiceId)
     .eq("clinic_id", clinicId);
 
@@ -186,6 +188,7 @@ export async function duplicateInvoice(invoiceId: string): Promise<ActionResult<
         description: it.description,
         quantity: it.quantity,
         unit_price: it.unit_price,
+        category: it.category,
         sort_order: it.sort_order,
       }))
     );

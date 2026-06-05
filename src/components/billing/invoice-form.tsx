@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createInvoice, editInvoice } from "@/server/actions/billing";
+import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,12 +25,18 @@ export interface InvoiceFormData {
   discount: number;
   tax: number;
   notes: string | null;
-  items: { description: string; quantity: number; unit_price: number }[];
+  items: { description: string; quantity: number; unit_price: number; category?: ServiceCategoryValue }[];
 }
 
-interface Row { key: number; description: string; quantity: string; unitPrice: string }
+interface Row { key: number; category: ServiceCategoryValue; description: string; quantity: string; unitPrice: string }
 let keySeq = 1;
-const blankRow = (): Row => ({ key: keySeq++, description: "", quantity: "1", unitPrice: "0" });
+const blankRow = (category: ServiceCategoryValue): Row => ({
+  key: keySeq++,
+  category,
+  description: "",
+  quantity: "1",
+  unitPrice: "0",
+});
 
 export function InvoiceForm({
   patients,
@@ -67,8 +74,14 @@ export function InvoiceForm({
   }
   const [rows, setRows] = React.useState<Row[]>(
     invoice && invoice.items.length > 0
-      ? invoice.items.map((it) => ({ key: keySeq++, description: it.description, quantity: String(it.quantity), unitPrice: String(it.unit_price) }))
-      : [blankRow()]
+      ? invoice.items.map((it) => ({
+          key: keySeq++,
+          category: it.category ?? "other",
+          description: it.description,
+          quantity: String(it.quantity),
+          unitPrice: String(it.unit_price),
+        }))
+      : [blankRow("consultation")]
   );
   const [discount, setDiscount] = React.useState(String(invoice?.discount ?? "0"));
   const [tax, setTax] = React.useState(String(invoice?.tax ?? "0"));
@@ -77,8 +90,14 @@ export function InvoiceForm({
   const subtotal = rows.reduce((sum, r) => sum + num(r.quantity) * num(r.unitPrice), 0);
   const total = subtotal - num(discount) + num(tax);
 
-  function update(key: number, field: keyof Row, value: string) {
+  function update(key: number, field: "description" | "quantity" | "unitPrice", value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
+  }
+  function addItem(category: ServiceCategoryValue) {
+    setRows((rs) => [...rs, blankRow(category)]);
+  }
+  function removeRow(key: number) {
+    setRows((rs) => (rs.length > 1 ? rs.filter((r) => r.key !== key) : rs));
   }
 
   function submit(form: HTMLFormElement, asDraft: boolean) {
@@ -93,7 +112,7 @@ export function InvoiceForm({
       discount: num(discount),
       tax: num(tax),
       notes: String(f.get("notes") ?? ""),
-      items: rows.map((r) => ({ description: r.description, quantity: num(r.quantity), unitPrice: num(r.unitPrice) })),
+      items: rows.map((r) => ({ description: r.description, quantity: num(r.quantity), unitPrice: num(r.unitPrice), category: r.category })),
     };
     startTransition(async () => {
       const result = isEdit
@@ -142,53 +161,77 @@ export function InvoiceForm({
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label>Line items</Label>
-          <Button type="button" variant="outline" size="sm" onClick={() => setRows((rs) => [...rs, blankRow()])}>Add item</Button>
-        </div>
-        {rows.map((r) => (
-          <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[3fr_1fr_1fr_1fr_auto]">
-            <Input placeholder="Description *" value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
-            <Input placeholder="Quantity" type="number" step="0.01" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} />
-            <Input placeholder="Unit price" type="number" step="0.01" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} />
-            <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setRows((rs) => (rs.length > 1 ? rs.filter((x) => x.key !== r.key) : rs))} disabled={rows.length === 1}>✕</Button>
+      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+        {/* Category-grouped line items (same layout as the Billing Workspace) */}
+        <div className="space-y-5">
+          {SERVICE_CATEGORIES.map((cat) => {
+            const group = rows.filter((r) => r.category === cat);
+            if (group.length === 0) return null;
+            return (
+              <section key={cat} className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                  {SERVICE_CATEGORY_LABELS[cat]}
+                </h3>
+                <div className="space-y-2">
+                  {group.map((r) => (
+                    <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1fr_4.5rem_6rem_4rem_auto]">
+                      <Input placeholder="Description *" value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
+                      <Input type="number" step="0.01" placeholder="Qty" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} title="Quantity" />
+                      <Input type="number" step="0.01" placeholder="Unit price" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} title="Unit price" />
+                      <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>✕</Button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            <span className="self-center text-xs text-[var(--muted-foreground)]">Add manual item:</span>
+            {(["consultation", "procedure", "other"] as ServiceCategoryValue[]).map((c) => (
+              <Button key={c} type="button" variant="outline" size="sm" onClick={() => addItem(c)}>
+                + {SERVICE_CATEGORY_LABELS[c]}
+              </Button>
+            ))}
           </div>
-        ))}
-      </div>
-
-      <div className="ml-auto max-w-xs space-y-2 text-sm">
-        <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{subtotal.toFixed(2)}</span></div>
-        <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="discount" className="text-[var(--muted-foreground)]">Discount</Label>
-          <Input id="discount" className="w-28" type="number" step="0.01" value={discount} onChange={(e) => setDiscount(e.target.value)} />
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="tax" className="text-[var(--muted-foreground)]">Tax</Label>
-          <Input id="tax" className="w-28" type="number" step="0.01" value={tax} onChange={(e) => setTax(e.target.value)} />
-        </div>
-        <div className="flex justify-between border-t border-[var(--border)] pt-2 font-semibold">
-          <span>Total</span><span className="tabular-nums">{total.toFixed(2)}</span>
-        </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes</Label>
-        <Textarea id="notes" name="notes" defaultValue={invoice?.notes ?? ""} />
-      </div>
+        {/* Summary rail */}
+        <aside className="space-y-4 lg:sticky lg:top-4 self-start">
+          <div className="space-y-2 rounded-lg border border-[var(--border)] p-4 text-sm">
+            <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{subtotal.toFixed(2)}</span></div>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="discount" className="text-[var(--muted-foreground)]">Discount</Label>
+              <Input id="discount" className="w-24" type="number" step="0.01" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="tax" className="text-[var(--muted-foreground)]">Tax</Label>
+              <Input id="tax" className="w-24" type="number" step="0.01" value={tax} onChange={(e) => setTax(e.target.value)} />
+            </div>
+            <div className="flex justify-between border-t border-[var(--border)] pt-2 font-semibold">
+              <span>Total</span><span className="tabular-nums">{total.toFixed(2)}</span>
+            </div>
+          </div>
 
-      {error && <p className="rounded-md bg-[var(--destructive)]/10 px-3 py-2 text-sm text-[var(--destructive)]">{error}</p>}
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea id="notes" name="notes" defaultValue={invoice?.notes ?? ""} />
+          </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={pending}>{pending ? "Saving…" : isEdit ? "Save changes" : "Create invoice"}</Button>
-        {!isEdit && (
-          <Button type="button" variant="outline" disabled={pending}
-            onClick={(e) => submit(e.currentTarget.form as HTMLFormElement, true)}>
-            Save as draft
-          </Button>
-        )}
-        <Button type="button" variant="ghost" onClick={() => router.back()} disabled={pending}>Cancel</Button>
+          {error && <p className="rounded-md bg-[var(--destructive)]/10 px-3 py-2 text-sm text-[var(--destructive)]">{error}</p>}
+
+          <div className="flex flex-col gap-2">
+            <Button type="submit" disabled={pending}>{pending ? "Saving…" : isEdit ? "Save changes" : "Create invoice"}</Button>
+            {!isEdit && (
+              <Button type="button" variant="outline" disabled={pending}
+                onClick={(e) => submit(e.currentTarget.form as HTMLFormElement, true)}>
+                Save as draft
+              </Button>
+            )}
+            <Button type="button" variant="ghost" onClick={() => router.back()} disabled={pending}>Cancel</Button>
+          </div>
+        </aside>
       </div>
     </form>
   );
