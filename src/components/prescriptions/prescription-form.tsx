@@ -183,7 +183,7 @@ export function PrescriptionForm({
         </div>
         {rows.map((r) => (
           <div key={r.key} className="space-y-2 rounded-lg border border-[var(--border)] p-3">
-            <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_1fr_0.7fr]">
+            <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_1.4fr_0.7fr]">
               <div className="space-y-1">
                 <span className="text-xs font-medium text-[var(--muted-foreground)]">Medicine *</span>
                 <Input value={r.medicineName} onChange={(e) => update(r.key, "medicineName", e.target.value)} required />
