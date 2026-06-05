@@ -23,6 +23,7 @@ import { getUnbilledForPatient } from "@/lib/db/queries/billing-suggestions";
 import { listPatientVisits } from "@/lib/db/queries/visits";
 import { listPatientMemberships, listMembershipPlanOptions } from "@/lib/db/queries/memberships";
 import { EnrolMembershipForm } from "@/components/billing/enrol-membership-form";
+import { StartVisitButton } from "@/components/billing/start-visit-button";
 import { SuggestedCharges } from "@/components/billing/suggested-charges";
 import { listPatientLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
@@ -320,10 +321,16 @@ export default async function PatientProfilePage({
           </CardContent>
         </Card>
       )}
-      {patientVisits.length > 0 && (
+      {(canBookAppt || patientVisits.length > 0) && (
         <Card>
-          <CardHeader><CardTitle>Visits ({patientVisits.length})</CardTitle></CardHeader>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>Visits ({patientVisits.length})</CardTitle>
+            {canBookAppt && <StartVisitButton patientId={patient.id} />}
+          </CardHeader>
           <CardContent className="space-y-1">
+            {patientVisits.length === 0 && (
+              <p className="text-xs text-[var(--muted-foreground)]">No visits yet. Start one for a walk-in.</p>
+            )}
             {patientVisits.slice(0, 8).map((vt) => (
               <Link
                 key={vt.id}
