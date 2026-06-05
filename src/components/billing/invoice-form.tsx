@@ -35,6 +35,7 @@ export function InvoiceForm({
   patients,
   doctors,
   branches,
+  consultingByPatient = {},
   defaultPatientId,
   defaultBranchId,
   invoice,
@@ -42,6 +43,8 @@ export function InvoiceForm({
   patients: PatientOption[];
   doctors: DoctorOption[];
   branches: BranchOption[];
+  /** patient id → the doctor they're currently consulting with. */
+  consultingByPatient?: Record<string, string>;
   defaultPatientId?: string;
   defaultBranchId?: string | null;
   invoice?: InvoiceFormData;
@@ -50,6 +53,18 @@ export function InvoiceForm({
   const isEdit = !!invoice;
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
+
+  const initialPatientId = invoice?.patient_id ?? defaultPatientId ?? "";
+  const [patientId, setPatientId] = React.useState(initialPatientId);
+  const [doctorId, setDoctorId] = React.useState(
+    invoice?.doctor_id ?? consultingByPatient[initialPatientId] ?? ""
+  );
+
+  function onPatientChange(value: string) {
+    setPatientId(value);
+    // Auto-fill the doctor with the patient's consulting doctor.
+    setDoctorId(consultingByPatient[value] ?? "");
+  }
   const [rows, setRows] = React.useState<Row[]>(
     invoice && invoice.items.length > 0
       ? invoice.items.map((it) => ({ key: keySeq++, description: it.description, quantity: String(it.quantity), unitPrice: String(it.unit_price) }))
@@ -96,14 +111,14 @@ export function InvoiceForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="patientId">Patient (optional)</Label>
-          <select id="patientId" name="patientId" className={selectClass} defaultValue={invoice?.patient_id ?? defaultPatientId ?? ""}>
+          <select id="patientId" name="patientId" className={selectClass} value={patientId} onChange={(e) => onPatientChange(e.target.value)}>
             <option value="">Walk-in / no patient</option>
             {patients.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="doctorId">Doctor (optional)</Label>
-          <select id="doctorId" name="doctorId" className={selectClass} defaultValue={invoice?.doctor_id ?? ""}>
+          <select id="doctorId" name="doctorId" className={selectClass} value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
             <option value="">Unassigned</option>
             {doctors.map((d) => <option key={d.id} value={d.id}>{d.full_name}</option>)}
           </select>
