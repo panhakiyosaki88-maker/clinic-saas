@@ -150,7 +150,7 @@ export function InvoiceForm({
         {rows.map((r) => (
           <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[3fr_1fr_1fr_1fr_auto]">
             <Input placeholder="Description *" value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
-            <Input placeholder="Qty" type="number" step="0.01" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} />
+            <Input placeholder="Quantity" type="number" step="0.01" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} />
             <Input placeholder="Unit price" type="number" step="0.01" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} />
             <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>
             <Button type="button" variant="ghost" size="sm" onClick={() => setRows((rs) => (rs.length > 1 ? rs.filter((x) => x.key !== r.key) : rs))} disabled={rows.length === 1}>✕</Button>

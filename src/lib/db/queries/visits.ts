@@ -140,7 +140,7 @@ export async function getVisitTimeline(visitId: string): Promise<VisitTimelineEv
     events.push({ kind: "prescription", at: p.prescribed_at, title: "Prescription", detail: `${n} item${n === 1 ? "" : "s"}`, amount: null });
   }
   for (const d of (disp.data ?? []) as unknown as { created_at: string; change: number; medicines: { name: string } | null }[]) {
-    events.push({ kind: "dispense", at: d.created_at, title: `Dispensed — ${d.medicines?.name ?? "medicine"}`, detail: `Qty ${Math.abs(Number(d.change))}`, amount: null });
+    events.push({ kind: "dispense", at: d.created_at, title: `Dispensed — ${d.medicines?.name ?? "medicine"}`, detail: `Quantity ${Math.abs(Number(d.change))}`, amount: null });
   }
   for (const p of (procs.data ?? []) as { performed_at: string; name: string; price: number; quantity: number }[]) {
     events.push({ kind: "procedure", at: p.performed_at, title: `Procedure — ${p.name}`, detail: null, amount: Number(p.price) * Number(p.quantity) });

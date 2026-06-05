@@ -69,7 +69,7 @@ export function RecordProcedureForm({
       )}
       <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} required />
       <Input type="number" step="0.01" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
-      <Input type="number" step="0.01" placeholder="Qty" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+      <Input type="number" step="0.01" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
       <Button type="submit" size="sm" disabled={pending}>{pending ? "…" : "Add"}</Button>
       {error && <p className="text-xs text-[var(--destructive)] sm:col-span-4">{error}</p>}
     </form>

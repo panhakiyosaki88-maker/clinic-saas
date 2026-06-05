@@ -76,7 +76,7 @@ export function DispenseForm({
           ))}
         </select>
       </div>
-      <Input type="number" step="1" placeholder="Qty" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+      <Input type="number" step="1" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
       <Input type="number" step="0.01" placeholder="Unit price" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
       <Button type="submit" size="sm" disabled={pending || !medicineId}>{pending ? "…" : "Dispense"}</Button>
       {chosen && Number(quantity) > chosen.stock_quantity && (

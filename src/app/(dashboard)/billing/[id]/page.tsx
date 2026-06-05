@@ -99,7 +99,7 @@ export default async function InvoiceDetailPage({
 
         <table className="w-full text-sm">
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
-            <tr><th className="pb-2">Description</th><th className="pb-2 text-right">Qty</th><th className="pb-2 text-right">Unit</th><th className="pb-2 text-right">Amount</th></tr>
+            <tr><th className="pb-2">Description</th><th className="pb-2 text-right">Quantity</th><th className="pb-2 text-right">Unit</th><th className="pb-2 text-right">Amount</th></tr>
           </thead>
           <tbody>
             {inv.items.map((it) => (

@@ -86,7 +86,7 @@ export default async function PrescriptionDetailPage({
                 <th key={t} className="pb-2 text-center">{t}</th>
               ))}
               <th className="pb-2">Duration</th>
-              <th className="pb-2 text-right">Qty</th>
+              <th className="pb-2 text-right">Quantity</th>
             </tr>
           </thead>
           <tbody>

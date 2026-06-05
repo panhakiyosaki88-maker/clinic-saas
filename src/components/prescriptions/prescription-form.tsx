@@ -28,6 +28,8 @@ interface Row {
   amounts: Amounts;
   durationDays: string;
   instructions: string;
+  /** Manual Qty override. Empty = use the auto value. */
+  quantity: string;
 }
 
 let keySeq = 1;
@@ -38,12 +40,15 @@ const blankRow = (): Row => ({
   amounts: blankAmounts(),
   durationDays: "",
   instructions: "",
+  quantity: "",
 });
 
 /** Units taken per day = sum of the four time-of-day amounts. */
 const perDay = (r: Row) => TIMES_OF_DAY.reduce((s, t) => s + (Number(r.amounts[t]) || 0), 0);
-/** Total quantity to dispense = per-day amount × duration in days. */
-const totalQty = (r: Row) => perDay(r) * (Number(r.durationDays) || 0);
+/** Auto quantity = per-day amount × duration in days. */
+const autoQty = (r: Row) => perDay(r) * (Number(r.durationDays) || 0);
+/** Effective quantity: the manual override when set, otherwise the auto value. */
+const effectiveQty = (r: Row) => (r.quantity !== "" ? Number(r.quantity) || 0 : autoQty(r));
 
 export function PrescriptionForm({
   patients,
@@ -88,7 +93,7 @@ export function PrescriptionForm({
     setDoctorId(consultingByPatient[value] ?? "");
   }
 
-  function update(key: number, field: "medicineName" | "durationDays" | "instructions", value: string) {
+  function update(key: number, field: "medicineName" | "durationDays" | "instructions" | "quantity", value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
   }
   function updateAmount(key: number, time: TimeOfDay, value: string) {
@@ -117,7 +122,7 @@ export function PrescriptionForm({
         notes: String(f.get("notes") ?? ""),
         items: rows.map((r) => {
           const filled = TIMES_OF_DAY.filter((t) => (Number(r.amounts[t]) || 0) > 0);
-          const qty = totalQty(r);
+          const qty = effectiveQty(r);
           return {
             medicineName: r.medicineName,
             // Dosage as the standard morning-afternoon-evening-night pattern, e.g. "1-0-1-0".
@@ -234,15 +239,14 @@ export function PrescriptionForm({
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Qty (auto)</span>
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Quantity</span>
                 <Input
                   type="number"
-                  readOnly
-                  tabIndex={-1}
-                  value={totalQty(r) > 0 ? totalQty(r) : ""}
-                  placeholder="—"
-                  className="bg-[var(--muted)] text-[var(--muted-foreground)]"
-                  title="Duration × total amount per day"
+                  min="0"
+                  value={r.quantity !== "" ? r.quantity : autoQty(r) > 0 ? String(autoQty(r)) : ""}
+                  placeholder="0"
+                  onChange={(e) => update(r.key, "quantity", e.target.value)}
+                  title="Auto = duration × amount per day. Type to override, clear to reset."
                 />
               </div>
               <div className="space-y-1">
