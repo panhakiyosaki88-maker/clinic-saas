@@ -89,13 +89,8 @@ export function PrescriptionForm({
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
   }
   function pickMedicine(key: number, s: MedicineSuggestion) {
-    setRows((rs) =>
-      rs.map((r) =>
-        r.key === key
-          ? { ...r, medicineName: s.name, dosage: r.dosage || (s.strength ?? "") }
-          : r
-      )
-    );
+    // Only fill the name — leave dosage for the prescriber to enter.
+    setRows((rs) => rs.map((r) => (r.key === key ? { ...r, medicineName: s.name } : r)));
   }
   function toggleTiming(key: number, time: string) {
     setRows((rs) =>
