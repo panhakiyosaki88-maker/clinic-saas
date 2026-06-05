@@ -10,7 +10,14 @@ import { Label } from "@/components/ui/label";
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm";
 
-export interface MedicineOption { id: string; name: string; selling_price: number; stock_quantity: number }
+export interface MedicineOption {
+  id: string;
+  name: string;
+  selling_price: number;
+  stock_quantity: number;
+  /** Pre-filled when the picker is scoped to this visit's prescription. */
+  prescribed_quantity?: number;
+}
 
 export function DispenseForm({
   patientId,
@@ -31,7 +38,10 @@ export function DispenseForm({
   function onPick(id: string) {
     setMedicineId(id);
     const m = medicines.find((x) => x.id === id);
-    if (m) setUnitPrice(String(m.selling_price));
+    if (m) {
+      setUnitPrice(String(m.selling_price));
+      if (m.prescribed_quantity != null) setQuantity(String(m.prescribed_quantity));
+    }
   }
 
   const chosen = medicines.find((m) => m.id === medicineId);
@@ -60,7 +70,9 @@ export function DispenseForm({
         <select className={selectClass} value={medicineId} onChange={(e) => onPick(e.target.value)} required>
           <option value="" disabled>Select a medicine…</option>
           {medicines.map((m) => (
-            <option key={m.id} value={m.id}>{m.name} (stock {m.stock_quantity})</option>
+            <option key={m.id} value={m.id}>
+              {m.name} (stock {m.stock_quantity}){m.prescribed_quantity != null ? ` · Rx ×${m.prescribed_quantity}` : ""}
+            </option>
           ))}
         </select>
       </div>

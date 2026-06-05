@@ -59,10 +59,17 @@ export async function listMedicineSuggestions(): Promise<MedicineSuggestion[]> {
   return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
+export interface MedicineDispenseOption {
+  id: string;
+  name: string;
+  selling_price: number;
+  stock_quantity: number;
+  /** Quantity prescribed in this visit, when the picker is prescription-scoped. */
+  prescribed_quantity?: number;
+}
+
 /** Active medicines for dispensing pickers: id, name, price and stock. */
-export async function listMedicineOptions(): Promise<
-  { id: string; name: string; selling_price: number; stock_quantity: number }[]
-> {
+export async function listMedicineOptions(): Promise<MedicineDispenseOption[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("medicines")
@@ -77,6 +84,64 @@ export async function listMedicineOptions(): Promise<
     selling_price: Number(m.selling_price ?? 0),
     stock_quantity: m.stock_quantity,
   }));
+}
+
+/**
+ * Dispensing options scoped to a visit's prescriptions: only medicines that were
+ * prescribed in this visit AND exist in the pharmacy catalog. Each carries the
+ * prescribed quantity so the dispense form can pre-fill qty + price. Prescribed
+ * medicines absent from the catalog are omitted (can't be dispensed). Returns an
+ * empty array when the visit has no prescription, so callers can fall back to the
+ * full catalog.
+ */
+export async function listPrescribedDispenseOptions(visitId: string): Promise<MedicineDispenseOption[]> {
+  const supabase = await createClient();
+
+  const { data: rx, error: rxErr } = await supabase
+    .from("prescriptions")
+    .select("prescription_items ( medicine_name, quantity )")
+    .eq("visit_id", visitId)
+    .is("deleted_at", null);
+  if (rxErr) throw rxErr;
+
+  // Sum prescribed quantity per medicine name (case-insensitive).
+  const prescribed = new Map<string, { name: string; quantity: number }>();
+  for (const p of (rx ?? []) as unknown as {
+    prescription_items: { medicine_name: string | null; quantity: number | null }[] | null;
+  }[]) {
+    for (const it of p.prescription_items ?? []) {
+      const name = (it.medicine_name ?? "").trim();
+      const key = name.toLowerCase();
+      if (!key) continue;
+      const prev = prescribed.get(key);
+      prescribed.set(key, {
+        name,
+        quantity: (prev?.quantity ?? 0) + (Number(it.quantity) || 0),
+      });
+    }
+  }
+  if (prescribed.size === 0) return [];
+
+  const { data: meds, error: medErr } = await supabase
+    .from("medicines")
+    .select("id, name, selling_price, stock_quantity")
+    .is("deleted_at", null)
+    .eq("is_active", true);
+  if (medErr) throw medErr;
+
+  const options: MedicineDispenseOption[] = [];
+  for (const m of meds ?? []) {
+    const match = prescribed.get(m.name.trim().toLowerCase());
+    if (!match) continue; // prescribed-only: skip catalog medicines not on the Rx
+    options.push({
+      id: m.id,
+      name: m.name,
+      selling_price: Number(m.selling_price ?? 0),
+      stock_quantity: m.stock_quantity,
+      prescribed_quantity: match.quantity > 0 ? match.quantity : undefined,
+    });
+  }
+  return options.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getMedicine(id: string): Promise<Medicine | null> {

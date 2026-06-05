@@ -5,7 +5,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getVisit, getVisitTimeline, type TimelineKind } from "@/lib/db/queries/visits";
 import { listProcedureOptions } from "@/lib/db/queries/procedures";
-import { listMedicineOptions } from "@/lib/db/queries/pharmacy";
+import { listMedicineOptions, listPrescribedDispenseOptions } from "@/lib/db/queries/pharmacy";
 import { RecordProcedureForm } from "@/components/billing/record-procedure-form";
 import { DispenseForm } from "@/components/billing/dispense-form";
 import {
@@ -51,10 +51,16 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
     hasPermission(PERMISSIONS.EMR_WRITE),
     hasPermission(PERMISSIONS.PHARMACY_WRITE),
   ]);
-  const [procedures, medicines] = await Promise.all([
+  const [procedures, prescribedMeds, allMeds] = await Promise.all([
     canProc ? listProcedureOptions() : Promise.resolve([]),
+    canDispense ? listPrescribedDispenseOptions(id) : Promise.resolve([]),
     canDispense ? listMedicineOptions() : Promise.resolve([]),
   ]);
+  // When this visit has a prescription, restrict the dispense picker to the
+  // prescribed medicines that are stocked (with qty/price pre-filled); otherwise
+  // offer the full catalog.
+  const fromPrescription = prescribedMeds.length > 0;
+  const medicines = fromPrescription ? prescribedMeds : allMeds;
   const isOpen = visit.status === "open";
 
   return (
@@ -124,6 +130,11 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
           {canDispense && (
             <div className="space-y-2">
               <p className="text-xs font-medium">Dispense medicine</p>
+              {fromPrescription && (
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Showing prescribed medicines in stock — quantity and price are pre-filled.
+                </p>
+              )}
               <DispenseForm patientId={visit.patient_id} visitId={visit.id} medicines={medicines} />
             </div>
           )}
