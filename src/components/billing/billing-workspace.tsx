@@ -78,6 +78,44 @@ export function BillingWorkspace({
   const [labOverall, setLabOverall] = React.useState(String(initialLabTotal));
   const [labDescription, setLabDescription] = React.useState("Laboratory Test");
 
+  // Remember the review state for this patient/visit so leaving (Back) and
+  // returning keeps the same lines selected and the same lab pricing settings.
+  const storageKey = `billing-ws:${patientId}:${visitId ?? "none"}`;
+  const restored = React.useRef(false);
+  React.useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(storageKey);
+      if (raw) {
+        const s = JSON.parse(raw) as {
+          selectedSourceIds?: string[];
+          labMode?: "individual" | "overall";
+          labOverall?: string;
+          labDescription?: string;
+        };
+        if (s.labMode) setLabMode(s.labMode);
+        if (s.labOverall != null) setLabOverall(s.labOverall);
+        if (s.labDescription != null) setLabDescription(s.labDescription);
+        if (s.selectedSourceIds) {
+          const sel = new Set(s.selectedSourceIds);
+          setRows((rs) => rs.map((r) => (r.sourceId ? { ...r, selected: sel.has(r.sourceId) } : r)));
+        }
+      }
+    } catch {
+      /* ignore unavailable/blocked storage */
+    }
+    restored.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  React.useEffect(() => {
+    if (!restored.current) return;
+    try {
+      const selectedSourceIds = rows.filter((r) => r.selected && r.sourceId).map((r) => r.sourceId);
+      sessionStorage.setItem(storageKey, JSON.stringify({ selectedSourceIds, labMode, labOverall, labDescription }));
+    } catch {
+      /* ignore */
+    }
+  }, [rows, labMode, labOverall, labDescription, storageKey]);
+
   function patch(key: number, p: Partial<Row>) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...p } : r)));
   }
@@ -159,6 +197,11 @@ export function BillingWorkspace({
         lines: payload,
       });
       if (!res.ok) return setError(res.error);
+      try {
+        sessionStorage.removeItem(storageKey);
+      } catch {
+        /* ignore */
+      }
       router.push(`/billing/${(res.data as { invoiceId: string }).invoiceId}`);
     });
   }
