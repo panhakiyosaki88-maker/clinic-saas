@@ -16,31 +16,34 @@ export interface DoctorOption { id: string; full_name: string }
 export interface BranchOption { id: string; name: string }
 export interface MedicineSuggestion { name: string; strength: string | null; inCatalog: boolean }
 
-/** When to take a medicine. Stored comma-joined in the item's `timing` field. */
+/** The four dosing times. The amount typed in each box is how many units the
+ *  patient takes at that time of day. */
 const TIMES_OF_DAY = ["Morning", "Afternoon", "Evening", "Night"] as const;
+type TimeOfDay = (typeof TIMES_OF_DAY)[number];
+type Amounts = Record<TimeOfDay, string>;
 
 interface Row {
   key: number;
   medicineName: string;
-  dosage: string;
-  frequency: string;
+  amounts: Amounts;
   durationDays: string;
-  timing: string[];
   instructions: string;
-  quantity: string;
 }
 
 let keySeq = 1;
+const blankAmounts = (): Amounts => ({ Morning: "", Afternoon: "", Evening: "", Night: "" });
 const blankRow = (): Row => ({
   key: keySeq++,
   medicineName: "",
-  dosage: "",
-  frequency: "",
+  amounts: blankAmounts(),
   durationDays: "",
-  timing: [],
   instructions: "",
-  quantity: "",
 });
+
+/** Units taken per day = sum of the four time-of-day amounts. */
+const perDay = (r: Row) => TIMES_OF_DAY.reduce((s, t) => s + (Number(r.amounts[t]) || 0), 0);
+/** Total quantity to dispense = per-day amount × duration in days. */
+const totalQty = (r: Row) => perDay(r) * (Number(r.durationDays) || 0);
 
 export function PrescriptionForm({
   patients,
@@ -85,27 +88,15 @@ export function PrescriptionForm({
     setDoctorId(consultingByPatient[value] ?? "");
   }
 
-  function update(key: number, field: keyof Row, value: string) {
+  function update(key: number, field: "medicineName" | "durationDays" | "instructions", value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
+  }
+  function updateAmount(key: number, time: TimeOfDay, value: string) {
+    setRows((rs) => rs.map((r) => (r.key === key ? { ...r, amounts: { ...r.amounts, [time]: value } } : r)));
   }
   function pickMedicine(key: number, s: MedicineSuggestion) {
     // Only fill the name — leave dosage for the prescriber to enter.
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, medicineName: s.name } : r)));
-  }
-  function toggleTiming(key: number, time: string) {
-    setRows((rs) =>
-      rs.map((r) =>
-        r.key === key
-          ? {
-              ...r,
-              timing: r.timing.includes(time)
-                ? r.timing.filter((t) => t !== time)
-                : // Keep the canonical Morning→Night order regardless of click order.
-                  TIMES_OF_DAY.filter((t) => t === time || r.timing.includes(t)),
-            }
-          : r
-      )
-    );
   }
   function addRow() {
     setRows((rs) => [...rs, blankRow()]);
@@ -124,17 +115,22 @@ export function PrescriptionForm({
         doctorId: String(f.get("doctorId") ?? ""),
         branchId: String(f.get("branchId") ?? ""),
         notes: String(f.get("notes") ?? ""),
-        items: rows.map((r) => ({
-          medicineName: r.medicineName,
-          dosage: r.dosage,
-          frequency: r.frequency,
-          duration: r.durationDays
-            ? `${r.durationDays} ${Number(r.durationDays) === 1 ? "day" : "days"}`
-            : "",
-          timing: r.timing.join(", "),
-          instructions: r.instructions,
-          quantity: r.quantity === "" ? undefined : Number(r.quantity),
-        })),
+        items: rows.map((r) => {
+          const filled = TIMES_OF_DAY.filter((t) => (Number(r.amounts[t]) || 0) > 0);
+          const qty = totalQty(r);
+          return {
+            medicineName: r.medicineName,
+            // Dosage as the standard morning-afternoon-evening-night pattern, e.g. "1-0-1-0".
+            dosage: filled.length ? TIMES_OF_DAY.map((t) => Number(r.amounts[t]) || 0).join("-") : "",
+            frequency: filled.length ? `${filled.length}×/day` : "",
+            duration: r.durationDays
+              ? `${r.durationDays} ${Number(r.durationDays) === 1 ? "day" : "days"}`
+              : "",
+            timing: filled.join(", "),
+            instructions: r.instructions,
+            quantity: qty > 0 ? qty : undefined,
+          };
+        }),
       });
       if (!result.ok) {
         setError(result.error);
@@ -198,27 +194,38 @@ export function PrescriptionForm({
           <Button type="button" variant="outline" size="sm" onClick={addRow}>Add medicine</Button>
         </div>
         {rows.map((r) => (
-          <div key={r.key} className="space-y-2 rounded-lg border border-[var(--border)] p-3">
-            <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_1fr_0.7fr]">
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Medicine *</span>
-                <MedicineCombobox
-                  value={r.medicineName}
-                  suggestions={suggestions}
-                  required
-                  onType={(v) => update(r.key, "medicineName", v)}
-                  onPick={(s) => pickMedicine(r.key, s)}
-                  onDismiss={dismissSuggestion}
-                />
+          <div key={r.key} className="space-y-3 rounded-lg border border-[var(--border)] p-3">
+            <div className="space-y-1">
+              <span className="text-xs font-medium text-[var(--muted-foreground)]">Medicine *</span>
+              <MedicineCombobox
+                value={r.medicineName}
+                suggestions={suggestions}
+                required
+                onType={(v) => update(r.key, "medicineName", v)}
+                onPick={(s) => pickMedicine(r.key, s)}
+                onDismiss={dismissSuggestion}
+              />
+            </div>
+            <div className="space-y-1">
+              <span className="text-xs font-medium text-[var(--muted-foreground)]">Dosage — amount per time of day</span>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {TIMES_OF_DAY.map((time) => (
+                  <label key={time} className="space-y-1">
+                    <span className="text-xs text-[var(--muted-foreground)]">{time}</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={r.amounts[time]}
+                      onChange={(e) => updateAmount(r.key, time, e.target.value)}
+                    />
+                  </label>
+                ))}
               </div>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Dosage</span>
-                <Input value={r.dosage} onChange={(e) => update(r.key, "dosage", e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Frequency</span>
-                <Input value={r.frequency} onChange={(e) => update(r.key, "frequency", e.target.value)} />
-              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-[1fr_1fr_2fr]">
               <div className="space-y-1">
                 <span className="text-xs font-medium text-[var(--muted-foreground)]">Duration</span>
                 <div className="flex items-center gap-1.5">
@@ -227,29 +234,23 @@ export function PrescriptionForm({
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Qty</span>
-                <Input type="number" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} />
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">Qty (auto)</span>
+                <Input
+                  type="number"
+                  readOnly
+                  tabIndex={-1}
+                  value={totalQty(r) > 0 ? totalQty(r) : ""}
+                  placeholder="—"
+                  className="bg-[var(--muted)] text-[var(--muted-foreground)]"
+                  title="Duration × total amount per day"
+                />
               </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-              <span className="text-xs font-medium text-[var(--muted-foreground)]">When to take</span>
-              {TIMES_OF_DAY.map((time) => (
-                <label key={time} className="flex items-center gap-1.5 text-sm">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 dark:border-slate-600"
-                    checked={r.timing.includes(time)}
-                    onChange={() => toggleTiming(r.key, time)}
-                  />
-                  {time}
-                </label>
-              ))}
-            </div>
-            <div className="flex items-end gap-2">
-              <div className="flex-1 space-y-1">
+              <div className="space-y-1">
                 <span className="text-xs font-medium text-[var(--muted-foreground)]">Instructions</span>
                 <Input value={r.instructions} onChange={(e) => update(r.key, "instructions", e.target.value)} />
               </div>
+            </div>
+            <div className="flex justify-end">
               <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>
                 Remove
               </Button>
