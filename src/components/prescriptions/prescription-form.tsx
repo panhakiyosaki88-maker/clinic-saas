@@ -62,19 +62,29 @@ function parseAmount(raw: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** Format a number back into a whole / fraction / mixed string in quarters,
- *  e.g. 0.25 → "1/4", 1 → "1", 1.5 → "1 1/2". Zero/negative → "". */
-function formatAmount(n: number): string {
-  const quarters = Math.round(n * 4);
-  if (quarters <= 0) return "";
-  const whole = Math.floor(quarters / 4);
-  const frac = ["", "1/4", "1/2", "3/4"][quarters % 4];
-  if (whole === 0) return frac;
-  return frac ? `${whole} ${frac}` : `${whole}`;
+/** The dose ladder the +/- buttons walk: only 1/4 and 1/2 below 1, then whole
+ *  numbers (2, 3, 4 …) — no fractions at or above 1. */
+function stepUp(n: number): number {
+  if (n < 0.25) return 0.25;
+  if (n < 0.5) return 0.5;
+  if (n < 1) return 1;
+  return Math.floor(n + 1e-9) + 1;
+}
+function stepDown(n: number): number {
+  if (n <= 0.25) return 0;
+  if (n <= 0.5) return 0.25;
+  if (n <= 1) return 0.5;
+  return Math.ceil(n - 1e-9) - 1;
 }
 
-/** Dose step for the +/- buttons (a quarter). */
-const DOSE_STEP = 0.25;
+/** Format a stepper value back to its string: 0.25 → "1/4", 0.5 → "1/2", whole
+ *  numbers as-is. Zero/negative → "". */
+function formatAmount(n: number): string {
+  if (n <= 0) return "";
+  if (n === 0.25) return "1/4";
+  if (n === 0.5) return "1/2";
+  return String(Math.round(n));
+}
 
 /** Units taken per day = sum of the four time-of-day amounts. */
 const perDay = (r: Row) => TIMES_OF_DAY.reduce((s, t) => s + parseAmount(r.amounts[t]), 0);
@@ -132,11 +142,12 @@ export function PrescriptionForm({
   function updateAmount(key: number, time: TimeOfDay, value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, amounts: { ...r.amounts, [time]: value } } : r)));
   }
-  function stepAmount(key: number, time: TimeOfDay, delta: number) {
+  function stepAmount(key: number, time: TimeOfDay, dir: 1 | -1) {
+    const step = dir > 0 ? stepUp : stepDown;
     setRows((rs) =>
       rs.map((r) =>
         r.key === key
-          ? { ...r, amounts: { ...r.amounts, [time]: formatAmount(Math.max(0, parseAmount(r.amounts[time]) + delta)) } }
+          ? { ...r, amounts: { ...r.amounts, [time]: formatAmount(step(parseAmount(r.amounts[time]))) } }
           : r
       )
     );
@@ -266,7 +277,7 @@ export function PrescriptionForm({
                       <button
                         type="button"
                         aria-label={`Decrease ${time} dose`}
-                        onClick={() => stepAmount(r.key, time, -DOSE_STEP)}
+                        onClick={() => stepAmount(r.key, time, -1)}
                         className="h-9 w-7 shrink-0 rounded-md border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
                       >
                         −
@@ -282,7 +293,7 @@ export function PrescriptionForm({
                       <button
                         type="button"
                         aria-label={`Increase ${time} dose`}
-                        onClick={() => stepAmount(r.key, time, DOSE_STEP)}
+                        onClick={() => stepAmount(r.key, time, 1)}
                         className="h-9 w-7 shrink-0 rounded-md border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
                       >
                         +
