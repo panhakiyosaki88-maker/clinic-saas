@@ -65,11 +65,13 @@ export async function createPrescription(
     const { data: existing } = await supabase.from("medicines").select("name").is("deleted_at", null);
     const known = new Set((existing ?? []).map((m) => m.name.trim().toLowerCase()));
     const toAdd = names.filter((n) => !known.has(n.toLowerCase()));
-    if (toAdd.length > 0) {
-      await supabase
-        .from("medicines")
-        .insert(toAdd.map((name) => ({ clinic_id: clinicId, name, created_by: user.id })));
-    }
+    // Insert per-row so a unique-name conflict (race / edge case) only skips
+    // that one medicine instead of dropping the whole batch.
+    await Promise.all(
+      toAdd.map((name) =>
+        supabase.from("medicines").insert({ clinic_id: clinicId, name, created_by: user.id })
+      )
+    );
   }
 
   await supabase.from("patient_timeline").insert({
