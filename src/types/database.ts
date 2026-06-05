@@ -1,15 +1,17 @@
 /**
- * Database types for the foundation schema (migration 0001).
+ * Database types — HAND-MAINTAINED. Do NOT regenerate this file.
  *
- * Hand-maintained for now. Once the local Supabase stack is running, regenerate
- * the full, authoritative file with:
+ * `supabase gen types` output diverges from this curated version and breaks the
+ * build: it omits the convenience enum aliases the codebase imports (Gender,
+ * BloodType, EmploymentType, NotificationType, SubscriptionPlan, …) and marks
+ * trigger-populated columns as required in Insert (invoice_number, invoice_seq,
+ * receipt_number, receipt_seq, patient_number).
  *
- *   npm run db:types
- *
- * (= `supabase gen types typescript --local > src/types/database.ts`)
- *
- * Each subsequent module's migration should be followed by a regen so this file
- * stays in sync with the database.
+ * After a migration, hand-edit this file: add the new column to the table's Row
+ * and Insert blocks, mirroring an existing nullable column. To peek at the
+ * generator's output for reference (e.g. to copy a new column), run
+ * `npm run db:types` — it writes to src/types/database.generated.ts (a scratch
+ * file), never overwriting this one.
  */
 
 export type Json =

@@ -39,6 +39,8 @@ yarn-error.log*
 # supabase
 /supabase/.branches
 /supabase/.temp
+# scratch output of `npm run db:types` — database.ts itself is hand-maintained
+/src/types/database.generated.ts
 
 # testing
 /coverage
