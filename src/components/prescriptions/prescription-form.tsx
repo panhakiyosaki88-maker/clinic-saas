@@ -62,6 +62,20 @@ function parseAmount(raw: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Format a number back into a whole / fraction / mixed string in quarters,
+ *  e.g. 0.25 → "1/4", 1 → "1", 1.5 → "1 1/2". Zero/negative → "". */
+function formatAmount(n: number): string {
+  const quarters = Math.round(n * 4);
+  if (quarters <= 0) return "";
+  const whole = Math.floor(quarters / 4);
+  const frac = ["", "1/4", "1/2", "3/4"][quarters % 4];
+  if (whole === 0) return frac;
+  return frac ? `${whole} ${frac}` : `${whole}`;
+}
+
+/** Dose step for the +/- buttons (a quarter). */
+const DOSE_STEP = 0.25;
+
 /** Units taken per day = sum of the four time-of-day amounts. */
 const perDay = (r: Row) => TIMES_OF_DAY.reduce((s, t) => s + parseAmount(r.amounts[t]), 0);
 /** Auto quantity = per-day amount × duration in days. */
@@ -117,6 +131,15 @@ export function PrescriptionForm({
   }
   function updateAmount(key: number, time: TimeOfDay, value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, amounts: { ...r.amounts, [time]: value } } : r)));
+  }
+  function stepAmount(key: number, time: TimeOfDay, delta: number) {
+    setRows((rs) =>
+      rs.map((r) =>
+        r.key === key
+          ? { ...r, amounts: { ...r.amounts, [time]: formatAmount(Math.max(0, parseAmount(r.amounts[time]) + delta)) } }
+          : r
+      )
+    );
   }
   function pickMedicine(key: number, s: MedicineSuggestion) {
     // Only fill the name — leave dosage for the prescriber to enter.
@@ -239,19 +262,35 @@ export function PrescriptionForm({
                 {TIMES_OF_DAY.map((time) => (
                   <label key={time} className="space-y-1">
                     <span className="text-xs text-[var(--muted-foreground)]">{time}</span>
-                    <Input
-                      type="text"
-                      inputMode="text"
-                      placeholder="0"
-                      value={r.amounts[time]}
-                      onChange={(e) => updateAmount(r.key, time, e.target.value)}
-                    />
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        aria-label={`Decrease ${time} dose`}
+                        onClick={() => stepAmount(r.key, time, -DOSE_STEP)}
+                        className="h-9 w-7 shrink-0 rounded-md border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
+                      >
+                        −
+                      </button>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="0"
+                        className="min-w-0 flex-1 text-center"
+                        value={r.amounts[time]}
+                        onChange={(e) => updateAmount(r.key, time, e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        aria-label={`Increase ${time} dose`}
+                        onClick={() => stepAmount(r.key, time, DOSE_STEP)}
+                        className="h-9 w-7 shrink-0 rounded-md border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
+                      >
+                        +
+                      </button>
+                    </div>
                   </label>
                 ))}
               </div>
-              <p className="text-xs text-[var(--muted-foreground)]">
-                Whole numbers or fractions — e.g. 1/4, 1/2, 3/4, 1, 1 1/2.
-              </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_2fr]">
               <div className="space-y-1">
