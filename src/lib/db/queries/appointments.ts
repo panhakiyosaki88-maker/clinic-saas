@@ -148,6 +148,51 @@ export async function getUpcomingFollowUps(days = 7): Promise<FollowUp[]> {
   );
 }
 
+/** Priority by which an appointment hints at the patient's *current* doctor.
+ *  A live consult outranks the queue, which outranks anything merely scheduled
+ *  or already finished. Ties fall back to recency (scheduled_at). */
+const CONSULTING_PRIORITY: Record<string, number> = {
+  in_consultation: 100,
+  waiting: 90,
+  scheduled: 50,
+  completed: 40,
+  no_show: 10,
+  cancelled: 0,
+};
+
+/** Map of patient_id → the doctor they're currently consulting with, derived
+ *  from their appointments (prefers a live consult, then the most recent one).
+ *  Used to default the prescribing doctor when writing a prescription. */
+export async function getPatientConsultingDoctorMap(): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("patient_id, doctor_id, status, scheduled_at")
+    .is("deleted_at", null)
+    .not("doctor_id", "is", null)
+    .order("scheduled_at", { ascending: false })
+    .limit(2000);
+  if (error) throw error;
+
+  const best = new Map<string, { doctorId: string; score: number; at: string }>();
+  for (const a of data ?? []) {
+    if (!a.patient_id || !a.doctor_id) continue;
+    const score = CONSULTING_PRIORITY[a.status] ?? 0;
+    const current = best.get(a.patient_id);
+    if (
+      !current ||
+      score > current.score ||
+      (score === current.score && a.scheduled_at > current.at)
+    ) {
+      best.set(a.patient_id, { doctorId: a.doctor_id, score, at: a.scheduled_at });
+    }
+  }
+
+  const map: Record<string, string> = {};
+  for (const [patientId, v] of best) map[patientId] = v.doctorId;
+  return map;
+}
+
 export async function listPatientAppointments(patientId: string): Promise<AppointmentWithNames[]> {
   const supabase = await createClient();
   const { data, error } = await supabase

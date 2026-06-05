@@ -40,12 +40,15 @@ export function PrescriptionForm({
   patients,
   doctors,
   branches = [],
+  consultingByPatient = {},
   defaultPatientId,
   defaultBranchId,
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
   branches?: BranchOption[];
+  /** patient id → the doctor they're currently consulting with. */
+  consultingByPatient?: Record<string, string>;
   defaultPatientId?: string;
   defaultBranchId?: string | null;
 }) {
@@ -53,6 +56,17 @@ export function PrescriptionForm({
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [rows, setRows] = React.useState<Row[]>([blankRow()]);
+
+  const [patientId, setPatientId] = React.useState(defaultPatientId ?? "");
+  const [doctorId, setDoctorId] = React.useState(
+    defaultPatientId ? consultingByPatient[defaultPatientId] ?? "" : ""
+  );
+
+  function onPatientChange(value: string) {
+    setPatientId(value);
+    // Auto-fill the prescribing doctor with the patient's consulting doctor.
+    setDoctorId(consultingByPatient[value] ?? "");
+  }
 
   function update(key: number, field: keyof Row, value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
@@ -97,7 +111,14 @@ export function PrescriptionForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="patientId">Patient</Label>
-          <select id="patientId" name="patientId" className={selectClass} defaultValue={defaultPatientId ?? ""} required>
+          <select
+            id="patientId"
+            name="patientId"
+            className={selectClass}
+            value={patientId}
+            onChange={(e) => onPatientChange(e.target.value)}
+            required
+          >
             <option value="" disabled>Select a patient…</option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
@@ -106,7 +127,13 @@ export function PrescriptionForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="doctorId">Prescribing doctor</Label>
-          <select id="doctorId" name="doctorId" className={selectClass} defaultValue="">
+          <select
+            id="doctorId"
+            name="doctorId"
+            className={selectClass}
+            value={doctorId}
+            onChange={(e) => setDoctorId(e.target.value)}
+          >
             <option value="">Unassigned</option>
             {doctors.map((d) => (
               <option key={d.id} value={d.id}>{d.full_name}</option>
