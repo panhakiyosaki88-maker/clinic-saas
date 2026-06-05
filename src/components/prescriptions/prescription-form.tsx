@@ -15,12 +15,15 @@ export interface PatientOption { id: string; label: string }
 export interface DoctorOption { id: string; full_name: string }
 export interface BranchOption { id: string; name: string }
 
+/** When to take a medicine. Stored comma-joined in the item's `duration` field. */
+const TIMES_OF_DAY = ["Morning", "Afternoon", "Evening", "Night"] as const;
+
 interface Row {
   key: number;
   medicineName: string;
   dosage: string;
   frequency: string;
-  duration: string;
+  timing: string[];
   instructions: string;
   quantity: string;
 }
@@ -31,7 +34,7 @@ const blankRow = (): Row => ({
   medicineName: "",
   dosage: "",
   frequency: "",
-  duration: "",
+  timing: [],
   instructions: "",
   quantity: "",
 });
@@ -71,6 +74,21 @@ export function PrescriptionForm({
   function update(key: number, field: keyof Row, value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
   }
+  function toggleTiming(key: number, time: string) {
+    setRows((rs) =>
+      rs.map((r) =>
+        r.key === key
+          ? {
+              ...r,
+              timing: r.timing.includes(time)
+                ? r.timing.filter((t) => t !== time)
+                : // Keep the canonical Morning→Night order regardless of click order.
+                  TIMES_OF_DAY.filter((t) => t === time || r.timing.includes(t)),
+            }
+          : r
+      )
+    );
+  }
   function addRow() {
     setRows((rs) => [...rs, blankRow()]);
   }
@@ -92,7 +110,7 @@ export function PrescriptionForm({
           medicineName: r.medicineName,
           dosage: r.dosage,
           frequency: r.frequency,
-          duration: r.duration,
+          duration: r.timing.join(", "),
           instructions: r.instructions,
           quantity: r.quantity === "" ? undefined : Number(r.quantity),
         })),
@@ -160,12 +178,25 @@ export function PrescriptionForm({
         </div>
         {rows.map((r) => (
           <div key={r.key} className="space-y-2 rounded-lg border border-[var(--border)] p-3">
-            <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_1fr_0.7fr]">
+            <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_0.7fr]">
               <Input placeholder="Medicine *" value={r.medicineName} onChange={(e) => update(r.key, "medicineName", e.target.value)} required />
               <Input placeholder="Dosage" value={r.dosage} onChange={(e) => update(r.key, "dosage", e.target.value)} />
               <Input placeholder="Frequency" value={r.frequency} onChange={(e) => update(r.key, "frequency", e.target.value)} />
-              <Input placeholder="Duration" value={r.duration} onChange={(e) => update(r.key, "duration", e.target.value)} />
               <Input placeholder="Qty" type="number" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} />
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span className="text-xs font-medium text-[var(--muted-foreground)]">When to take</span>
+              {TIMES_OF_DAY.map((time) => (
+                <label key={time} className="flex items-center gap-1.5 text-sm">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 dark:border-slate-600"
+                    checked={r.timing.includes(time)}
+                    onChange={() => toggleTiming(r.key, time)}
+                  />
+                  {time}
+                </label>
+              ))}
             </div>
             <div className="flex gap-2">
               <Input placeholder="Instructions" value={r.instructions} onChange={(e) => update(r.key, "instructions", e.target.value)} />
