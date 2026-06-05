@@ -6,9 +6,14 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PrintButton } from "@/components/prescriptions/print-button";
 import { DeletePrescriptionButton } from "@/components/prescriptions/delete-prescription-button";
-import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 
 export const metadata = { title: "Prescription" };
+
+/** Prefix the doctor's name with "Dr." unless it already carries the title. */
+function withDoctorTitle(name: string): string {
+  const trimmed = name.trim();
+  return /^dr\.?\s/i.test(trimmed) ? trimmed : `Dr. ${trimmed}`;
+}
 
 export default async function PrescriptionDetailPage({
   params,
@@ -54,10 +59,7 @@ export default async function PrescriptionDetailPage({
             <p className="text-xs text-[var(--muted-foreground)]">Date</p>
             <p className="font-medium">{new Date(rx.prescribed_at).toLocaleDateString()}</p>
             {rx.doctor_name && (
-              <p className="flex items-center justify-end gap-1.5 text-xs">
-                <DoctorAvatar name={rx.doctor_name} avatarPath={rx.doctor_avatar_path} size={18} />
-                Dr. {rx.doctor_name}
-              </p>
+              <p className="text-xs">{withDoctorTitle(rx.doctor_name)}</p>
             )}
           </div>
         </div>
@@ -105,7 +107,7 @@ export default async function PrescriptionDetailPage({
           <div className="text-center text-sm">
             <div className="mb-1 h-px w-48 bg-[var(--border)]" />
             <p className="text-xs text-[var(--muted-foreground)]">
-              {rx.doctor_name ? `Dr. ${rx.doctor_name}` : "Signature"}
+              {rx.doctor_name ? withDoctorTitle(rx.doctor_name) : "Signature"}
             </p>
           </div>
         </footer>
