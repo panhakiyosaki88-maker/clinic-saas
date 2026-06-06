@@ -195,6 +195,27 @@ export async function changeAppointmentStatus(input: ChangeStatusInput): Promise
     }
   }
 
+  // The encounter is finished → auto-close the visit tied to this appointment so
+  // the Suggested charges panel stops following it. Only an open visit is closed.
+  if (status === "completed") {
+    const { data: appt } = await supabase
+      .from("appointments")
+      .select("patient_id, visit_id")
+      .eq("id", appointmentId)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
+    if (appt?.visit_id) {
+      await supabase
+        .from("patient_visits")
+        .update({ status: "closed", closed_at: now })
+        .eq("id", appt.visit_id)
+        .eq("clinic_id", clinicId)
+        .eq("status", "open");
+      revalidatePath(`/visits/${appt.visit_id}`);
+    }
+    if (appt?.patient_id) revalidatePath(`/patients/${appt.patient_id}`);
+  }
+
   revalidatePath("/appointments");
   revalidatePath(`/appointments/${appointmentId}`);
   return ok(undefined);

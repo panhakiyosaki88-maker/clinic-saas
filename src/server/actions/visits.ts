@@ -57,14 +57,38 @@ export async function closeVisit(input: CloseVisitInput): Promise<ActionResult> 
   if (!parsed.success) return fail("Invalid visit.");
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("patient_visits")
     .update({ status: "closed", closed_at: new Date().toISOString() })
     .eq("id", parsed.data.visitId)
-    .eq("clinic_id", clinicId);
+    .eq("clinic_id", clinicId)
+    .select("patient_id")
+    .maybeSingle();
   if (error) return fail(error.message);
 
   revalidatePath(`/visits/${parsed.data.visitId}`);
+  if (data?.patient_id) revalidatePath(`/patients/${data.patient_id}`);
+  return ok(undefined);
+}
+
+/** Reopens a closed visit so further charges/records can be threaded to it. */
+export async function reopenVisit(input: CloseVisitInput): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.APPOINTMENTS_WRITE);
+  const parsed = closeVisitSchema.safeParse(input);
+  if (!parsed.success) return fail("Invalid visit.");
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("patient_visits")
+    .update({ status: "open", closed_at: null })
+    .eq("id", parsed.data.visitId)
+    .eq("clinic_id", clinicId)
+    .select("patient_id")
+    .maybeSingle();
+  if (error) return fail(error.message);
+
+  revalidatePath(`/visits/${parsed.data.visitId}`);
+  if (data?.patient_id) revalidatePath(`/patients/${data.patient_id}`);
   return ok(undefined);
 }
 

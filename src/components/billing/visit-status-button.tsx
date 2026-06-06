@@ -1,0 +1,35 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import { closeVisit, reopenVisit } from "@/server/actions/visits";
+import type { VisitStatus } from "@/types/database";
+import { Button } from "@/components/ui/button";
+
+/** Toggles a visit between open and closed. Cancelled visits aren't togglable. */
+export function VisitStatusButton({ visitId, status }: { visitId: string; status: VisitStatus }) {
+  const router = useRouter();
+  const [pending, startTransition] = React.useTransition();
+  const [error, setError] = React.useState<string | null>(null);
+
+  if (status === "cancelled") return null;
+  const isOpen = status === "open";
+
+  function onClick() {
+    setError(null);
+    startTransition(async () => {
+      const res = isOpen ? await closeVisit({ visitId }) : await reopenVisit({ visitId });
+      if (!res.ok) return setError(res.error);
+      router.refresh();
+    });
+  }
+
+  return (
+    <span className="inline-flex shrink-0 items-center gap-2">
+      {error && <span className="text-xs text-[var(--destructive)]">{error}</span>}
+      <Button type="button" size="sm" variant="outline" onClick={onClick} disabled={pending}>
+        {pending ? "…" : isOpen ? "Close" : "Reopen"}
+      </Button>
+    </span>
+  );
+}

@@ -27,6 +27,7 @@ import { listPatientVisits } from "@/lib/db/queries/visits";
 import { listPatientMemberships, listMembershipPlanOptions } from "@/lib/db/queries/memberships";
 import { EnrolMembershipForm } from "@/components/billing/enrol-membership-form";
 import { StartVisitButton } from "@/components/billing/start-visit-button";
+import { VisitStatusButton } from "@/components/billing/visit-status-button";
 import { SuggestedCharges } from "@/components/billing/suggested-charges";
 import { listPatientLabRequests } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
@@ -132,8 +133,9 @@ export default async function PatientProfilePage({
   const currencyCtx = currencyContext(billingSettings);
   const unbilled = canBillWrite
     ? await getUnbilledForPatient(id)
-    : { appointments: [], labs: [] };
-  const hasUnbilled = unbilled.appointments.length > 0 || unbilled.labs.length > 0;
+    : { appointments: [], labs: [], prescriptions: [], openVisitId: null };
+  const hasUnbilled =
+    unbilled.appointments.length > 0 || unbilled.labs.length > 0 || unbilled.prescriptions.length > 0;
 
   const age = patientAge(patient.date_of_birth);
   const activeMeds = medications.filter((m) => m.status === "active").length;
@@ -337,17 +339,19 @@ export default async function PatientProfilePage({
               <p className="text-xs text-[var(--muted-foreground)]">No visits yet. Start one for a walk-in.</p>
             )}
             {patientVisits.slice(0, 8).map((vt) => (
-              <Link
+              <div
                 key={vt.id}
-                href={`/visits/${vt.id}`}
                 className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--muted)]"
               >
-                <span className="font-medium">{vt.visit_number}</span>
-                <span className="text-xs text-[var(--muted-foreground)]">
-                  {new Date(vt.visit_date).toLocaleDateString()}
-                  {vt.doctor_name ? ` · ${vt.doctor_name}` : ""} · {vt.status}
-                </span>
-              </Link>
+                <Link href={`/visits/${vt.id}`} className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                  <span className="font-medium">{vt.visit_number}</span>
+                  <span className="text-xs text-[var(--muted-foreground)]">
+                    {new Date(vt.visit_date).toLocaleDateString()}
+                    {vt.doctor_name ? ` · ${vt.doctor_name}` : ""} · {vt.status}
+                  </span>
+                </Link>
+                {canBookAppt && <VisitStatusButton visitId={vt.id} status={vt.status} />}
+              </div>
             ))}
           </CardContent>
         </Card>
@@ -356,7 +360,7 @@ export default async function PatientProfilePage({
         <Card>
           <CardHeader><CardTitle>Suggested charges</CardTitle></CardHeader>
           <CardContent>
-            <SuggestedCharges patientId={patient.id} appointments={unbilled.appointments} labs={unbilled.labs} />
+            <SuggestedCharges patientId={patient.id} appointments={unbilled.appointments} labs={unbilled.labs} prescriptions={unbilled.prescriptions} openVisitId={unbilled.openVisitId} />
           </CardContent>
         </Card>
       )}

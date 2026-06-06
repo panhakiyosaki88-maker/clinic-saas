@@ -87,17 +87,6 @@ export const recordPaymentSchema = z.object({
 });
 export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
 
-export const billFromSourcesSchema = z
-  .object({
-    patientId: z.string().uuid(),
-    appointmentIds: z.array(z.string().uuid()).default([]),
-    labIds: z.array(z.string().uuid()).default([]),
-  })
-  .refine((v) => v.appointmentIds.length + v.labIds.length > 0, {
-    message: "Select at least one charge to bill.",
-  });
-export type BillFromSourcesInput = z.infer<typeof billFromSourcesSchema>;
-
 export const SERVICE_CATEGORIES = [
   "consultation",
   "lab",
