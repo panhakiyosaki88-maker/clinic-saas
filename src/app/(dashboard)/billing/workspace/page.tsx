@@ -5,6 +5,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { listPatientOptions, getPatient } from "@/lib/db/queries/patients";
 import { getVisitChargeSet } from "@/lib/db/queries/visit-charges";
 import { getVisitDraftInvoice } from "@/lib/db/queries/billing";
+import { listMedicineOptions } from "@/lib/db/queries/pharmacy";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext } from "@/lib/billing/currency";
 import { BillingWorkspace } from "@/components/billing/billing-workspace";
@@ -54,10 +55,11 @@ export default async function BillingWorkspacePage({
     );
   }
 
-  const [patient, chargeSet, settings] = await Promise.all([
+  const [patient, chargeSet, settings, medicines] = await Promise.all([
     getPatient(patientId),
     getVisitChargeSet(patientId, sp.visitId ?? null),
     getBillingSettings(),
+    listMedicineOptions(),
   ]);
   if (!patient) redirect("/billing/workspace");
   const ctx = currencyContext(settings);
@@ -115,6 +117,7 @@ export default async function BillingWorkspacePage({
         initialTax={draft?.tax ?? 0}
         initialNotes={draft?.notes ?? ""}
         labBundleInit={labBundle}
+        medicines={medicines}
       />
     </main>
   );

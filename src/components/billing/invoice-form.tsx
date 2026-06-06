@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createInvoice, editInvoice } from "@/server/actions/billing";
 import { formatKHR, usdToKhr } from "@/lib/billing/currency";
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/invoice";
+import { MedicinePicker, type MedicinePickOption } from "@/components/billing/medicine-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +49,7 @@ export function InvoiceForm({
   defaultBranchId,
   invoice,
   rate = 4100,
+  medicines = [],
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
@@ -59,6 +61,8 @@ export function InvoiceForm({
   invoice?: InvoiceFormData;
   /** USD→KHR rate for the live equivalent shown under the total. */
   rate?: number;
+  /** Pharmacy catalog for the Pharmacy line's medicine typeahead. */
+  medicines?: MedicinePickOption[];
 }) {
   const router = useRouter();
   const isEdit = !!invoice;
@@ -96,6 +100,11 @@ export function InvoiceForm({
 
   function update(key: number, field: "description" | "quantity" | "unitPrice", value: string) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
+  }
+  function pickMedicine(key: number, m: MedicinePickOption) {
+    setRows((rs) =>
+      rs.map((r) => (r.key === key ? { ...r, description: m.name, unitPrice: String(m.selling_price) } : r))
+    );
   }
   function addItem(category: ServiceCategoryValue) {
     setRows((rs) => [...rs, blankRow(category)]);
@@ -186,7 +195,16 @@ export function InvoiceForm({
                   </div>
                   {group.map((r) => (
                     <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1fr_5rem_7rem_5rem_2.5rem]">
-                      <Input placeholder="Description *" value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
+                      {cat === "pharmacy" ? (
+                        <MedicinePicker
+                          value={r.description}
+                          medicines={medicines}
+                          onType={(v) => update(r.key, "description", v)}
+                          onPick={(m) => pickMedicine(r.key, m)}
+                        />
+                      ) : (
+                        <Input placeholder="Description *" value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
+                      )}
                       <Input type="number" step="0.01" placeholder="Quantity" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} title="Quantity" />
                       <Input type="number" step="0.01" placeholder="Unit price" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} title="Unit price" />
                       <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>

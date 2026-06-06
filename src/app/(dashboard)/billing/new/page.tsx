@@ -5,6 +5,7 @@ import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
 import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
+import { listMedicineOptions } from "@/lib/db/queries/pharmacy";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext } from "@/lib/billing/currency";
 import { hasPermission } from "@/lib/auth/guard";
@@ -23,12 +24,13 @@ export default async function NewInvoicePage({
   if (!(await hasPermission(PERMISSIONS.BILLING_WRITE))) redirect("/billing");
 
   const sp = await searchParams;
-  const [patients, doctors, consultingByPatient, { branches, activeId, primaryId }, settings] = await Promise.all([
+  const [patients, doctors, consultingByPatient, { branches, activeId, primaryId }, settings, medicines] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     getPatientConsultingDoctorMap(),
     getActiveBranchContext(),
     getBillingSettings(),
+    listMedicineOptions(),
   ]);
   const ctx = currencyContext(settings);
 
@@ -46,6 +48,7 @@ export default async function NewInvoicePage({
         defaultPatientId={sp.patientId}
         defaultBranchId={activeId ?? primaryId}
         rate={ctx.rate}
+        medicines={medicines}
       />
     </main>
   );

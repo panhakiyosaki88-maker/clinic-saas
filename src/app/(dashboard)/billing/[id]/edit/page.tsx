@@ -6,6 +6,7 @@ import { listPatientOptions } from "@/lib/db/queries/patients";
 import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
 import { resolveVisitBranchId } from "@/lib/db/queries/visits";
 import { listDoctors } from "@/lib/db/queries/doctors";
+import { listMedicineOptions } from "@/lib/db/queries/pharmacy";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext } from "@/lib/billing/currency";
 import { hasPermission } from "@/lib/auth/guard";
@@ -25,12 +26,13 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   // Issued+paid invoices are immutable; bounce to the detail view.
   if (inv.status === "cancelled" || Number(inv.amount_paid) > 0) redirect(`/billing/${id}`);
 
-  const [patients, doctors, branches, consultingByPatient, settings] = await Promise.all([
+  const [patients, doctors, branches, consultingByPatient, settings, medicines] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     listBranches(),
     getPatientConsultingDoctorMap(),
     getBillingSettings(),
+    listMedicineOptions(),
   ]);
   const ctx = currencyContext(settings);
   // Default the branch to where the patient consulted when this invoice has none.
@@ -49,6 +51,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
         consultingByPatient={consultingByPatient}
         rate={ctx.rate}
+        medicines={medicines}
         invoice={{
           id: inv.id,
           patient_id: inv.patient_id,

@@ -12,6 +12,7 @@ import {
 import { formatKHR, usdToKhr } from "@/lib/billing/currency";
 import type { MembershipBenefit, BillingAlerts } from "@/lib/db/queries/visit-billing";
 import type { VisitCharge } from "@/lib/db/queries/visit-charges";
+import { MedicinePicker, type MedicinePickOption } from "@/components/billing/medicine-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,7 @@ export function BillingWorkspace({
   initialTax = 0,
   initialNotes = "",
   labBundleInit = null,
+  medicines = [],
 }: {
   patientId: string;
   visitId: string | null;
@@ -61,6 +63,8 @@ export function BillingWorkspace({
   /** When the continued draft had its labs bundled ("Price overall"), restore
    *  that mode with the saved description + price. */
   labBundleInit?: { description: string; price: number } | null;
+  /** Pharmacy catalog for the manual Pharmacy line's medicine typeahead. */
+  medicines?: MedicinePickOption[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
@@ -317,12 +321,21 @@ export function BillingWorkspace({
                   {group.map((r) => (
                     <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1.5rem_1fr_4.5rem_6rem_5rem_2rem]">
                       <input type="checkbox" checked={r.selected} onChange={(e) => patch(r.key, { selected: e.target.checked })} />
-                      {r.source === "manual" ? (
-                        <Input value={r.description} placeholder="Description" onChange={(e) => patch(r.key, { description: e.target.value })} />
-                      ) : (
+                      {r.source !== "manual" ? (
                         // Detected lines keep their name fixed so prices round-trip when
                         // continuing the draft (matched by description).
                         <span className="truncate text-sm" title={r.description}>{r.description}</span>
+                      ) : r.category === "pharmacy" ? (
+                        // Manual Pharmacy line: pick from the catalog (name + stock),
+                        // filling the medicine's selling price on selection.
+                        <MedicinePicker
+                          value={r.description}
+                          medicines={medicines}
+                          onType={(v) => patch(r.key, { description: v })}
+                          onPick={(m) => patch(r.key, { description: m.name, unitPrice: String(m.selling_price) })}
+                        />
+                      ) : (
+                        <Input value={r.description} placeholder="Description" onChange={(e) => patch(r.key, { description: e.target.value })} />
                       )}
                       <Input type="number" step="0.01" value={r.quantity} onChange={(e) => patch(r.key, { quantity: e.target.value })} title="Quantity" />
                       <Input
