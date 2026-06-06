@@ -8,8 +8,10 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 import { labSessionKey, labSessionAnchor, formatLabSessionDate } from "@/lib/lab/session";
-import { PATIENT_LAB_STATE_LABELS, type PatientLabState } from "@/lib/validations/lab";
+import { type PatientLabState } from "@/lib/validations/lab";
 import { PatientLabUpload } from "@/components/lab/patient-lab-upload";
+import { LabSessionStatus } from "@/components/lab/lab-session-status";
+import { LabStateBadge } from "@/components/lab/lab-state-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Patient lab tests" };
@@ -20,12 +22,6 @@ const PANEL_GROUP_BY_TEST = new Map<string, string>();
 LAB_TEST_PANEL.forEach((g) => g.tests.forEach((t) => {
   if (!PANEL_GROUP_BY_TEST.has(t)) PANEL_GROUP_BY_TEST.set(t, g.title);
 }));
-
-const STATE_BADGE: Record<PatientLabState, string> = {
-  requested: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
-  processing: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
-  completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
-};
 
 /** Collapse a session's individual test statuses into one patient-level state. */
 function sessionState(tests: LabRequestWithNames[]): PatientLabState {
@@ -154,9 +150,11 @@ export default async function PatientLabPage({
             <Card key={session.dateKey} id={labSessionAnchor(session.dateKey)} className="scroll-mt-24 overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
                 <CardTitle className="text-base">{session.label}</CardTitle>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATE_BADGE[state]}`}>
-                  {PATIENT_LAB_STATE_LABELS[state]}
-                </span>
+                {canWrite && activeRequestIds.length > 0 ? (
+                  <LabSessionStatus requestIds={activeRequestIds} status={state} />
+                ) : (
+                  <LabStateBadge status={state} />
+                )}
               </CardHeader>
               <CardContent className="space-y-4 p-0 pb-2">
                 {orderedGroups.map(([title, tests]) => (

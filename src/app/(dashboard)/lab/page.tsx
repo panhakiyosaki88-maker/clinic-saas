@@ -7,7 +7,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { FlaskConical, Plus, Tags } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
-import { LabPatientStatus } from "@/components/lab/lab-patient-status";
+import { LabStateBadge } from "@/components/lab/lab-state-badge";
 import type { PatientLabState } from "@/lib/validations/lab";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
@@ -128,13 +128,7 @@ export default async function LabPage() {
                     </TD>
                     <TD className="text-slate-500 dark:text-slate-400">{p.count}</TD>
                     <TD>
-                      {canWrite ? (
-                        <LabPatientStatus key={p.patientId} patientId={p.patientId} status={p.status} />
-                      ) : (
-                        <span className="text-slate-500 dark:text-slate-400">
-                          {p.status === "completed" ? "Finish" : p.status === "processing" ? "In Progress" : "Pending"}
-                        </span>
-                      )}
+                      <LabStateBadge status={p.status} />
                     </TD>
                     <TD className="text-slate-500 dark:text-slate-400">{fmt(p.start)}</TD>
                     <TD className="text-slate-500 dark:text-slate-400">{fmt(p.finish)}</TD>

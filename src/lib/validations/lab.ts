@@ -45,11 +45,13 @@ export const PATIENT_LAB_STATE_LABELS: Record<PatientLabState, string> = {
   completed: "Finish",
 };
 
-export const setPatientLabStatusSchema = z.object({
-  patientId: z.string().uuid(),
+/** Applies one patient-level state to a single lab session (a set of the day's
+ *  test request ids). */
+export const setLabSessionStatusSchema = z.object({
+  requestIds: z.array(z.string().uuid()).min(1, "No tests to update").max(200),
   status: z.enum(PATIENT_LAB_STATES),
 });
-export type SetPatientLabStatusInput = z.infer<typeof setPatientLabStatusSchema>;
+export type SetLabSessionStatusInput = z.infer<typeof setLabSessionStatusSchema>;
 
 export const addLabResultSchema = z.object({
   requestId: z.string().uuid(),

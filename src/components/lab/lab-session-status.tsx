@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { setPatientLabStatus } from "@/server/actions/lab";
+import { setLabSessionStatus } from "@/server/actions/lab";
 import {
   PATIENT_LAB_STATES,
   PATIENT_LAB_STATE_LABELS,
@@ -11,18 +11,17 @@ import {
 import { Button } from "@/components/ui/button";
 
 /**
- * Pending / In Progress / Finish buttons for a patient's lab order. Selecting
- * a state applies it to all of the patient's tests; Finish records the date.
- *
- * The highlight is driven by the server-provided `status` (via useOptimistic),
- * so each row reflects only its own patient and re-syncs after every refresh.
+ * Pending / In Progress / Finish buttons for one lab session (the tests
+ * requested on a given date). Selecting a state applies it to every test in that
+ * session; Finish records the date. The highlight is driven by the
+ * server-provided `status` (via useOptimistic) so it re-syncs after refresh.
  */
-export function LabPatientStatus({
-  patientId,
+export function LabSessionStatus({
+  requestIds,
   status,
   disabled,
 }: {
-  patientId: string;
+  requestIds: string[];
   status: PatientLabState;
   disabled?: boolean;
 }) {
@@ -37,11 +36,11 @@ export function LabPatientStatus({
           key={s}
           size="sm"
           variant={optimistic === s ? "default" : "outline"}
-          disabled={disabled || pending}
+          disabled={disabled || pending || requestIds.length === 0}
           onClick={() =>
             startTransition(async () => {
               setOptimistic(s);
-              await setPatientLabStatus({ patientId, status: s });
+              await setLabSessionStatus({ requestIds, status: s });
               router.refresh();
             })
           }
