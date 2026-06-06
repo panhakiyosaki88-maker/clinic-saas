@@ -57,16 +57,28 @@ export async function closeVisit(input: CloseVisitInput): Promise<ActionResult> 
   if (!parsed.success) return fail("Invalid visit.");
 
   const supabase = await createClient();
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from("patient_visits")
-    .update({ status: "closed", closed_at: new Date().toISOString() })
+    .update({ status: "closed", closed_at: now })
     .eq("id", parsed.data.visitId)
     .eq("clinic_id", clinicId)
     .select("patient_id")
     .maybeSingle();
   if (error) return fail(error.message);
 
+  // Closing the encounter completes its appointment (the mirror of completing an
+  // appointment, which closes its visit). Only active appointments transition.
+  await supabase
+    .from("appointments")
+    .update({ status: "completed", completed_at: now })
+    .eq("clinic_id", clinicId)
+    .eq("visit_id", parsed.data.visitId)
+    .neq("status", "completed")
+    .neq("status", "cancelled");
+
   revalidatePath(`/visits/${parsed.data.visitId}`);
+  revalidatePath("/appointments");
   if (data?.patient_id) revalidatePath(`/patients/${data.patient_id}`);
   return ok(undefined);
 }
@@ -87,7 +99,17 @@ export async function reopenVisit(input: CloseVisitInput): Promise<ActionResult>
     .maybeSingle();
   if (error) return fail(error.message);
 
+  // Reopening puts a completed appointment back into consultation (the inverse of
+  // closing → completing it).
+  await supabase
+    .from("appointments")
+    .update({ status: "in_consultation", completed_at: null })
+    .eq("clinic_id", clinicId)
+    .eq("visit_id", parsed.data.visitId)
+    .eq("status", "completed");
+
   revalidatePath(`/visits/${parsed.data.visitId}`);
+  revalidatePath("/appointments");
   if (data?.patient_id) revalidatePath(`/patients/${data.patient_id}`);
   return ok(undefined);
 }
