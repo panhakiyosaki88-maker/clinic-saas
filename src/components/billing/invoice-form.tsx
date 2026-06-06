@@ -200,7 +200,7 @@ export function InvoiceForm({
 
           <div className="flex flex-wrap gap-2 pt-1">
             <span className="self-center text-xs text-[var(--muted-foreground)]">Add manual item:</span>
-            {(["consultation", "procedure", "other"] as ServiceCategoryValue[]).map((c) => (
+            {(["consultation", "lab", "pharmacy", "procedure", "other"] as ServiceCategoryValue[]).map((c) => (
               <Button key={c} type="button" variant="outline" size="sm" onClick={() => addItem(c)}>
                 + {SERVICE_CATEGORY_LABELS[c]}
               </Button>
