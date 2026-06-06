@@ -90,7 +90,7 @@ export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
 /** Removes a single detected charge from the draft invoice it was billed into,
  *  so it becomes selectable again in Suggested charges. */
 export const unbillChargeSchema = z.object({
-  source: z.enum(["appointment", "lab", "prescription"]),
+  source: z.enum(["appointment", "lab", "pharmacy", "procedure", "membership"]),
   sourceId: z.string().uuid(),
   description: z.string().trim().min(1).max(255),
 });
@@ -145,6 +145,9 @@ export type VisitBillLineInput = z.infer<typeof visitBillLineSchema>;
 export const billFromVisitSchema = z.object({
   patientId: z.string().uuid(),
   visitId: z.string().uuid().optional().or(z.literal("")),
+  /** When set, edits this existing draft invoice instead of creating a new one
+   *  (the Billing Workspace continuing a draft made from Suggested charges). */
+  invoiceId: z.string().uuid().optional().or(z.literal("")),
   discount: money,
   tax: money,
   notes: z.string().trim().max(2000).optional().or(z.literal("")),

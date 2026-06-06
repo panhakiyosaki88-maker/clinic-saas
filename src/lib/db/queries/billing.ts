@@ -56,6 +56,27 @@ export async function listPatientInvoices(patientId: string): Promise<InvoiceWit
   return mapList((data ?? []) as unknown as ListJoined[]);
 }
 
+/** The visit's open draft invoice (source = visit), if one exists. The Billing
+ *  Workspace continues this draft instead of creating a duplicate. */
+export async function getVisitDraftInvoice(
+  visitId: string
+): Promise<{ id: string; discount: number; tax: number; notes: string | null } | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("invoices")
+    .select("id, discount, tax, notes")
+    .eq("visit_id", visitId)
+    .eq("source", "visit")
+    .eq("status", "draft")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return { id: data.id, discount: Number(data.discount), tax: Number(data.tax), notes: data.notes };
+}
+
 /** Outstanding (unpaid / partially paid) invoices for dashboards & reports. */
 export async function outstandingInvoices(): Promise<InvoiceWithPatient[]> {
   const supabase = await createClient();

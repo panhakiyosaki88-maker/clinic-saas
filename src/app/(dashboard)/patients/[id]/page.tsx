@@ -20,7 +20,8 @@ import {
 import { listMedicalRecords } from "@/lib/db/queries/medical-records";
 import { listPatientPrescriptions } from "@/lib/db/queries/prescriptions";
 import { listPatientInvoices } from "@/lib/db/queries/billing";
-import { getUnbilledForPatient } from "@/lib/db/queries/billing-suggestions";
+import { getVisitChargeSet } from "@/lib/db/queries/visit-charges";
+import { getVisitDraftInvoice } from "@/lib/db/queries/billing";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext, formatIn } from "@/lib/billing/currency";
 import { listPatientVisits } from "@/lib/db/queries/visits";
@@ -131,11 +132,20 @@ export default async function PatientProfilePage({
   ]);
   const billingSettings = await getBillingSettings();
   const currencyCtx = currencyContext(billingSettings);
-  const unbilled = canBillWrite
-    ? await getUnbilledForPatient(id)
-    : { appointments: [], labs: [], prescriptions: [], openVisitId: null };
-  const hasUnbilled =
-    unbilled.appointments.length > 0 || unbilled.labs.length > 0 || unbilled.prescriptions.length > 0;
+  const chargeSet = canBillWrite
+    ? await getVisitChargeSet(id)
+    : {
+        patientId: id,
+        visitId: null,
+        charges: [],
+        prescribedMedicines: [],
+        membership: null,
+        alerts: { unbilledLabs: 0, unbilledMedicines: 0, membershipAvailable: false },
+      };
+  const hasActivity = chargeSet.charges.length > 0 || chargeSet.prescribedMedicines.length > 0;
+  // A draft already exists for this visit → steer billing through the workspace
+  // (which continues that draft) instead of spawning a second one.
+  const visitDraft = chargeSet.visitId ? await getVisitDraftInvoice(chargeSet.visitId) : null;
 
   const age = patientAge(patient.date_of_birth);
   const activeMeds = medications.filter((m) => m.status === "active").length;
@@ -356,11 +366,17 @@ export default async function PatientProfilePage({
           </CardContent>
         </Card>
       )}
-      {canBillWrite && hasUnbilled && (
+      {canBillWrite && hasActivity && (
         <Card>
           <CardHeader><CardTitle>Suggested charges</CardTitle></CardHeader>
           <CardContent>
-            <SuggestedCharges patientId={patient.id} appointments={unbilled.appointments} labs={unbilled.labs} prescriptions={unbilled.prescriptions} openVisitId={unbilled.openVisitId} />
+            <SuggestedCharges
+              patientId={patient.id}
+              visitId={chargeSet.visitId}
+              charges={chargeSet.charges}
+              prescribedMedicines={chargeSet.prescribedMedicines}
+              hasDraft={!!visitDraft}
+            />
           </CardContent>
         </Card>
       )}

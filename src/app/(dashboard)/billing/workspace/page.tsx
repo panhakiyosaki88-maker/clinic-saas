@@ -3,7 +3,8 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { listPatientOptions, getPatient } from "@/lib/db/queries/patients";
-import { getVisitBillables } from "@/lib/db/queries/visit-billing";
+import { getVisitChargeSet } from "@/lib/db/queries/visit-charges";
+import { getVisitDraftInvoice } from "@/lib/db/queries/billing";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext } from "@/lib/billing/currency";
 import { BillingWorkspace } from "@/components/billing/billing-workspace";
@@ -53,13 +54,21 @@ export default async function BillingWorkspacePage({
     );
   }
 
-  const [patient, billables, settings] = await Promise.all([
+  const [patient, chargeSet, settings] = await Promise.all([
     getPatient(patientId),
-    getVisitBillables(patientId, sp.visitId ?? null),
+    getVisitChargeSet(patientId, sp.visitId ?? null),
     getBillingSettings(),
   ]);
   if (!patient) redirect("/billing/workspace");
   const ctx = currencyContext(settings);
+
+  // Continue the visit's existing draft (if any) instead of duplicating it, and
+  // surface every charge that is unbilled or already on that draft (charges
+  // billed to other invoices are hidden so nothing is double-billed).
+  const draft = chargeSet.visitId ? await getVisitDraftInvoice(chargeSet.visitId) : null;
+  const lines = chargeSet.charges.filter(
+    (c) => c.billedInvoiceId === null || c.billedInvoiceId === draft?.id
+  );
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
@@ -69,17 +78,22 @@ export default async function BillingWorkspacePage({
           <h1 className="mt-1 text-2xl font-bold">Billing workspace</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {patient.full_name} · {patient.patient_number}
+            {draft ? " · continuing draft" : ""}
           </p>
         </div>
       </header>
 
       <BillingWorkspace
         patientId={patientId}
-        visitId={billables.visitId}
-        lines={billables.lines}
-        membership={billables.membership}
-        alerts={billables.alerts}
+        visitId={chargeSet.visitId}
+        lines={lines}
+        membership={chargeSet.membership}
+        alerts={chargeSet.alerts}
         rate={ctx.rate}
+        draftInvoiceId={draft?.id ?? null}
+        initialDiscount={draft?.discount ?? 0}
+        initialTax={draft?.tax ?? 0}
+        initialNotes={draft?.notes ?? ""}
       />
     </main>
   );

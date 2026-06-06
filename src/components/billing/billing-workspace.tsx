@@ -10,7 +10,8 @@ import {
   type ServiceCategoryValue,
 } from "@/lib/validations/invoice";
 import { formatKHR, usdToKhr } from "@/lib/billing/currency";
-import type { BillableLine, MembershipBenefit, BillingAlerts } from "@/lib/db/queries/visit-billing";
+import type { MembershipBenefit, BillingAlerts } from "@/lib/db/queries/visit-billing";
+import type { VisitCharge } from "@/lib/db/queries/visit-charges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,14 +40,23 @@ export function BillingWorkspace({
   membership,
   alerts,
   rate = 4100,
+  draftInvoiceId = null,
+  initialDiscount = 0,
+  initialTax = 0,
+  initialNotes = "",
 }: {
   patientId: string;
   visitId: string | null;
-  lines: BillableLine[];
+  lines: VisitCharge[];
   membership: MembershipBenefit | null;
   alerts: BillingAlerts;
   /** USD→KHR rate for the live equivalent under the total. */
   rate?: number;
+  /** When set, the workspace continues (edits) this existing draft invoice. */
+  draftInvoiceId?: string | null;
+  initialDiscount?: number;
+  initialTax?: number;
+  initialNotes?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
@@ -65,10 +75,13 @@ export function BillingWorkspace({
       needsPrice: l.needsPrice,
     }))
   );
-  const [applyMembership, setApplyMembership] = React.useState(!!membership);
-  const [manualDiscount, setManualDiscount] = React.useState("0");
-  const [tax, setTax] = React.useState("0");
-  const [notes, setNotes] = React.useState("");
+  // When continuing an existing draft its stored discount already folds in any
+  // membership benefit, so seed it as the manual discount and leave the toggle
+  // off (the user can re-apply); a fresh review applies the benefit by default.
+  const [applyMembership, setApplyMembership] = React.useState(!!membership && !draftInvoiceId);
+  const [manualDiscount, setManualDiscount] = React.useState(String(initialDiscount));
+  const [tax, setTax] = React.useState(String(initialTax));
+  const [notes, setNotes] = React.useState(initialNotes);
 
   // Laboratory pricing mode: "individual" prices each test; "overall" replaces
   // every lab test with a single bundled "Laboratory Test" line at one price (on
@@ -205,6 +218,7 @@ export function BillingWorkspace({
       const res = await createInvoiceFromVisit({
         patientId,
         visitId: visitId ?? undefined,
+        invoiceId: draftInvoiceId ?? undefined,
         discount: discountTotal,
         tax: num(tax),
         notes,
@@ -372,8 +386,10 @@ export function BillingWorkspace({
         {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
 
         <div className="flex flex-col gap-2">
-          <Button onClick={() => submit(false)} disabled={pending}>{pending ? "Creating…" : "Issue invoice"}</Button>
-          <Button variant="outline" onClick={() => submit(true)} disabled={pending}>Save as draft</Button>
+          <Button onClick={() => submit(false)} disabled={pending}>{pending ? "Saving…" : "Issue invoice"}</Button>
+          <Button variant="outline" onClick={() => submit(true)} disabled={pending}>
+            {draftInvoiceId ? "Update draft" : "Save as draft"}
+          </Button>
         </div>
       </aside>
     </div>

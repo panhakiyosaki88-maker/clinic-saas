@@ -3,79 +3,84 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createInvoiceFromVisit, unbillCharge } from "@/server/actions/billing";
-import type {
-  BillableAppointment,
-  BillableLab,
-  BillablePrescription,
-} from "@/lib/db/queries/billing-suggestions";
+import { recordDispense } from "@/server/actions/visits";
+import type { VisitCharge, PrescribedMedicine, ChargeSource } from "@/lib/db/queries/visit-charges";
+import { SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const num = (s: string) => (Number.isFinite(Number(s)) ? Number(s) : 0);
 
+// Charge categories shown in this panel, in display order.
+const CATEGORY_ORDER: ServiceCategoryValue[] = ["consultation", "lab", "pharmacy", "procedure", "membership"];
+
 /**
- * Lists a patient's charges (completed consultations, lab tests, prescriptions)
- * and bundles the selected ones into a draft invoice. Unbilled charges are
- * selectable with an editable price; lab tests can be priced each or as one
- * bundled line ("Price each" / "Price overall", like the Billing workspace).
- * Already-billed charges are shown read-only and stay listed until the patient's
- * open visit is closed/completed — they can never be re-billed.
+ * Lists every charge tied to a patient's open visit — consultations, lab tests,
+ * dispensed medicines, procedures and membership — and bundles the selected ones
+ * into a draft invoice. Unbilled charges are selectable with an editable price;
+ * lab tests can be priced each or bundled ("Price each" / "Price overall").
+ * Already-billed charges stay listed read-only (greyed) and can be un-billed back
+ * to selectable while their invoice has no payments. Prescriptions appear as a
+ * dispense block: dispensing a prescribed medicine writes the stock ledger and
+ * adds it as a billable pharmacy charge above. Shares its detection with the
+ * Billing Workspace so the two always agree.
  */
 export function SuggestedCharges({
   patientId,
-  appointments,
-  labs,
-  prescriptions,
-  openVisitId,
+  visitId,
+  charges,
+  prescribedMedicines,
+  hasDraft = false,
 }: {
   patientId: string;
-  appointments: BillableAppointment[];
-  labs: BillableLab[];
-  prescriptions: BillablePrescription[];
-  openVisitId: string | null;
+  visitId: string | null;
+  charges: VisitCharge[];
+  prescribedMedicines: PrescribedMedicine[];
+  /** True when the visit already has a draft invoice — billing then routes
+   *  through the workspace (which continues that draft) to avoid duplicates. */
+  hasDraft?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
-  const openAppts = appointments.filter((a) => !a.billed);
-  const openLabs = labs.filter((l) => !l.billed);
-  const openRx = prescriptions.filter((p) => !p.billed);
+  const unbilledCharges = charges.filter((c) => !c.billed);
 
-  const [appt, setAppt] = React.useState<Set<string>>(() => new Set(openAppts.map((a) => a.id)));
-  const [lab, setLab] = React.useState<Set<string>>(() => new Set(openLabs.map((l) => l.id)));
-  const [rx, setRx] = React.useState<Set<string>>(() => new Set(openRx.map((p) => p.id)));
-
-  // Editable unit price per chargeable source, prefilled from its detected amount.
+  // Selected unbilled charges (default: all), keyed by sourceId (uuids are unique).
+  const [selected, setSelected] = React.useState<Set<string>>(
+    () => new Set(unbilledCharges.map((c) => c.sourceId))
+  );
+  // Editable unit price per unbilled charge, prefilled from its detected amount.
   const [prices, setPrices] = React.useState<Record<string, string>>(() => {
     const seed: Record<string, string> = {};
-    for (const a of openAppts) seed[a.id] = String(a.amount);
-    for (const l of openLabs) seed[l.id] = String(l.amount);
-    for (const p of openRx) seed[p.id] = "0";
+    for (const c of unbilledCharges) seed[c.sourceId] = String(c.unitPrice);
     return seed;
   });
 
-  // Lab pricing mode: "individual" prices each test; "overall" bills every lab
-  // test as one bundled line at a single price.
+  // Lab pricing mode: "individual" prices each test; "overall" bills every
+  // unbilled lab test as one bundled line at a single price.
+  const unbilledLabs = unbilledCharges.filter((c) => c.category === "lab");
   const [labMode, setLabMode] = React.useState<"individual" | "overall">("individual");
   const [labOverall, setLabOverall] = React.useState(() =>
-    String(openLabs.reduce((s, l) => s + l.amount, 0))
+    String(unbilledLabs.reduce((s, l) => s + l.unitPrice, 0))
   );
   const [labDescription, setLabDescription] = React.useState("Laboratory Test");
 
-  if (appointments.length === 0 && labs.length === 0 && prescriptions.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No unbilled charges — everything is invoiced.</p>;
+  if (charges.length === 0 && prescribedMedicines.length === 0) {
+    return <p className="text-sm text-[var(--muted-foreground)]">No charges on this visit yet.</p>;
   }
 
-  const toggle = (set: Set<string>, setSet: (s: Set<string>) => void, id: string) => {
-    const next = new Set(set);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSet(next);
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
   const setPrice = (id: string, value: string) => setPrices((p) => ({ ...p, [id]: value }));
 
-  function onUnbill(source: "appointment" | "lab" | "prescription", sourceId: string, description: string) {
+  function onUnbill(source: ChargeSource, sourceId: string, description: string) {
     setError(null);
     startTransition(async () => {
       const res = await unbillCharge({ source, sourceId, description });
@@ -84,38 +89,58 @@ export function SuggestedCharges({
     });
   }
 
-  const overallLab = labMode === "overall" && openLabs.length > 0;
-  const count = appt.size + rx.size + (overallLab ? (lab.size > 0 ? 1 : 0) : lab.size);
+  function onDispense(med: PrescribedMedicine, quantity: number, unitPrice: number) {
+    if (!med.medicineId) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await recordDispense({
+        patientId,
+        visitId: visitId ?? undefined,
+        medicineId: med.medicineId!,
+        quantity,
+        unitPrice,
+      });
+      if (!res.ok) return setError(res.error);
+      router.refresh();
+    });
+  }
 
-  // Deep-link into the full billing workspace, scoped to the patient's open visit.
-  const workspaceHref = `/billing/workspace?patientId=${patientId}${openVisitId ? `&visitId=${openVisitId}` : ""}`;
+  const overallLab = labMode === "overall" && unbilledLabs.length > 0;
+  const selectedNonLab = unbilledCharges.filter((c) => c.category !== "lab" && selected.has(c.sourceId)).length;
+  const selectedLabCount = unbilledLabs.filter((c) => selected.has(c.sourceId)).length;
+  const count = selectedNonLab + (overallLab ? (selectedLabCount > 0 ? 1 : 0) : selectedLabCount);
+
+  const workspaceHref = `/billing/workspace?patientId=${patientId}${visitId ? `&visitId=${visitId}` : ""}`;
 
   function onCreate() {
     setError(null);
     type Line = {
-      source: "appointment" | "lab" | "prescription";
+      source: ChargeSource;
       sourceId: string;
       linkSourceIds?: string[];
-      category: "consultation" | "lab" | "other";
+      category: ServiceCategoryValue;
       description: string;
       quantity: number;
       unitPrice: number;
     };
     const lines: Line[] = [];
 
-    for (const a of openAppts) {
-      if (!appt.has(a.id)) continue;
-      lines.push({ source: "appointment", sourceId: a.id, category: "consultation", description: a.label, quantity: 1, unitPrice: num(prices[a.id]) });
-    }
-    for (const p of openRx) {
-      if (!rx.has(p.id)) continue;
-      lines.push({ source: "prescription", sourceId: p.id, category: "other", description: p.label, quantity: 1, unitPrice: num(prices[p.id]) });
+    for (const c of unbilledCharges) {
+      if (c.category === "lab") continue; // handled below
+      if (!selected.has(c.sourceId)) continue;
+      lines.push({
+        source: c.source,
+        sourceId: c.sourceId,
+        category: c.category as ServiceCategoryValue,
+        description: c.description,
+        quantity: c.quantity,
+        unitPrice: num(prices[c.sourceId] ?? String(c.unitPrice)),
+      });
     }
 
-    const selectedLabs = openLabs.filter((l) => lab.has(l.id));
+    const selectedLabs = unbilledLabs.filter((c) => selected.has(c.sourceId));
     if (overallLab && selectedLabs.length > 0) {
-      // One bundled "Laboratory Test" line covering every selected lab source.
-      const ids = selectedLabs.map((l) => l.id);
+      const ids = selectedLabs.map((l) => l.sourceId);
       lines.push({
         source: "lab",
         sourceId: ids[0],
@@ -127,7 +152,14 @@ export function SuggestedCharges({
       });
     } else {
       for (const l of selectedLabs) {
-        lines.push({ source: "lab", sourceId: l.id, category: "lab", description: l.test_name, quantity: 1, unitPrice: num(prices[l.id]) });
+        lines.push({
+          source: "lab",
+          sourceId: l.sourceId,
+          category: "lab",
+          description: l.description,
+          quantity: 1,
+          unitPrice: num(prices[l.sourceId] ?? String(l.unitPrice)),
+        });
       }
     }
 
@@ -139,7 +171,7 @@ export function SuggestedCharges({
     startTransition(async () => {
       const res = await createInvoiceFromVisit({
         patientId,
-        visitId: openVisitId ?? undefined,
+        visitId: visitId ?? undefined,
         discount: 0,
         tax: 0,
         notes: "",
@@ -156,7 +188,7 @@ export function SuggestedCharges({
       Billed
     </span>
   );
-  const unbillBtn = (source: "appointment" | "lab" | "prescription", sourceId: string, description: string) => (
+  const unbillBtn = (source: ChargeSource, sourceId: string, description: string) => (
     <Button
       type="button"
       variant="ghost"
@@ -170,168 +202,197 @@ export function SuggestedCharges({
     </Button>
   );
 
+  const billedRow = (c: VisitCharge) => (
+    <div key={c.sourceId} className="flex items-center justify-between gap-3 text-sm opacity-60">
+      <span className="flex min-w-0 items-center gap-2">
+        <input type="checkbox" disabled checked={false} readOnly />
+        <span className="truncate">{c.description}</span>
+        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(c.date).toLocaleDateString()}</span>
+        {billedTag}
+      </span>
+      <span className="flex shrink-0 items-center gap-2">
+        <span className="tabular-nums text-[var(--muted-foreground)]">{(c.quantity * c.unitPrice).toFixed(2)}</span>
+        {c.unbillable && unbillBtn(c.source, c.sourceId, c.description)}
+      </span>
+    </div>
+  );
+
+  const unbilledRow = (c: VisitCharge) => (
+    <div key={c.sourceId} className="flex items-center justify-between gap-3 text-sm">
+      <span className="flex min-w-0 items-center gap-2">
+        <input type="checkbox" checked={selected.has(c.sourceId)} onChange={() => toggle(c.sourceId)} />
+        <span className="truncate">{c.description}</span>
+        {c.quantity !== 1 && <span className="shrink-0 text-xs text-[var(--muted-foreground)]">×{c.quantity}</span>}
+        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(c.date).toLocaleDateString()}</span>
+      </span>
+      <Input
+        type="number"
+        step="0.01"
+        className="w-24"
+        value={prices[c.sourceId] ?? "0"}
+        onChange={(e) => setPrice(c.sourceId, e.target.value)}
+        title="Unit price"
+      />
+    </div>
+  );
+
   return (
-    <div className="space-y-3">
-      {appointments.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Consultations</p>
-          {appointments.map((a) => (
-            <div
-              key={a.id}
-              className={`flex items-center justify-between gap-3 text-sm ${a.billed ? "opacity-60" : ""}`}
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <input type="checkbox" disabled={a.billed} checked={a.billed ? false : appt.has(a.id)} onChange={() => toggle(appt, setAppt, a.id)} />
-                <span className="truncate">{a.label}</span>
-                <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(a.date).toLocaleDateString()}</span>
-                {a.billed && billedTag}
-              </span>
-              {a.billed ? (
-                <span className="flex shrink-0 items-center gap-2">
-                  <span className="tabular-nums text-[var(--muted-foreground)]">{a.amount.toFixed(2)}</span>
-                  {a.unbillable && unbillBtn("appointment", a.id, a.label)}
-                </span>
-              ) : (
-                <Input
-                  type="number"
-                  step="0.01"
-                  className="w-24"
-                  value={prices[a.id] ?? "0"}
-                  onChange={(e) => setPrice(a.id, e.target.value)}
-                  title="Unit price"
-                />
+    <div className="space-y-4">
+      {CATEGORY_ORDER.map((cat) => {
+        const group = charges.filter((c) => c.category === cat);
+        if (group.length === 0) return null;
+        const isLab = cat === "lab";
+        return (
+          <div key={cat} className="space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                {SERVICE_CATEGORY_LABELS[cat]}
+              </p>
+              {isLab && unbilledLabs.length > 0 && (
+                <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)] text-xs">
+                  {(["individual", "overall"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setLabMode(m)}
+                      className={`px-2.5 py-1 ${labMode === m ? "bg-brand-600 text-white" : "text-[var(--muted-foreground)]"}`}
+                    >
+                      {m === "individual" ? "Price each" : "Price overall"}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          ))}
-        </div>
-      )}
 
-      {labs.length > 0 && (
-        <div className="space-y-1">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Lab tests</p>
-            {openLabs.length > 0 && (
-              <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)] text-xs">
-                {(["individual", "overall"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setLabMode(m)}
-                    className={`px-2.5 py-1 ${labMode === m ? "bg-brand-600 text-white" : "text-[var(--muted-foreground)]"}`}
-                  >
-                    {m === "individual" ? "Price each" : "Price overall"}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            {group.map((c) => {
+              if (c.billed) return billedRow(c);
+              if (isLab && overallLab) return null; // bundled below
+              return unbilledRow(c);
+            })}
 
-          {labs.map((l) =>
-            l.billed ? (
-              <div key={l.id} className="flex items-center justify-between gap-3 text-sm">
-                <span className="flex min-w-0 items-center gap-2 opacity-60">
-                  <input type="checkbox" disabled checked={false} readOnly />
-                  <span className="truncate">{l.test_name}</span>
-                  <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(l.date).toLocaleDateString()}</span>
-                  {billedTag}
-                </span>
-                {l.unbillable && unbillBtn("lab", l.id, l.test_name)}
-              </div>
-            ) : overallLab ? null : (
-              <div key={l.id} className="flex items-center justify-between gap-3 text-sm">
-                <span className="flex min-w-0 items-center gap-2">
-                  <input type="checkbox" checked={lab.has(l.id)} onChange={() => toggle(lab, setLab, l.id)} />
-                  <span className="truncate">{l.test_name}</span>
-                  <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(l.date).toLocaleDateString()}</span>
-                </span>
-                <Input
-                  type="number"
-                  step="0.01"
-                  className="w-24"
-                  value={prices[l.id] ?? "0"}
-                  onChange={(e) => setPrice(l.id, e.target.value)}
-                  title="Unit price"
-                />
-              </div>
-            )
-          )}
-
-          {overallLab && (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <Input
-                  className="min-w-0 flex-1"
-                  value={labDescription}
-                  placeholder="Laboratory Test"
-                  onChange={(e) => setLabDescription(e.target.value)}
-                  title="Bundled description"
-                />
-                <Input
-                  type="number"
-                  step="0.01"
-                  className="w-24"
-                  value={labOverall}
-                  onChange={(e) => setLabOverall(e.target.value)}
-                  title="Overall laboratory price"
-                />
-              </div>
-              <p className="text-xs text-[var(--muted-foreground)]">
-                Billed as one line covering {openLabs.length} test{openLabs.length === 1 ? "" : "s"}.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {prescriptions.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Prescriptions</p>
-          {prescriptions.map((p) => (
-            <div key={p.id} className="flex items-center justify-between gap-3 text-sm">
-              <span className={`flex min-w-0 items-center gap-2 ${p.billed ? "opacity-60" : ""}`}>
-                <input type="checkbox" disabled={p.billed} checked={p.billed ? false : rx.has(p.id)} onChange={() => toggle(rx, setRx, p.id)} />
-                <span className="truncate">{p.label}</span>
-                <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(p.date).toLocaleDateString()}</span>
-                {p.billed && billedTag}
-              </span>
-              {p.billed
-                ? p.unbillable && unbillBtn("prescription", p.id, p.label)
-                : (
+            {isLab && overallLab && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <Input
+                    className="min-w-0 flex-1"
+                    value={labDescription}
+                    placeholder="Laboratory Test"
+                    onChange={(e) => setLabDescription(e.target.value)}
+                    title="Bundled description"
+                  />
                   <Input
                     type="number"
                     step="0.01"
                     className="w-24"
-                    value={prices[p.id] ?? "0"}
-                    onChange={(e) => setPrice(p.id, e.target.value)}
-                    title="Unit price"
+                    value={labOverall}
+                    onChange={(e) => setLabOverall(e.target.value)}
+                    title="Overall laboratory price"
                   />
-                )}
-            </div>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Billed as one line covering {unbilledLabs.length} test{unbilledLabs.length === 1 ? "" : "s"}.
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {prescribedMedicines.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+            Prescriptions — dispense to bill
+          </p>
+          {prescribedMedicines.map((m) => (
+            <DispenseRow key={m.name} med={m} pending={pending} onDispense={onDispense} />
           ))}
+          <p className="text-xs text-[var(--muted-foreground)]">
+            Dispensing reduces stock and adds the medicine as a billable Pharmacy charge above.
+          </p>
         </div>
       )}
 
       {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={onCreate} disabled={pending || count === 0}>
-          {pending ? "Creating…" : `Create draft invoice (${count})`}
+        {!hasDraft && (
+          <Button size="sm" onClick={onCreate} disabled={pending || count === 0}>
+            {pending ? "Creating…" : `Create draft invoice (${count})`}
+          </Button>
+        )}
+        <Button
+          type="button"
+          size="sm"
+          variant={hasDraft ? "default" : "outline"}
+          onClick={() => router.push(workspaceHref)}
+          disabled={pending}
+          title="Open the full billing workspace: it continues this visit's draft with every charge shown here — edit descriptions, quantities, manual items, discounts & tax, then issue"
+        >
+          {hasDraft ? "Edit draft in workspace →" : "Open billing workspace →"}
         </Button>
+      </div>
+      <p className="text-xs text-[var(--muted-foreground)]">
+        {hasDraft
+          ? "This visit already has a draft invoice. Open the workspace to add these charges, apply discounts & tax, and issue it."
+          : "Prices are prefilled from the catalog where available — adjust before creating the draft. Un-bill a charge to pull it back off the draft and re-price it. The billing workspace continues this same draft with every charge here (plus membership discount & tax)."}
+      </p>
+    </div>
+  );
+}
+
+/** One prescribed-medicine row in the dispense block: editable qty + price with a
+ *  Dispense button, or a status note when it can't be dispensed. */
+function DispenseRow({
+  med,
+  pending,
+  onDispense,
+}: {
+  med: PrescribedMedicine;
+  pending: boolean;
+  onDispense: (med: PrescribedMedicine, quantity: number, unitPrice: number) => void;
+}) {
+  const [qty, setQty] = React.useState(String(med.remainingQty || med.prescribedQty || 1));
+  const [price, setPrice] = React.useState(String(med.sellingPrice));
+
+  if (!med.medicineId) {
+    return (
+      <div className="flex items-center justify-between gap-3 text-sm opacity-60">
+        <span className="truncate">{med.name}</span>
+        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">not in catalog</span>
+      </div>
+    );
+  }
+  if (med.remainingQty <= 0) {
+    return (
+      <div className="flex items-center justify-between gap-3 text-sm opacity-60">
+        <span className="truncate">{med.name}</span>
+        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">Dispensed ✓</span>
+      </div>
+    );
+  }
+
+  const q = Number(qty) || 0;
+  const overStock = q > med.stockQuantity;
+  return (
+    <div className="space-y-0.5">
+      <div className="grid items-center gap-2 sm:grid-cols-[1fr_4rem_5rem_auto]">
+        <span className="flex min-w-0 items-center gap-2 text-sm">
+          <span className="truncate">{med.name}</span>
+          <span className="shrink-0 text-xs text-[var(--muted-foreground)]">Rx ×{med.remainingQty}</span>
+        </span>
+        <Input type="number" step="1" className="w-full" value={qty} onChange={(e) => setQty(e.target.value)} title="Quantity" />
+        <Input type="number" step="0.01" className="w-full" value={price} onChange={(e) => setPrice(e.target.value)} title="Unit price" />
         <Button
           type="button"
           size="sm"
           variant="outline"
-          onClick={() => router.push(workspaceHref)}
-          disabled={pending}
-          title="Open the full billing workspace: edit descriptions, quantities, add manual items, discounts, tax and issue the invoice"
+          className="h-9"
+          disabled={pending || q < 1 || overStock}
+          onClick={() => onDispense(med, q, Number(price) || 0)}
         >
-          Open billing workspace →
+          Dispense
         </Button>
       </div>
-      <p className="text-xs text-[var(--muted-foreground)]">
-        Prices are prefilled from the catalog where available — adjust before creating the draft.
-        Un-bill a charge to pull it back off the draft and re-price it. For full control
-        (descriptions, quantities, manual items, discounts &amp; tax) open the billing workspace.
-      </p>
+      {overStock && <p className="text-xs text-amber-600">Only {med.stockQuantity} in stock.</p>}
     </div>
   );
 }

@@ -214,12 +214,15 @@ export async function finalizeInvoice(invoiceId: string): Promise<ActionResult> 
 }
 
 /**
- * Billing Workspace → invoice. Takes the reviewed, category-tagged lines for a
- * patient/visit (detected charges plus any manual ones, with edits/overrides
- * already applied) and creates one invoice: category-tagged line items + a
- * source link per detected line so each charge is billed at most once. The
- * passed discount already folds in any membership benefit. Drops any line whose
- * source is already billed (dedupe guard).
+ * Billing Workspace / Suggested charges → invoice. Takes the reviewed,
+ * category-tagged lines for a patient/visit (detected charges plus any manual
+ * ones, with edits/overrides already applied) and writes one invoice:
+ * category-tagged line items + a source link per detected line so each charge is
+ * billed at most once. When `invoiceId` is given it edits that existing draft in
+ * place (replacing items + links) so the Workspace continues a draft started in
+ * Suggested charges instead of duplicating it; otherwise it creates a new
+ * invoice. The passed discount already folds in any membership benefit. Drops any
+ * line whose source is already billed on another invoice (dedupe guard).
  */
 export async function createInvoiceFromVisit(
   input: BillFromVisitInput
@@ -237,18 +240,20 @@ export async function createInvoiceFromVisit(
   const lineSourceIds = (l: (typeof v.lines)[number]): string[] =>
     l.source === "manual" ? [] : [l.sourceId ?? "", ...(l.linkSourceIds ?? [])].filter(Boolean);
 
-  // Dedupe: drop detected lines whose source(s) are already linked to an invoice.
+  // Dedupe: drop detected lines whose source(s) are already linked to *another*
+  // invoice (when editing a draft, its own links don't count — they're rewritten).
+  const editingId = v.invoiceId || null;
   const sourcedTypes = [...new Set(v.lines.filter((l) => lineSourceIds(l).length > 0).map((l) => l.source))];
   let billed = new Set<string>();
   if (sourcedTypes.length > 0) {
     const { data: links } = await supabase
       .from("invoice_source_links")
-      .select("source, source_id, invoices ( status )")
+      .select("source, source_id, invoice_id, invoices ( status )")
       .in("source", sourcedTypes);
     // A link to a cancelled invoice no longer counts — that charge is free again.
     billed = new Set(
-      ((links ?? []) as unknown as { source: string; source_id: string; invoices: { status: string } | null }[])
-        .filter((l) => l.invoices && l.invoices.status !== "cancelled")
+      ((links ?? []) as unknown as { source: string; source_id: string; invoice_id: string; invoices: { status: string } | null }[])
+        .filter((l) => l.invoice_id !== editingId && l.invoices && l.invoices.status !== "cancelled")
         .map((l) => `${l.source}:${l.source_id}`)
     );
   }
@@ -260,6 +265,71 @@ export async function createInvoiceFromVisit(
   });
   if (lines.length === 0) return fail("Those charges are already billed.");
 
+  // Build line item + source-link rows for a given invoice id.
+  const itemRows = (invoiceId: string) =>
+    lines.map((l, i) => ({
+      clinic_id: clinicId,
+      invoice_id: invoiceId,
+      description: l.description,
+      quantity: l.quantity,
+      unit_price: l.unitPrice,
+      category: l.category,
+      sort_order: i,
+    }));
+  // Link every source each line touches (primary + bundled) so none can be
+  // billed again. Skip ids already billed elsewhere (race guard).
+  const linkRows = (invoiceId: string) =>
+    lines.flatMap((l) =>
+      lineSourceIds(l)
+        .filter((id) => !billed.has(`${l.source}:${id}`))
+        .map((id) => ({ clinic_id: clinicId, invoice_id: invoiceId, source: l.source, source_id: id }))
+    );
+
+  // --- Edit an existing draft (Workspace continuing a Suggested-charges draft) ---
+  if (editingId) {
+    const { data: inv } = await supabase
+      .from("invoices")
+      .select("status, amount_paid")
+      .eq("id", editingId)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
+    if (!inv) return fail("Invoice not found.");
+    if (inv.status === "cancelled") return fail("This invoice is cancelled.");
+    if (Number(inv.amount_paid) > 0) return fail("Cannot edit an invoice that already has payments.");
+
+    // Replace items + this invoice's source links wholesale (triggers recompute totals).
+    await supabase.from("invoice_items").delete().eq("invoice_id", editingId).eq("clinic_id", clinicId);
+    const { error: itemsErr } = await supabase.from("invoice_items").insert(itemRows(editingId));
+    if (itemsErr) return fail(itemsErr.message);
+
+    await supabase.from("invoice_source_links").delete().eq("invoice_id", editingId).eq("clinic_id", clinicId);
+    const links = linkRows(editingId);
+    if (links.length > 0) {
+      await supabase.from("invoice_source_links").upsert(links, { onConflict: "clinic_id,source,source_id" });
+    }
+
+    await supabase
+      .from("invoices")
+      .update({
+        discount: v.discount,
+        tax: v.tax,
+        notes: v.notes || null,
+        ...(v.asDraft
+          ? { status: "draft" }
+          : inv.status === "draft"
+            ? { status: "unpaid", issued_at: new Date().toISOString() }
+            : {}),
+      })
+      .eq("id", editingId)
+      .eq("clinic_id", clinicId);
+
+    revalidateBilling(editingId);
+    revalidatePath(`/patients/${v.patientId}`);
+    if (v.visitId) revalidatePath(`/visits/${v.visitId}`);
+    return ok({ invoiceId: editingId });
+  }
+
+  // --- Create a new invoice ---
   const { data: invoice, error } = await supabase
     .from("invoices")
     .insert({
@@ -278,34 +348,19 @@ export async function createInvoiceFromVisit(
     .single();
   if (error || !invoice) return fail(error?.message ?? "Could not create invoice.");
 
-  const { error: itemsErr } = await supabase.from("invoice_items").insert(
-    lines.map((l, i) => ({
-      clinic_id: clinicId,
-      invoice_id: invoice.id,
-      description: l.description,
-      quantity: l.quantity,
-      unit_price: l.unitPrice,
-      category: l.category,
-      sort_order: i,
-    }))
-  );
+  const { error: itemsErr } = await supabase.from("invoice_items").insert(itemRows(invoice.id));
   if (itemsErr) {
     await supabase.from("invoices").delete().eq("id", invoice.id);
     return fail(itemsErr.message);
   }
 
-  // Link every source each line touches (primary + bundled) so none can be
-  // billed again. Skip ids already billed (race guard). On conflict, repoint the
-  // link to this invoice — covers a charge freed from a now-cancelled invoice.
-  const linkRows = lines.flatMap((l) =>
-    lineSourceIds(l)
-      .filter((id) => !billed.has(`${l.source}:${id}`))
-      .map((id) => ({ clinic_id: clinicId, invoice_id: invoice.id, source: l.source, source_id: id }))
-  );
-  if (linkRows.length > 0) {
+  // On conflict, repoint the link to this invoice — covers a charge freed from a
+  // now-cancelled invoice.
+  const links = linkRows(invoice.id);
+  if (links.length > 0) {
     await supabase
       .from("invoice_source_links")
-      .upsert(linkRows, { onConflict: "clinic_id,source,source_id" });
+      .upsert(links, { onConflict: "clinic_id,source,source_id" });
   }
 
   await supabase.from("patient_timeline").insert({
