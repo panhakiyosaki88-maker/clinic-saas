@@ -317,7 +317,13 @@ export function BillingWorkspace({
                   {group.map((r) => (
                     <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1.5rem_1fr_4.5rem_6rem_5rem_2rem]">
                       <input type="checkbox" checked={r.selected} onChange={(e) => patch(r.key, { selected: e.target.checked })} />
-                      <Input value={r.description} placeholder="Description" onChange={(e) => patch(r.key, { description: e.target.value })} />
+                      {r.source === "manual" ? (
+                        <Input value={r.description} placeholder="Description" onChange={(e) => patch(r.key, { description: e.target.value })} />
+                      ) : (
+                        // Detected lines keep their name fixed so prices round-trip when
+                        // continuing the draft (matched by description).
+                        <span className="truncate text-sm" title={r.description}>{r.description}</span>
+                      )}
                       <Input type="number" step="0.01" value={r.quantity} onChange={(e) => patch(r.key, { quantity: e.target.value })} title="Quantity" />
                       <Input
                         type="number"
