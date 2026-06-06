@@ -3,6 +3,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
 import { listPatientOptions } from "@/lib/db/queries/patients";
+import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext } from "@/lib/billing/currency";
@@ -23,10 +24,11 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   // Issued+paid invoices are immutable; bounce to the detail view.
   if (inv.status === "cancelled" || Number(inv.amount_paid) > 0) redirect(`/billing/${id}`);
 
-  const [patients, doctors, branches, settings] = await Promise.all([
+  const [patients, doctors, branches, consultingByPatient, settings] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     listBranches(),
+    getPatientConsultingDoctorMap(),
     getBillingSettings(),
   ]);
   const ctx = currencyContext(settings);
@@ -41,6 +43,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
         patients={patients}
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+        consultingByPatient={consultingByPatient}
         rate={ctx.rate}
         invoice={{
           id: inv.id,

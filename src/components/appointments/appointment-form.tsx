@@ -21,6 +21,7 @@ export function AppointmentForm({
   doctors,
   branches,
   appointment,
+  consultingByPatient = {},
   defaultPatientId,
   defaultBranchId,
   defaultDate,
@@ -30,6 +31,8 @@ export function AppointmentForm({
   doctors: DoctorOption[];
   branches: BranchOption[];
   appointment?: AppointmentWithNames;
+  /** patient id → the doctor they're currently consulting with. */
+  consultingByPatient?: Record<string, string>;
   defaultPatientId?: string;
   defaultBranchId?: string | null;
   defaultDate?: string;
@@ -41,6 +44,17 @@ export function AppointmentForm({
   const [walkIn, setWalkIn] = React.useState(defaultWalkIn ?? false);
   const [error, setError] = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
+
+  const [patientId, setPatientId] = React.useState(defaultPatientId ?? "");
+  const [doctorId, setDoctorId] = React.useState(
+    appointment?.doctor_id ?? (defaultPatientId ? consultingByPatient[defaultPatientId] ?? "" : "")
+  );
+
+  function onPatientChange(value: string) {
+    setPatientId(value);
+    // Auto-fill the doctor with the patient's previous consulting doctor.
+    setDoctorId(consultingByPatient[value] ?? "");
+  }
 
   const initialDate = appointment ? appointment.scheduled_at.slice(0, 10) : defaultDate ?? "";
   const initialTime = appointment
@@ -103,7 +117,7 @@ export function AppointmentForm({
       ) : (
         <div className="space-y-2">
           <Label htmlFor="patientId">Patient</Label>
-          <select id="patientId" name="patientId" className={selectClass} defaultValue={defaultPatientId ?? ""} required>
+          <select id="patientId" name="patientId" className={selectClass} value={patientId} onChange={(e) => onPatientChange(e.target.value)} required>
             <option value="" disabled>Select a patient…</option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
@@ -117,7 +131,7 @@ export function AppointmentForm({
 
       <div className="space-y-2">
         <Label htmlFor="doctorId">Doctor</Label>
-        <select id="doctorId" name="doctorId" className={selectClass} defaultValue={appointment?.doctor_id ?? ""}>
+        <select id="doctorId" name="doctorId" className={selectClass} value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
           <option value="">Unassigned</option>
           {doctors.map((d) => (
             <option key={d.id} value={d.id}>{d.full_name}</option>
