@@ -72,6 +72,33 @@ export function SuggestedCharges({
   );
   const [labDescription, setLabDescription] = React.useState("Laboratory Test");
 
+  // After a refresh (e.g. just dispensing a prescribed medicine), a brand-new
+  // unbilled charge appears in `charges`. The state above only seeds on mount, so
+  // auto-select it and fill its Qty / Unit price from the dispensed values — the
+  // medicine you just dispensed is ready to bill without re-checking it.
+  const seenIds = React.useRef<Set<string>>(new Set(charges.map((c) => c.sourceId)));
+  React.useEffect(() => {
+    const fresh = charges.filter((c) => !c.billed && !seenIds.current.has(c.sourceId));
+    if (fresh.length > 0) {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        for (const c of fresh) next.add(c.sourceId);
+        return next;
+      });
+      setPrices((prev) => {
+        const next = { ...prev };
+        for (const c of fresh) if (next[c.sourceId] == null) next[c.sourceId] = String(c.unitPrice);
+        return next;
+      });
+      setQuantities((prev) => {
+        const next = { ...prev };
+        for (const c of fresh) if (next[c.sourceId] == null) next[c.sourceId] = String(c.quantity);
+        return next;
+      });
+    }
+    for (const c of charges) seenIds.current.add(c.sourceId);
+  }, [charges]);
+
   if (charges.length === 0 && prescribedMedicines.length === 0) {
     return <p className="text-sm text-[var(--muted-foreground)]">No charges on this visit yet.</p>;
   }
@@ -251,14 +278,14 @@ export function SuggestedCharges({
         <Input
           type="number"
           step="0.01"
-          value={quantities[c.sourceId] ?? "1"}
+          value={quantities[c.sourceId] ?? String(c.quantity)}
           onChange={(e) => setQuantity(c.sourceId, e.target.value)}
           title="Quantity"
         />
         <Input
           type="number"
           step="0.01"
-          value={prices[c.sourceId] ?? "0"}
+          value={prices[c.sourceId] ?? String(c.unitPrice)}
           onChange={(e) => setPrice(c.sourceId, e.target.value)}
           title="Unit price"
         />
