@@ -7,7 +7,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/service-price";
 import { formatUSD } from "@/lib/billing/currency";
 import { Tags } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader, HeaderAction } from "@/components/page-header";
 import { BillingTabs } from "@/components/billing/billing-tabs";
 import { ServicePriceForm } from "@/components/billing/service-price-form";
 import { CatalogRowActions } from "@/components/billing/catalog-row-actions";
@@ -38,7 +38,16 @@ export default async function CatalogPage({
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
-      <PageHeader icon={Tags} title="Price catalog" subtitle={`${prices.length} ${showArchived ? "items (incl. archived)" : "active prices"}`} />
+      <PageHeader
+        icon={Tags}
+        title="Price catalog"
+        subtitle={`${prices.length} ${showArchived ? "items (incl. archived)" : "active prices"}`}
+        actions={
+          <HeaderAction href={showArchived ? "/billing/catalog" : "/billing/catalog?archived=1"} variant="outline">
+            {showArchived ? "Hide archived" : "Show archived"}
+          </HeaderAction>
+        }
+      />
       <BillingTabs />
 
       {canWrite && (

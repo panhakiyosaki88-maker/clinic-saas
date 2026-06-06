@@ -3,10 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { setServicePriceArchived } from "@/server/actions/service-prices";
+import { setServicePriceArchived, deleteServicePrice } from "@/server/actions/service-prices";
 import { Button } from "@/components/ui/button";
 
-/** Edit link + archive/restore toggle for a catalog row. */
+/** Edit link + archive/restore toggle + permanent delete for a catalog row. */
 export function CatalogRowActions({ id, archived }: { id: string; archived: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
@@ -30,6 +30,21 @@ export function CatalogRowActions({ id, archived }: { id: string; archived: bool
         }
       >
         {archived ? "Restore" : "Archive"}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-[var(--destructive)] hover:text-[var(--destructive)]"
+        disabled={pending}
+        onClick={() => {
+          if (!window.confirm("Delete this price permanently? Past invoices keep their amounts. Use Archive to hide it instead.")) return;
+          startTransition(async () => {
+            const res = await deleteServicePrice(id);
+            if (res.ok) router.refresh();
+          });
+        }}
+      >
+        Delete
       </Button>
     </div>
   );

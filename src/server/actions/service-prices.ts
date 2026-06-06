@@ -66,3 +66,21 @@ export async function setServicePriceArchived(id: string, archived: boolean): Pr
   revalidatePath("/billing/catalog");
   return ok(undefined);
 }
+
+/**
+ * Permanently removes a catalog entry. Safe because invoices snapshot their own
+ * amounts (no foreign key back to service_prices) — past bills are unaffected.
+ * Use Archive instead to keep the row for history but hide it from pickers.
+ */
+export async function deleteServicePrice(id: string): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("service_prices")
+    .delete()
+    .eq("id", id)
+    .eq("clinic_id", clinicId);
+  if (error) return fail(error.message);
+  revalidatePath("/billing/catalog");
+  return ok(undefined);
+}
