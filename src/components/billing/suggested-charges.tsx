@@ -56,6 +56,12 @@ export function SuggestedCharges({
     for (const c of unbilledCharges) seed[c.sourceId] = String(c.unitPrice);
     return seed;
   });
+  // Editable quantity per unbilled charge, prefilled from its detected quantity.
+  const [quantities, setQuantities] = React.useState<Record<string, string>>(() => {
+    const seed: Record<string, string> = {};
+    for (const c of unbilledCharges) seed[c.sourceId] = String(c.quantity);
+    return seed;
+  });
 
   // Lab pricing mode: "individual" prices each test; "overall" bills every
   // unbilled lab test as one bundled line at a single price.
@@ -79,6 +85,7 @@ export function SuggestedCharges({
     });
   };
   const setPrice = (id: string, value: string) => setPrices((p) => ({ ...p, [id]: value }));
+  const setQuantity = (id: string, value: string) => setQuantities((q) => ({ ...q, [id]: value }));
 
   function onUnbill(source: ChargeSource, sourceId: string, description: string) {
     setError(null);
@@ -133,7 +140,7 @@ export function SuggestedCharges({
         sourceId: c.sourceId,
         category: c.category as ServiceCategoryValue,
         description: c.description,
-        quantity: c.quantity,
+        quantity: num(quantities[c.sourceId] ?? String(c.quantity)) || 1,
         unitPrice: num(prices[c.sourceId] ?? String(c.unitPrice)),
       });
     }
@@ -157,7 +164,7 @@ export function SuggestedCharges({
           sourceId: l.sourceId,
           category: "lab",
           description: l.description,
-          quantity: 1,
+          quantity: num(quantities[l.sourceId] ?? String(l.quantity)) || 1,
           unitPrice: num(prices[l.sourceId] ?? String(l.unitPrice)),
         });
       }
@@ -202,39 +209,64 @@ export function SuggestedCharges({
     </Button>
   );
 
+  // Shared column grid: [checkbox] description | Qty | Unit price | Amount | trailing.
+  const rowGrid = "grid items-center gap-2 sm:grid-cols-[1.25rem_1fr_3.5rem_5rem_4.5rem_auto]";
+
+  const columnHeader = (
+    <div className={`hidden px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] sm:grid sm:grid-cols-[1.25rem_1fr_3.5rem_5rem_4.5rem_auto]`}>
+      <span aria-hidden />
+      <span>Description</span>
+      <span>Qty</span>
+      <span>Unit price</span>
+      <span className="text-right">Amount</span>
+      <span aria-hidden />
+    </div>
+  );
+
   const billedRow = (c: VisitCharge) => (
-    <div key={c.sourceId} className="flex items-center justify-between gap-3 text-sm opacity-60">
-      <span className="flex min-w-0 items-center gap-2">
-        <input type="checkbox" disabled checked={false} readOnly />
+    <div key={c.sourceId} className={`${rowGrid} opacity-60`}>
+      <input type="checkbox" disabled checked={false} readOnly />
+      <span className="flex min-w-0 items-center gap-2 text-sm">
         <span className="truncate">{c.description}</span>
         <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(c.date).toLocaleDateString()}</span>
         {billedTag}
       </span>
-      <span className="flex shrink-0 items-center gap-2">
-        <span className="tabular-nums text-[var(--muted-foreground)]">{(c.quantity * c.unitPrice).toFixed(2)}</span>
-        {c.unbillable && unbillBtn(c.source, c.sourceId, c.description)}
-      </span>
+      <span className="text-sm tabular-nums text-[var(--muted-foreground)]">{c.quantity}</span>
+      <span className="text-sm tabular-nums text-[var(--muted-foreground)]">{c.unitPrice.toFixed(2)}</span>
+      <span className="text-right text-sm tabular-nums text-[var(--muted-foreground)]">{(c.quantity * c.unitPrice).toFixed(2)}</span>
+      {c.unbillable ? unbillBtn(c.source, c.sourceId, c.description) : <span aria-hidden />}
     </div>
   );
 
-  const unbilledRow = (c: VisitCharge) => (
-    <div key={c.sourceId} className="flex items-center justify-between gap-3 text-sm">
-      <span className="flex min-w-0 items-center gap-2">
+  const unbilledRow = (c: VisitCharge) => {
+    const qty = num(quantities[c.sourceId] ?? String(c.quantity));
+    const price = num(prices[c.sourceId] ?? String(c.unitPrice));
+    return (
+      <div key={c.sourceId} className={rowGrid}>
         <input type="checkbox" checked={selected.has(c.sourceId)} onChange={() => toggle(c.sourceId)} />
-        <span className="truncate">{c.description}</span>
-        {c.quantity !== 1 && <span className="shrink-0 text-xs text-[var(--muted-foreground)]">×{c.quantity}</span>}
-        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(c.date).toLocaleDateString()}</span>
-      </span>
-      <Input
-        type="number"
-        step="0.01"
-        className="w-24"
-        value={prices[c.sourceId] ?? "0"}
-        onChange={(e) => setPrice(c.sourceId, e.target.value)}
-        title="Unit price"
-      />
-    </div>
-  );
+        <span className="flex min-w-0 items-center gap-2 text-sm">
+          <span className="truncate">{c.description}</span>
+          <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(c.date).toLocaleDateString()}</span>
+        </span>
+        <Input
+          type="number"
+          step="0.01"
+          value={quantities[c.sourceId] ?? "1"}
+          onChange={(e) => setQuantity(c.sourceId, e.target.value)}
+          title="Quantity"
+        />
+        <Input
+          type="number"
+          step="0.01"
+          value={prices[c.sourceId] ?? "0"}
+          onChange={(e) => setPrice(c.sourceId, e.target.value)}
+          title="Unit price"
+        />
+        <span className="text-right text-sm tabular-nums">{(qty * price).toFixed(2)}</span>
+        <span aria-hidden />
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -264,6 +296,7 @@ export function SuggestedCharges({
               )}
             </div>
 
+            {columnHeader}
             {group.map((c) => {
               if (c.billed) return billedRow(c);
               if (isLab && overallLab) return null; // bundled below
@@ -272,22 +305,24 @@ export function SuggestedCharges({
 
             {isLab && overallLab && (
               <div className="space-y-1">
-                <div className="flex items-center justify-between gap-3 text-sm">
+                <div className={rowGrid}>
+                  <span aria-hidden />
                   <Input
-                    className="min-w-0 flex-1"
                     value={labDescription}
                     placeholder="Laboratory Test"
                     onChange={(e) => setLabDescription(e.target.value)}
                     title="Bundled description"
                   />
+                  <Input type="number" value="1" disabled title="Quantity" />
                   <Input
                     type="number"
                     step="0.01"
-                    className="w-24"
                     value={labOverall}
                     onChange={(e) => setLabOverall(e.target.value)}
                     title="Overall laboratory price"
                   />
+                  <span className="text-right text-sm tabular-nums">{num(labOverall).toFixed(2)}</span>
+                  <span aria-hidden />
                 </div>
                 <p className="text-xs text-[var(--muted-foreground)]">
                   Billed as one line covering {unbilledLabs.length} test{unbilledLabs.length === 1 ? "" : "s"}.
@@ -372,15 +407,17 @@ function DispenseRow({
 
   const q = Number(qty) || 0;
   const overStock = q > med.stockQuantity;
+  const amount = q * (Number(price) || 0);
   return (
     <div className="space-y-0.5">
-      <div className="grid items-center gap-2 sm:grid-cols-[1fr_4rem_5rem_auto]">
+      <div className="grid items-center gap-2 sm:grid-cols-[1fr_3.5rem_5rem_4.5rem_auto]">
         <span className="flex min-w-0 items-center gap-2 text-sm">
           <span className="truncate">{med.name}</span>
           <span className="shrink-0 text-xs text-[var(--muted-foreground)]">Rx ×{med.remainingQty}</span>
         </span>
         <Input type="number" step="1" className="w-full" value={qty} onChange={(e) => setQty(e.target.value)} title="Quantity" />
         <Input type="number" step="0.01" className="w-full" value={price} onChange={(e) => setPrice(e.target.value)} title="Unit price" />
+        <span className="text-right text-sm tabular-nums">{amount.toFixed(2)}</span>
         <Button
           type="button"
           size="sm"
