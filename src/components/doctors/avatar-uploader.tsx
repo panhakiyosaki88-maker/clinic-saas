@@ -56,7 +56,7 @@ export function AvatarUploader({
 
   return (
     <div className="relative">
-      <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--muted)] text-lg font-semibold text-[var(--muted-foreground)]">
+      <div className="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--muted)] text-3xl font-semibold text-[var(--muted-foreground)]">
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="" className="size-full object-cover" />

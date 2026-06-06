@@ -63,7 +63,7 @@ export default async function PrescriptionsPage() {
                       </span>
                       {p.doctor_name && (
                         <span className="inline-flex items-center gap-1">
-                          ·<DoctorAvatar name={p.doctor_name} avatarPath={p.doctor_avatar_path} size={16} />
+                          ·<DoctorAvatar name={p.doctor_name} avatarPath={p.doctor_avatar_path} size={32} />
                           {p.doctor_name}
                         </span>
                       )}

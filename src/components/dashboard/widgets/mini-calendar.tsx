@@ -176,7 +176,7 @@ export function MiniCalendar({
                       key={i}
                       name={doc.name}
                       avatarPath={doc.avatarPath}
-                      size={16}
+                      size={32}
                       className="ring-1 ring-white dark:ring-slate-900"
                     />
                   ))}

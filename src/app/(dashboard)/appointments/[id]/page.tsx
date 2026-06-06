@@ -79,7 +79,7 @@ export default async function AppointmentDetailPage({
             value={
               a.doctor_name ? (
                 <span className="inline-flex items-center gap-2">
-                  <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={24} />
+                  <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={48} />
                   {a.doctor_name}
                 </span>
               ) : (

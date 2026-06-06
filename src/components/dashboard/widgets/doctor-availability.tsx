@@ -45,7 +45,7 @@ export function DoctorAvailability({
               <li key={d.id} className="flex items-center justify-between gap-3 px-5 py-3">
                 <div className="flex items-center gap-3">
                   <div className="relative shrink-0">
-                    <DoctorAvatar name={d.name} avatarPath={d.avatarPath} size={36} />
+                    <DoctorAvatar name={d.name} avatarPath={d.avatarPath} size={72} />
                     <span className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white dark:border-slate-900 ${meta.dot}`} />
                   </div>
                   <div>

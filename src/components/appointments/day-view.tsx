@@ -30,7 +30,7 @@ export function DayView({
                   {a.patient_name}
                 </Link>
                 <p className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
-                  {a.doctor_name && <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={16} />}
+                  {a.doctor_name && <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={32} />}
                   <span>{a.doctor_name ?? "Unassigned"}{a.reason ? ` · ${a.reason}` : ""}</span>
                 </p>
               </div>

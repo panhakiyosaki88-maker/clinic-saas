@@ -104,7 +104,7 @@ export default async function DoctorsPage({
               {doctors.map((d) => (
                 <li key={d.id} className="flex items-center justify-between gap-3 p-4">
                   <div className="flex min-w-0 items-center gap-3">
-                    <DoctorAvatar name={d.full_name} avatarPath={d.avatar_path} size={40} />
+                    <DoctorAvatar name={d.full_name} avatarPath={d.avatar_path} size={80} />
                     <div className="min-w-0">
                       <Link href={`/doctors/${d.id}`} className="font-medium text-[var(--primary)] hover:underline">
                         {d.title ? `${d.title} ` : ""}{d.full_name}
