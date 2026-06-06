@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { resolveVisitBranchId } from "@/lib/db/queries/visits";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -265,6 +266,9 @@ export async function createInvoiceFromVisit(
   });
   if (lines.length === 0) return fail("Those charges are already billed.");
 
+  // Default the invoice to the branch the patient consulted in (visit/appointment).
+  const consultBranchId = v.visitId ? await resolveVisitBranchId(v.visitId) : null;
+
   // Build line item + source-link rows for a given invoice id.
   const itemRows = (invoiceId: string) =>
     lines.map((l, i) => ({
@@ -289,7 +293,7 @@ export async function createInvoiceFromVisit(
   if (editingId) {
     const { data: inv } = await supabase
       .from("invoices")
-      .select("status, amount_paid")
+      .select("status, amount_paid, branch_id")
       .eq("id", editingId)
       .eq("clinic_id", clinicId)
       .maybeSingle();
@@ -314,6 +318,8 @@ export async function createInvoiceFromVisit(
         discount: v.discount,
         tax: v.tax,
         notes: v.notes || null,
+        // Backfill the consult branch if this draft never had one.
+        ...(inv.branch_id ? {} : consultBranchId ? { branch_id: consultBranchId } : {}),
         ...(v.asDraft
           ? { status: "draft" }
           : inv.status === "draft"
@@ -336,6 +342,7 @@ export async function createInvoiceFromVisit(
       clinic_id: clinicId,
       patient_id: v.patientId,
       visit_id: v.visitId || null,
+      branch_id: consultBranchId,
       source: "visit",
       service_type: "Visit",
       status: v.asDraft ? "draft" : "unpaid",

@@ -4,6 +4,7 @@ import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
 import { listPatientOptions } from "@/lib/db/queries/patients";
 import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
+import { resolveVisitBranchId } from "@/lib/db/queries/visits";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext } from "@/lib/billing/currency";
@@ -32,6 +33,9 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
     getBillingSettings(),
   ]);
   const ctx = currencyContext(settings);
+  // Default the branch to where the patient consulted when this invoice has none.
+  const branchId =
+    inv.branch_id ?? (inv.visit_id ? await resolveVisitBranchId(inv.visit_id) : null);
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
@@ -48,7 +52,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
         invoice={{
           id: inv.id,
           patient_id: inv.patient_id,
-          branch_id: inv.branch_id,
+          branch_id: branchId,
           doctor_id: inv.doctor_id,
           service_type: inv.service_type,
           due_date: inv.due_date,

@@ -48,6 +48,29 @@ export async function listPatientVisits(patientId: string): Promise<VisitWithNam
   return ((data ?? []) as unknown as Joined[]).map(mapVisit);
 }
 
+/**
+ * The branch a visit's consultation took place in — the visit's own branch, or
+ * (when unset) the branch of an appointment threaded onto the visit. Used to
+ * default a visit invoice's branch to where the patient was actually seen.
+ */
+export async function resolveVisitBranchId(visitId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: visit } = await supabase
+    .from("patient_visits")
+    .select("branch_id")
+    .eq("id", visitId)
+    .maybeSingle();
+  if (visit?.branch_id) return visit.branch_id;
+  const { data: appt } = await supabase
+    .from("appointments")
+    .select("branch_id")
+    .eq("visit_id", visitId)
+    .not("branch_id", "is", null)
+    .limit(1)
+    .maybeSingle();
+  return appt?.branch_id ?? null;
+}
+
 export type TimelineKind =
   | "appointment"
   | "consultation"
