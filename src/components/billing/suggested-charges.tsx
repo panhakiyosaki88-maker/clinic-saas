@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createInvoiceFromVisit } from "@/server/actions/billing";
+import { createInvoiceFromVisit, unbillCharge } from "@/server/actions/billing";
 import type {
   BillableAppointment,
   BillableLab,
@@ -75,6 +75,15 @@ export function SuggestedCharges({
   };
   const setPrice = (id: string, value: string) => setPrices((p) => ({ ...p, [id]: value }));
 
+  function onUnbill(source: "appointment" | "lab" | "prescription", sourceId: string, description: string) {
+    setError(null);
+    startTransition(async () => {
+      const res = await unbillCharge({ source, sourceId, description });
+      if (!res.ok) return setError(res.error);
+      router.refresh();
+    });
+  }
+
   const overallLab = labMode === "overall" && openLabs.length > 0;
   const count = appt.size + rx.size + (overallLab ? (lab.size > 0 ? 1 : 0) : lab.size);
 
@@ -144,6 +153,19 @@ export function SuggestedCharges({
       Billed
     </span>
   );
+  const unbillBtn = (source: "appointment" | "lab" | "prescription", sourceId: string, description: string) => (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="h-7 shrink-0 px-2 text-xs"
+      onClick={() => onUnbill(source, sourceId, description)}
+      disabled={pending}
+      title="Remove from the draft invoice and edit"
+    >
+      Un-bill
+    </Button>
+  );
 
   return (
     <div className="space-y-3">
@@ -162,7 +184,10 @@ export function SuggestedCharges({
                 {a.billed && billedTag}
               </span>
               {a.billed ? (
-                <span className="tabular-nums text-[var(--muted-foreground)]">{a.amount.toFixed(2)}</span>
+                <span className="flex shrink-0 items-center gap-2">
+                  <span className="tabular-nums text-[var(--muted-foreground)]">{a.amount.toFixed(2)}</span>
+                  {a.unbillable && unbillBtn("appointment", a.id, a.label)}
+                </span>
               ) : (
                 <Input
                   type="number"
@@ -200,13 +225,14 @@ export function SuggestedCharges({
 
           {labs.map((l) =>
             l.billed ? (
-              <div key={l.id} className="flex items-center justify-between gap-3 text-sm opacity-60">
-                <span className="flex min-w-0 items-center gap-2">
+              <div key={l.id} className="flex items-center justify-between gap-3 text-sm">
+                <span className="flex min-w-0 items-center gap-2 opacity-60">
                   <input type="checkbox" disabled checked={false} readOnly />
                   <span className="truncate">{l.test_name}</span>
                   <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(l.date).toLocaleDateString()}</span>
                   {billedTag}
                 </span>
+                {l.unbillable && unbillBtn("lab", l.id, l.test_name)}
               </div>
             ) : overallLab ? null : (
               <div key={l.id} className="flex items-center justify-between gap-3 text-sm">
@@ -258,26 +284,25 @@ export function SuggestedCharges({
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Prescriptions</p>
           {prescriptions.map((p) => (
-            <div
-              key={p.id}
-              className={`flex items-center justify-between gap-3 text-sm ${p.billed ? "opacity-60" : ""}`}
-            >
-              <span className="flex min-w-0 items-center gap-2">
+            <div key={p.id} className="flex items-center justify-between gap-3 text-sm">
+              <span className={`flex min-w-0 items-center gap-2 ${p.billed ? "opacity-60" : ""}`}>
                 <input type="checkbox" disabled={p.billed} checked={p.billed ? false : rx.has(p.id)} onChange={() => toggle(rx, setRx, p.id)} />
                 <span className="truncate">{p.label}</span>
                 <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(p.date).toLocaleDateString()}</span>
                 {p.billed && billedTag}
               </span>
-              {!p.billed && (
-                <Input
-                  type="number"
-                  step="0.01"
-                  className="w-24"
-                  value={prices[p.id] ?? "0"}
-                  onChange={(e) => setPrice(p.id, e.target.value)}
-                  title="Unit price"
-                />
-              )}
+              {p.billed
+                ? p.unbillable && unbillBtn("prescription", p.id, p.label)
+                : (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    className="w-24"
+                    value={prices[p.id] ?? "0"}
+                    onChange={(e) => setPrice(p.id, e.target.value)}
+                    title="Unit price"
+                  />
+                )}
             </div>
           ))}
         </div>
@@ -289,6 +314,7 @@ export function SuggestedCharges({
       </Button>
       <p className="text-xs text-[var(--muted-foreground)]">
         Prices are prefilled from the catalog where available — adjust before creating the draft.
+        Un-bill a charge to pull it back off the draft and re-price it.
       </p>
     </div>
   );

@@ -8,6 +8,9 @@ export interface BillableAppointment {
   amount: number;
   /** True once this charge is linked to an invoice — shown read-only, never re-billed. */
   billed: boolean;
+  /** True when the linked invoice is still editable (no payments) and the charge
+   *  can be un-billed back to a selectable state. */
+  unbillable: boolean;
 }
 export interface BillableLab {
   id: string;
@@ -16,12 +19,14 @@ export interface BillableLab {
   /** Catalog price when the test name matches a service price, else 0. */
   amount: number;
   billed: boolean;
+  unbillable: boolean;
 }
 export interface BillablePrescription {
   id: string;
   date: string;
   label: string;
   billed: boolean;
+  unbillable: boolean;
 }
 export interface BillableItems {
   appointments: BillableAppointment[];
@@ -69,7 +74,7 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
       .order("prescribed_at", { ascending: false }),
     supabase
       .from("invoice_source_links")
-      .select("source, source_id")
+      .select("source, source_id, invoices ( status, amount_paid )")
       .in("source", ["appointment", "lab", "prescription"]),
     supabase
       .from("service_prices")
@@ -87,7 +92,20 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
       .maybeSingle(),
   ]);
 
-  const billed = new Set((linkRes.data ?? []).map((l) => `${l.source}:${l.source_id}`));
+  const billed = new Set<string>();
+  const unbillable = new Set<string>();
+  for (const l of (linkRes.data ?? []) as unknown as {
+    source: string;
+    source_id: string;
+    invoices: { status: string; amount_paid: number } | null;
+  }[]) {
+    const key = `${l.source}:${l.source_id}`;
+    billed.add(key);
+    // Editable invoices (no payments, not cancelled) can give the charge back.
+    if (l.invoices && l.invoices.status !== "cancelled" && Number(l.invoices.amount_paid) === 0) {
+      unbillable.add(key);
+    }
+  }
   const labPrice = new Map((priceRes.data ?? []).map((p) => [p.name.toLowerCase(), Number(p.unit_price)]));
   const openVisitId = openVisitRes.data?.id ?? null;
 
@@ -109,6 +127,7 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
       label: a.doctors?.full_name ? `Consultation — ${a.doctors.full_name}` : "Consultation",
       amount: Number(a.doctors?.consultation_fee ?? 0),
       billed: billed.has(`appointment:${a.id}`),
+      unbillable: unbillable.has(`appointment:${a.id}`),
     }));
 
   const labRows = (labRes.data ?? []) as {
@@ -125,6 +144,7 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
       test_name: l.test_name,
       amount: labPrice.get(l.test_name.toLowerCase()) ?? 0,
       billed: billed.has(`lab:${l.id}`),
+      unbillable: unbillable.has(`lab:${l.id}`),
     }));
 
   const rxRows = (rxRes.data ?? []) as unknown as {
@@ -140,6 +160,7 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
       date: p.prescribed_at,
       label: p.doctors?.full_name ? `Prescription — ${p.doctors.full_name}` : "Prescription",
       billed: billed.has(`prescription:${p.id}`),
+      unbillable: unbillable.has(`prescription:${p.id}`),
     }));
 
   return { appointments, labs, prescriptions, openVisitId };

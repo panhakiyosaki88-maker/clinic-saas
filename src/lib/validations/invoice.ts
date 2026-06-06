@@ -87,6 +87,15 @@ export const recordPaymentSchema = z.object({
 });
 export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
 
+/** Removes a single detected charge from the draft invoice it was billed into,
+ *  so it becomes selectable again in Suggested charges. */
+export const unbillChargeSchema = z.object({
+  source: z.enum(["appointment", "lab", "prescription"]),
+  sourceId: z.string().uuid(),
+  description: z.string().trim().min(1).max(255),
+});
+export type UnbillChargeInput = z.infer<typeof unbillChargeSchema>;
+
 export const SERVICE_CATEGORIES = [
   "consultation",
   "lab",

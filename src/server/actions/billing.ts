@@ -10,11 +10,13 @@ import {
   recordPaymentSchema,
   refundPaymentSchema,
   billFromVisitSchema,
+  unbillChargeSchema,
   type CreateInvoiceInput,
   type EditInvoiceInput,
   type RecordPaymentInput,
   type RefundPaymentInput,
   type BillFromVisitInput,
+  type UnbillChargeInput,
 } from "@/lib/validations/invoice";
 import { ok, fail, type ActionResult } from "./types";
 
@@ -313,6 +315,76 @@ export async function createInvoiceFromVisit(
   revalidatePath(`/patients/${v.patientId}`);
   if (v.visitId) revalidatePath(`/visits/${v.visitId}`);
   return ok({ invoiceId: invoice.id });
+}
+
+/**
+ * Un-bills a single detected charge: unlinks it from its invoice and drops the
+ * matching line item, so it reappears as a selectable charge in Suggested
+ * charges (to be re-priced and re-billed). Only allowed while the invoice has no
+ * payments. An emptied draft invoice is deleted.
+ */
+export async function unbillCharge(input: UnbillChargeInput): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const parsed = unbillChargeSchema.safeParse(input);
+  if (!parsed.success) return fail("Invalid charge.");
+  const { source, sourceId, description } = parsed.data;
+  const supabase = await createClient();
+
+  // The invoice this charge is linked to.
+  const { data: link } = await supabase
+    .from("invoice_source_links")
+    .select("invoice_id")
+    .eq("clinic_id", clinicId)
+    .eq("source", source)
+    .eq("source_id", sourceId)
+    .maybeSingle();
+  if (!link) return fail("This charge isn't billed.");
+
+  const { data: inv } = await supabase
+    .from("invoices")
+    .select("id, patient_id, status, amount_paid")
+    .eq("id", link.invoice_id)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+  if (!inv) return fail("Invoice not found.");
+  if (inv.status === "cancelled") return fail("This invoice is cancelled.");
+  if (Number(inv.amount_paid) > 0) return fail("Cannot edit an invoice that already has payments.");
+
+  // Unlink the source so the charge becomes selectable again.
+  await supabase
+    .from("invoice_source_links")
+    .delete()
+    .eq("clinic_id", clinicId)
+    .eq("source", source)
+    .eq("source_id", sourceId);
+
+  // Drop one matching line item; the trigger recomputes the invoice totals.
+  const { data: item } = await supabase
+    .from("invoice_items")
+    .select("id")
+    .eq("clinic_id", clinicId)
+    .eq("invoice_id", inv.id)
+    .eq("description", description)
+    .limit(1)
+    .maybeSingle();
+  if (item) {
+    await supabase.from("invoice_items").delete().eq("id", item.id).eq("clinic_id", clinicId);
+  }
+
+  // Clean up an emptied draft invoice (and any leftover source links).
+  const { count } = await supabase
+    .from("invoice_items")
+    .select("id", { count: "exact", head: true })
+    .eq("clinic_id", clinicId)
+    .eq("invoice_id", inv.id);
+  if ((count ?? 0) === 0) {
+    await supabase.from("invoice_source_links").delete().eq("clinic_id", clinicId).eq("invoice_id", inv.id);
+    await supabase.from("invoices").delete().eq("id", inv.id).eq("clinic_id", clinicId);
+  }
+
+  revalidateBilling(inv.id);
+  if (inv.patient_id) revalidatePath(`/patients/${inv.patient_id}`);
+  return ok(undefined);
 }
 
 /** Bulk-voids invoices (skips ones already paid). Used by the invoice table. */
