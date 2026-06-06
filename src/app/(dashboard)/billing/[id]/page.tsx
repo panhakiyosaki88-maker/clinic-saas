@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
@@ -10,7 +11,14 @@ import { buildKhqr } from "@/lib/billing/khqr";
 import { KhqrPanel } from "@/components/billing/khqr-panel";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
-import { PAYMENT_METHOD_LABELS, INVOICE_STATUS_LABELS, type InvoiceStatusValue } from "@/lib/validations/invoice";
+import {
+  PAYMENT_METHOD_LABELS,
+  INVOICE_STATUS_LABELS,
+  SERVICE_CATEGORIES,
+  SERVICE_CATEGORY_LABELS,
+  type InvoiceStatusValue,
+  type ServiceCategoryValue,
+} from "@/lib/validations/invoice";
 import { PrintButton } from "@/components/print-button";
 import { PaymentForm } from "@/components/billing/payment-form";
 import { CancelInvoiceButton } from "@/components/billing/cancel-invoice-button";
@@ -45,6 +53,14 @@ export default async function InvoiceDetailPage({
   const active = inv.status !== "cancelled";
   const editable = active && Number(inv.amount_paid) === 0;
   const isDraft = inv.status === "draft";
+
+  // Group line items by category (in catalog order) so the invoice reads by
+  // section — Consultation, Laboratory, Pharmacy, … — keeping each item's saved
+  // order within its group. Headers only show when there's more than one group.
+  const itemGroups = SERVICE_CATEGORIES.map((cat) => ({
+    cat,
+    items: inv.items.filter((it) => ((it.category as ServiceCategoryValue) ?? "other") === cat),
+  })).filter((g) => g.items.length > 0);
 
   const currency = ctx.primary;
   const khqrPayload =
@@ -106,13 +122,24 @@ export default async function InvoiceDetailPage({
             <tr><th className="pb-2">Description</th><th className="pb-2 text-right">Quantity</th><th className="pb-2 text-right">Unit</th><th className="pb-2 text-right">Amount</th></tr>
           </thead>
           <tbody>
-            {inv.items.map((it) => (
-              <tr key={it.id} className="border-b border-[var(--border)]">
-                <td className="py-2">{it.description}</td>
-                <td className="py-2 text-right tabular-nums">{Number(it.quantity)}</td>
-                <td className="py-2 text-right tabular-nums">{one(it.unit_price)}</td>
-                <td className="py-2 text-right tabular-nums">{one(it.line_total)}</td>
-              </tr>
+            {itemGroups.map((g) => (
+              <Fragment key={g.cat}>
+                {itemGroups.length > 1 && (
+                  <tr>
+                    <td colSpan={4} className="pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                      {SERVICE_CATEGORY_LABELS[g.cat]}
+                    </td>
+                  </tr>
+                )}
+                {g.items.map((it) => (
+                  <tr key={it.id} className="border-b border-[var(--border)]">
+                    <td className="py-2">{it.description}</td>
+                    <td className="py-2 text-right tabular-nums">{Number(it.quantity)}</td>
+                    <td className="py-2 text-right tabular-nums">{one(it.unit_price)}</td>
+                    <td className="py-2 text-right tabular-nums">{one(it.line_total)}</td>
+                  </tr>
+                ))}
+              </Fragment>
             ))}
           </tbody>
         </table>
