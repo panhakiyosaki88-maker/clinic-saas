@@ -87,6 +87,9 @@ export function SuggestedCharges({
   const overallLab = labMode === "overall" && openLabs.length > 0;
   const count = appt.size + rx.size + (overallLab ? (lab.size > 0 ? 1 : 0) : lab.size);
 
+  // Deep-link into the full billing workspace, scoped to the patient's open visit.
+  const workspaceHref = `/billing/workspace?patientId=${patientId}${openVisitId ? `&visitId=${openVisitId}` : ""}`;
+
   function onCreate() {
     setError(null);
     type Line = {
@@ -309,12 +312,25 @@ export function SuggestedCharges({
       )}
 
       {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
-      <Button size="sm" onClick={onCreate} disabled={pending || count === 0}>
-        {pending ? "Creating…" : `Create draft invoice (${count})`}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={onCreate} disabled={pending || count === 0}>
+          {pending ? "Creating…" : `Create draft invoice (${count})`}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => router.push(workspaceHref)}
+          disabled={pending}
+          title="Open the full billing workspace: edit descriptions, quantities, add manual items, discounts, tax and issue the invoice"
+        >
+          Open billing workspace →
+        </Button>
+      </div>
       <p className="text-xs text-[var(--muted-foreground)]">
         Prices are prefilled from the catalog where available — adjust before creating the draft.
-        Un-bill a charge to pull it back off the draft and re-price it.
+        Un-bill a charge to pull it back off the draft and re-price it. For full control
+        (descriptions, quantities, manual items, discounts &amp; tax) open the billing workspace.
       </p>
     </div>
   );
