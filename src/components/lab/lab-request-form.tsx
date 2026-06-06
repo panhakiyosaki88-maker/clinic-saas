@@ -20,6 +20,7 @@ export function LabRequestForm({
   patients,
   doctors,
   branches = [],
+  consultingByPatient = {},
   defaultPatientId,
   defaultBranchId,
   panel,
@@ -27,6 +28,7 @@ export function LabRequestForm({
   patients: PatientOption[];
   doctors: DoctorOption[];
   branches?: BranchOption[];
+  consultingByPatient?: Record<string, string>;
   defaultPatientId?: string;
   defaultBranchId?: string | null;
   panel: LabTestGroup[];
@@ -37,6 +39,16 @@ export function LabRequestForm({
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [query, setQuery] = React.useState("");
+  const [patientId, setPatientId] = React.useState(defaultPatientId ?? "");
+  const [doctorId, setDoctorId] = React.useState(
+    defaultPatientId ? consultingByPatient[defaultPatientId] ?? "" : ""
+  );
+
+  function onPatientChange(value: string) {
+    setPatientId(value);
+    // Auto-fill the requesting doctor with the patient's consulting doctor.
+    setDoctorId(consultingByPatient[value] ?? "");
+  }
 
   function toggle(test: string) {
     setSelected((prev) => {
@@ -61,12 +73,11 @@ export function LabRequestForm({
     setError(null);
     setFieldErrors({});
     const f = new FormData(e.currentTarget);
-    const patientId = String(f.get("patientId") ?? "");
     const testNames = Array.from(selected);
     startTransition(async () => {
       const result = await createLabRequest({
         patientId,
-        doctorId: String(f.get("doctorId") ?? ""),
+        doctorId,
         branchId: String(f.get("branchId") ?? ""),
         testNames,
         notes: String(f.get("notes") ?? ""),
@@ -85,7 +96,14 @@ export function LabRequestForm({
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="patientId">Patient</Label>
-        <select id="patientId" name="patientId" className={selectClass} defaultValue={defaultPatientId ?? ""} required>
+        <select
+          id="patientId"
+          name="patientId"
+          className={selectClass}
+          value={patientId}
+          onChange={(e) => onPatientChange(e.target.value)}
+          required
+        >
           <option value="" disabled>Select a patient…</option>
           {patients.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
         </select>
@@ -94,7 +112,13 @@ export function LabRequestForm({
 
       <div className="space-y-2">
         <Label htmlFor="doctorId">Requesting doctor</Label>
-        <select id="doctorId" name="doctorId" className={selectClass} defaultValue="">
+        <select
+          id="doctorId"
+          name="doctorId"
+          className={selectClass}
+          value={doctorId}
+          onChange={(e) => setDoctorId(e.target.value)}
+        >
           <option value="">Unassigned</option>
           {doctors.map((d) => <option key={d.id} value={d.id}>{d.full_name}</option>)}
         </select>

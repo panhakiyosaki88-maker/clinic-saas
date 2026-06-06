@@ -3,6 +3,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
+import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { listLabCategoryTree } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
@@ -22,12 +23,14 @@ export default async function NewLabRequestPage({
   if (!(await hasPermission(PERMISSIONS.LAB_WRITE))) redirect("/lab");
 
   const sp = await searchParams;
-  const [patients, doctors, tree, { branches, activeId, primaryId }] = await Promise.all([
-    listPatientOptions(),
-    listDoctors(),
-    listLabCategoryTree(),
-    getActiveBranchContext(),
-  ]);
+  const [patients, doctors, consultingByPatient, tree, { branches, activeId, primaryId }] =
+    await Promise.all([
+      listPatientOptions(),
+      listDoctors(),
+      getPatientConsultingDoctorMap(),
+      listLabCategoryTree(),
+      getActiveBranchContext(),
+    ]);
 
   // Drive the test picker from the clinic's own Lab Categories so the two stay
   // in sync: each group is a section, each subgroup a selectable test (a group
@@ -51,6 +54,7 @@ export default async function NewLabRequestPage({
         patients={patients}
         doctors={doctors.map((d) => ({ id: d.id, full_name: d.full_name }))}
         branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+        consultingByPatient={consultingByPatient}
         defaultPatientId={sp.patientId}
         defaultBranchId={activeId ?? primaryId}
         panel={panel}
