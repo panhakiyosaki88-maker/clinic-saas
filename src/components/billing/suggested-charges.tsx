@@ -406,14 +406,24 @@ function DispenseRow({
   }
 
   const q = Number(qty) || 0;
+  const outOfStock = med.stockQuantity <= 0;
   const overStock = q > med.stockQuantity;
   const amount = q * (Number(price) || 0);
   return (
     <div className="space-y-0.5">
       <div className="grid items-center gap-2 sm:grid-cols-[1fr_3.5rem_5rem_4.5rem_auto]">
-        <span className="flex min-w-0 items-center gap-2 text-sm">
+        <span className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm">
           <span className="truncate">{med.name}</span>
           <span className="shrink-0 text-xs text-[var(--muted-foreground)]">Rx ×{med.remainingQty}</span>
+          <span
+            className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${
+              outOfStock
+                ? "bg-[var(--destructive)]/10 text-[var(--destructive)]"
+                : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            }`}
+          >
+            {outOfStock ? "Out of stock" : `${med.stockQuantity} in stock`}
+          </span>
         </span>
         <Input type="number" step="1" className="w-full" value={qty} onChange={(e) => setQty(e.target.value)} title="Quantity" />
         <Input type="number" step="0.01" className="w-full" value={price} onChange={(e) => setPrice(e.target.value)} title="Unit price" />
@@ -429,7 +439,7 @@ function DispenseRow({
           Dispense
         </Button>
       </div>
-      {overStock && <p className="text-xs text-amber-600">Only {med.stockQuantity} in stock.</p>}
+      {overStock && !outOfStock && <p className="text-xs text-amber-600">Only {med.stockQuantity} in stock.</p>}
     </div>
   );
 }
