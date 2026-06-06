@@ -66,9 +66,29 @@ export default async function BillingWorkspacePage({
   // surface every charge that is unbilled or already on that draft (charges
   // billed to other invoices are hidden so nothing is double-billed).
   const draft = chargeSet.visitId ? await getVisitDraftInvoice(chargeSet.visitId) : null;
-  const lines = chargeSet.charges.filter(
-    (c) => c.billedInvoiceId === null || c.billedInvoiceId === draft?.id
-  );
+
+  // The draft's saved items are the source of truth for prices/quantities the
+  // user already set — re-detection would reset them (e.g. labs to catalog 0).
+  // Override each on-draft charge from its saved item (matched by category +
+  // description), and restore lab "Price overall" bundling.
+  const itemKey = (category: string, description: string) => `${category}|${description.trim().toLowerCase()}`;
+  const draftItems = draft?.items ?? [];
+  const overrides = new Map(draftItems.map((it) => [itemKey(it.category, it.description), it]));
+
+  const draftLabItems = draftItems.filter((it) => it.category === "lab");
+  const draftLabCharges = chargeSet.charges.filter((c) => c.category === "lab" && c.billedInvoiceId === draft?.id);
+  // One saved lab line covering many lab tests → it was bundled ("Price overall").
+  const labBundle =
+    draftLabItems.length === 1 && draftLabCharges.length > 1
+      ? { description: draftLabItems[0].description, price: draftLabItems[0].unit_price }
+      : null;
+
+  const lines = chargeSet.charges
+    .filter((c) => c.billedInvoiceId === null || c.billedInvoiceId === draft?.id)
+    .map((c) => {
+      const o = overrides.get(itemKey(c.category, c.description));
+      return o ? { ...c, quantity: o.quantity, unitPrice: o.unit_price } : c;
+    });
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
@@ -94,6 +114,7 @@ export default async function BillingWorkspacePage({
         initialDiscount={draft?.discount ?? 0}
         initialTax={draft?.tax ?? 0}
         initialNotes={draft?.notes ?? ""}
+        labBundleInit={labBundle}
       />
     </main>
   );

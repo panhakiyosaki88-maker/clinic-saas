@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
-import type { Database } from "@/types/database";
+import type { Database, ServiceCategory } from "@/types/database";
 
 export type Invoice = Database["public"]["Tables"]["invoices"]["Row"];
 export type InvoiceItem = Database["public"]["Tables"]["invoice_items"]["Row"];
@@ -56,15 +56,23 @@ export async function listPatientInvoices(patientId: string): Promise<InvoiceWit
   return mapList((data ?? []) as unknown as ListJoined[]);
 }
 
+export interface VisitDraftInvoice {
+  id: string;
+  discount: number;
+  tax: number;
+  notes: string | null;
+  /** The draft's saved line items — the source of truth for prices/quantities and
+   *  lab bundling when the Billing Workspace continues this draft. */
+  items: { category: ServiceCategory; description: string; quantity: number; unit_price: number }[];
+}
+
 /** The visit's open draft invoice (source = visit), if one exists. The Billing
  *  Workspace continues this draft instead of creating a duplicate. */
-export async function getVisitDraftInvoice(
-  visitId: string
-): Promise<{ id: string; discount: number; tax: number; notes: string | null } | null> {
+export async function getVisitDraftInvoice(visitId: string): Promise<VisitDraftInvoice | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("invoices")
-    .select("id, discount, tax, notes")
+    .select("id, discount, tax, notes, invoice_items ( category, description, quantity, unit_price )")
     .eq("visit_id", visitId)
     .eq("source", "visit")
     .eq("status", "draft")
@@ -74,7 +82,25 @@ export async function getVisitDraftInvoice(
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  return { id: data.id, discount: Number(data.discount), tax: Number(data.tax), notes: data.notes };
+  const row = data as unknown as {
+    id: string;
+    discount: number;
+    tax: number;
+    notes: string | null;
+    invoice_items: { category: ServiceCategory; description: string; quantity: number; unit_price: number }[] | null;
+  };
+  return {
+    id: row.id,
+    discount: Number(row.discount),
+    tax: Number(row.tax),
+    notes: row.notes,
+    items: (row.invoice_items ?? []).map((it) => ({
+      category: it.category,
+      description: it.description,
+      quantity: Number(it.quantity),
+      unit_price: Number(it.unit_price),
+    })),
+  };
 }
 
 /** Outstanding (unpaid / partially paid) invoices for dashboards & reports. */

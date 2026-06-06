@@ -44,6 +44,7 @@ export function BillingWorkspace({
   initialDiscount = 0,
   initialTax = 0,
   initialNotes = "",
+  labBundleInit = null,
 }: {
   patientId: string;
   visitId: string | null;
@@ -57,6 +58,9 @@ export function BillingWorkspace({
   initialDiscount?: number;
   initialTax?: number;
   initialNotes?: string;
+  /** When the continued draft had its labs bundled ("Price overall"), restore
+   *  that mode with the saved description + price. */
+  labBundleInit?: { description: string; price: number } | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
@@ -87,13 +91,17 @@ export function BillingWorkspace({
   // every lab test with a single bundled "Laboratory Test" line at one price (on
   // screen and on the printed invoice). All lab sources are still linked, so
   // nothing can be re-billed.
-  const [labMode, setLabMode] = React.useState<"individual" | "overall">("individual");
+  const [labMode, setLabMode] = React.useState<"individual" | "overall">(
+    labBundleInit ? "overall" : "individual"
+  );
   const initialLabTotal = React.useMemo(
     () => lines.filter((l) => l.category === "lab").reduce((s, l) => s + l.quantity * l.unitPrice, 0),
     [lines]
   );
-  const [labOverall, setLabOverall] = React.useState(String(initialLabTotal));
-  const [labDescription, setLabDescription] = React.useState("Laboratory Test");
+  const [labOverall, setLabOverall] = React.useState(
+    labBundleInit ? String(labBundleInit.price) : String(initialLabTotal)
+  );
+  const [labDescription, setLabDescription] = React.useState(labBundleInit?.description ?? "Laboratory Test");
 
   // Remember the review state for this patient/visit so leaving (Back) and
   // returning keeps the same lines selected and the same lab pricing settings.
