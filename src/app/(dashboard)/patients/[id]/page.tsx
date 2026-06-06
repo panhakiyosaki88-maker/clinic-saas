@@ -350,7 +350,7 @@ export default async function PatientProfilePage({
                     {vt.doctor_name ? ` · ${vt.doctor_name}` : ""} · {vt.status}
                   </span>
                 </Link>
-                {canBookAppt && <VisitStatusButton visitId={vt.id} status={vt.status} />}
+                {canBookAppt && <VisitStatusButton visitId={vt.id} status={vt.status} isLatest={vt.id === patientVisits[0]?.id} />}
               </div>
             ))}
           </CardContent>

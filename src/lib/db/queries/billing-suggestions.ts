@@ -34,14 +34,12 @@ export interface BillableItems {
 }
 
 /**
- * Charges a patient has incurred: completed appointments (consultation fee from
- * the doctor), lab requests and prescriptions.
- *
- * Unbilled charges are always listed (selectable, patient-wide). Already-billed
- * charges are listed read-only — but only while they belong to the patient's
- * current open visit, so the panel keeps showing them until that visit is
- * closed/completed, then they drop off. Lab lines carry the catalog price (by
- * name) when one exists; the reviewer can override it before billing.
+ * Charges tied to the patient's *current* encounter: completed appointments
+ * (consultation fee from the doctor), lab requests and prescriptions belonging
+ * to the most-recent open visit. Unbilled charges are selectable; already-billed
+ * ones are listed read-only (greyed). When no visit is open the patient has no
+ * live activity, so nothing is suggested and the panel is blank. Lab lines carry
+ * the catalog price (by name) when one exists; the reviewer can override it.
  */
 export async function getUnbilledForPatient(patientId: string): Promise<BillableItems> {
   const supabase = await createClient();
@@ -49,9 +47,11 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
   const [apptRes, labRes, rxRes, linkRes, priceRes, openVisitRes] = await Promise.all([
     supabase
       .from("appointments")
+      // The live consult (in_consultation) and finished ones both bill a fee; the
+      // open-visit filter below keeps only the current encounter's appointment.
       .select("id, scheduled_at, visit_id, doctors ( full_name, consultation_fee )")
       .eq("patient_id", patientId)
-      .eq("status", "completed")
+      .in("status", ["in_consultation", "completed"])
       .is("deleted_at", null)
       .order("scheduled_at", { ascending: false }),
     supabase
@@ -91,10 +91,9 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
   const labPrice = new Map((priceRes.data ?? []).map((p) => [p.name.toLowerCase(), Number(p.unit_price)]));
   const openVisitId = openVisitRes.data?.id ?? null;
 
-  // A billed charge is kept only while it belongs to the open visit (so it stays
-  // visible until that visit closes). Unbilled charges are always kept.
-  const keep = (isBilled: boolean, visitId: string | null) =>
-    !isBilled || (openVisitId !== null && visitId === openVisitId);
+  // Only the current open visit's charges are actionable here (billed or not).
+  // With no open visit there is no live activity, so nothing is kept.
+  const keep = (visitId: string | null) => openVisitId !== null && visitId === openVisitId;
 
   const appts = (apptRes.data ?? []) as unknown as {
     id: string;
@@ -103,7 +102,7 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
     doctors: { full_name: string; consultation_fee: number | null } | null;
   }[];
   const appointments: BillableAppointment[] = appts
-    .filter((a) => keep(billed.has(`appointment:${a.id}`), a.visit_id))
+    .filter((a) => keep(a.visit_id))
     .map((a) => ({
       id: a.id,
       date: a.scheduled_at,
@@ -119,7 +118,7 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
     visit_id: string | null;
   }[];
   const labs: BillableLab[] = labRows
-    .filter((l) => keep(billed.has(`lab:${l.id}`), l.visit_id))
+    .filter((l) => keep(l.visit_id))
     .map((l) => ({
       id: l.id,
       date: l.requested_at,
@@ -135,7 +134,7 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
     doctors: { full_name: string } | null;
   }[];
   const prescriptions: BillablePrescription[] = rxRows
-    .filter((p) => keep(billed.has(`prescription:${p.id}`), p.visit_id))
+    .filter((p) => keep(p.visit_id))
     .map((p) => ({
       id: p.id,
       date: p.prescribed_at,
