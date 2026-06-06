@@ -99,12 +99,14 @@ export async function getUnbilledForPatient(patientId: string): Promise<Billable
     source_id: string;
     invoices: { status: string; amount_paid: number } | null;
   }[]) {
+    const inv = l.invoices;
+    // A cancelled (or vanished) invoice no longer holds its charges — treat the
+    // charge as unbilled so it returns as a selectable, editable line.
+    if (!inv || inv.status === "cancelled") continue;
     const key = `${l.source}:${l.source_id}`;
     billed.add(key);
-    // Editable invoices (no payments, not cancelled) can give the charge back.
-    if (l.invoices && l.invoices.status !== "cancelled" && Number(l.invoices.amount_paid) === 0) {
-      unbillable.add(key);
-    }
+    // Editable invoices (no payments) can give the charge back via Un-bill.
+    if (Number(inv.amount_paid) === 0) unbillable.add(key);
   }
   const labPrice = new Map((priceRes.data ?? []).map((p) => [p.name.toLowerCase(), Number(p.unit_price)]));
   const openVisitId = openVisitRes.data?.id ?? null;

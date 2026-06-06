@@ -243,9 +243,14 @@ export async function createInvoiceFromVisit(
   if (sourcedTypes.length > 0) {
     const { data: links } = await supabase
       .from("invoice_source_links")
-      .select("source, source_id")
+      .select("source, source_id, invoices ( status )")
       .in("source", sourcedTypes);
-    billed = new Set((links ?? []).map((l) => `${l.source}:${l.source_id}`));
+    // A link to a cancelled invoice no longer counts — that charge is free again.
+    billed = new Set(
+      ((links ?? []) as unknown as { source: string; source_id: string; invoices: { status: string } | null }[])
+        .filter((l) => l.invoices && l.invoices.status !== "cancelled")
+        .map((l) => `${l.source}:${l.source_id}`)
+    );
   }
   // Keep a line if it is manual, has no source, or still has at least one
   // un-billed source id.
@@ -290,7 +295,8 @@ export async function createInvoiceFromVisit(
   }
 
   // Link every source each line touches (primary + bundled) so none can be
-  // billed again. Skip ids already billed (race guard).
+  // billed again. Skip ids already billed (race guard). On conflict, repoint the
+  // link to this invoice — covers a charge freed from a now-cancelled invoice.
   const linkRows = lines.flatMap((l) =>
     lineSourceIds(l)
       .filter((id) => !billed.has(`${l.source}:${id}`))
@@ -299,7 +305,7 @@ export async function createInvoiceFromVisit(
   if (linkRows.length > 0) {
     await supabase
       .from("invoice_source_links")
-      .upsert(linkRows, { onConflict: "clinic_id,source,source_id", ignoreDuplicates: true });
+      .upsert(linkRows, { onConflict: "clinic_id,source,source_id" });
   }
 
   await supabase.from("patient_timeline").insert({
@@ -398,10 +404,21 @@ export async function voidInvoices(invoiceIds: string[]): Promise<ActionResult<{
     .in("id", invoiceIds)
     .eq("clinic_id", clinicId)
     .neq("status", "paid")
-    .select("id");
+    .select("id, patient_id");
   if (error) return fail(error.message);
+
+  const voided = data ?? [];
+  if (voided.length > 0) {
+    // A voided invoice releases its charges so they can be billed again.
+    await supabase
+      .from("invoice_source_links")
+      .delete()
+      .eq("clinic_id", clinicId)
+      .in("invoice_id", voided.map((v) => v.id));
+    for (const v of voided) if (v.patient_id) revalidatePath(`/patients/${v.patient_id}`);
+  }
   revalidateBilling();
-  return ok({ voided: data?.length ?? 0 });
+  return ok({ voided: voided.length });
 }
 
 /** Records a payment against an invoice. Triggers recompute the balance/status. */
