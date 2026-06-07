@@ -2,9 +2,9 @@
 
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { addDays, startOfWeek, startOfMonth, ymd, isSameDay, WEEKDAYS } from "@/lib/date";
+import { addDays, startOfWeek, startOfMonth, ymd, isSameDay } from "@/lib/date";
 import { getAppointmentCalendar, type CalendarDay } from "@/server/actions/appointments";
 import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export function MiniCalendar({
   initialDays: Days;
 }) {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
   const [monthStart, setMonthStart] = useState(
     () => new Date(initialYear, initialMonth, 1),
   );
@@ -72,10 +73,14 @@ export function MiniCalendar({
   const cells = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i)); // 6 weeks
   const today = new Date();
   const month = monthStart.getMonth();
-  const monthLabel = monthStart.toLocaleDateString(undefined, {
+  const monthLabel = monthStart.toLocaleDateString(locale, {
     month: "long",
     year: "numeric",
   });
+  // Localized, Sunday-first weekday headers (the grid starts on Sunday).
+  const weekdayFmt = new Intl.DateTimeFormat(locale, { weekday: "short" });
+  const sunday = startOfWeek(today);
+  const weekdayNames = Array.from({ length: 7 }, (_, i) => weekdayFmt.format(addDays(sunday, i)));
   const isCurrentMonth =
     today.getFullYear() === monthStart.getFullYear() && today.getMonth() === month;
 
@@ -124,8 +129,8 @@ export function MiniCalendar({
       </div>
 
       <div className="mb-2 grid grid-cols-7 text-center text-[11px] font-medium uppercase tracking-wide text-slate-400">
-        {WEEKDAYS.map((w) => (
-          <div key={w}>{w}</div>
+        {weekdayNames.map((w, i) => (
+          <div key={i}>{w}</div>
         ))}
       </div>
 

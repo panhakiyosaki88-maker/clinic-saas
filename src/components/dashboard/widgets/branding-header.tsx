@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { HeartPulse, CalendarDays, Clock, DollarSign, type LucideIcon } from "lucide-react";
 import { LiveClock } from "./live-clock";
 
@@ -59,7 +59,8 @@ export async function BrandingHeader({
   kpis: HeroKpis;
 }) {
   const t = await getTranslations("dashboard");
-  const today = new Date().toLocaleDateString(undefined, {
+  const locale = await getLocale();
+  const today = new Date().toLocaleDateString(locale, {
     weekday: "long",
     month: "long",
     day: "numeric",

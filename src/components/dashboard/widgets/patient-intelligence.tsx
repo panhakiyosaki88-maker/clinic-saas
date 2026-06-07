@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { ShieldAlert, CalendarClock } from "lucide-react";
 import type { HighRiskPatient } from "@/lib/db/queries/reports";
 import type { FollowUp } from "@/lib/db/queries/appointments";
@@ -12,11 +12,11 @@ const TONE: Record<"rose" | "amber" | "violet", string> = {
   violet: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
 };
 
-function dayLabel(iso: string, todayWord: string): string {
+function dayLabel(iso: string, todayWord: string, locale: string): string {
   const d = new Date(iso);
   const today = new Date();
   const isToday = d.toDateString() === today.toDateString();
-  return isToday ? `${todayWord} ${timeLabel(iso)}` : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return isToday ? `${todayWord} ${timeLabel(iso)}` : d.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 /** Patient Insights — new today, high-risk flags, and upcoming follow-ups. */
@@ -32,6 +32,7 @@ export async function PatientIntelligence({
   followUps: FollowUp[];
 }) {
   const t = await getTranslations("dashboard");
+  const locale = await getLocale();
   return (
     <WidgetCard title={t("widget.patientInsights")} action={{ href: "/patients", label: t("action.allPatients") }} bodyClassName="p-5 space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -87,7 +88,7 @@ export async function PatientIntelligence({
                 <Link href={`/appointments/${f.id}`} className="truncate text-slate-700 hover:text-brand-600 dark:text-slate-200 dark:hover:text-brand-400">
                   {f.patient_name}
                 </Link>
-                <span className="shrink-0 text-xs text-slate-400">{dayLabel(f.scheduled_at, t("labels.today"))}</span>
+                <span className="shrink-0 text-xs text-slate-400">{dayLabel(f.scheduled_at, t("labels.today"), locale)}</span>
               </li>
             ))}
           </ul>
