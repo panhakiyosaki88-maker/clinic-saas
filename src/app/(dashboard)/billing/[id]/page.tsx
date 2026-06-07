@@ -7,9 +7,9 @@ import { getInvoice } from "@/lib/db/queries/billing";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext, formatIn, usdToKhr } from "@/lib/billing/currency";
 import { Money } from "@/components/billing/money";
+import QRCode from "qrcode";
 import { buildKhqr } from "@/lib/billing/khqr";
 import { paymentQrUrl } from "@/lib/payment-qr";
-import { KhqrPanel } from "@/components/billing/khqr-panel";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -65,12 +65,14 @@ export default async function InvoiceDetailPage({
 
   const currency = ctx.primary;
 
-  // An uploaded branch payment QR takes precedence over the generated KHQR.
+  // A payment QR shows on the invoice when there's an outstanding balance. An
+  // uploaded branch QR takes precedence; otherwise we generate a KHQR from the
+  // clinic's Bakong account. Both render in the same spot (beside the totals).
+  const hasBalance = active && !isDraft && Number(inv.balance) > 0;
   const qrUrl = paymentQrUrl(inv.payment_qr_path);
-  const showPaymentQr = !!qrUrl && active && !isDraft && Number(inv.balance) > 0;
 
   const khqrPayload =
-    !qrUrl && settings?.khqr_merchant_account && active && !isDraft && Number(inv.balance) > 0
+    !qrUrl && settings?.khqr_merchant_account && hasBalance
       ? buildKhqr({
           merchantAccount: settings.khqr_merchant_account,
           merchantName: settings.khqr_merchant_name || inv.clinic_name,
@@ -81,6 +83,11 @@ export default async function InvoiceDetailPage({
           billNumber: inv.invoice_number,
         })
       : null;
+
+  // Render the QR image server-side so it prints. Uploaded QR (public URL) wins;
+  // otherwise turn the KHQR payload into a data-URL image.
+  const qrSrc = qrUrl ?? (khqrPayload ? await QRCode.toDataURL(khqrPayload, { width: 240, margin: 1 }) : null);
+  const showPaymentQr = !!qrSrc && hasBalance;
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
@@ -154,9 +161,9 @@ export default async function InvoiceDetailPage({
           {showPaymentQr ? (
             <div className="text-center">
               <p className="text-xs font-medium">Scan to pay</p>
-              {/* eslint-disable-next-line @next/next/no-img-element -- public Storage URL, prints on the invoice */}
-              <img src={qrUrl!} alt="Payment QR" className="mt-1 size-32 object-contain" />
-              {inv.payment_qr_caption && (
+              {/* eslint-disable-next-line @next/next/no-img-element -- public URL / data-URL, prints on the invoice */}
+              <img src={qrSrc!} alt="Payment QR" className="mt-1 size-32 object-contain" />
+              {qrUrl && inv.payment_qr_caption && (
                 <p className="mt-1 max-w-32 text-[10px] text-[var(--muted-foreground)]">{inv.payment_qr_caption}</p>
               )}
             </div>
@@ -187,16 +194,6 @@ export default async function InvoiceDetailPage({
           <CardHeader><CardTitle>Record payment</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <PaymentForm invoiceId={inv.id} balance={Number(inv.balance)} rate={ctx.rate} />
-            {khqrPayload && (
-              <KhqrPanel
-                invoiceId={inv.id}
-                payload={khqrPayload}
-                amount={Number(inv.balance)}
-                reference={inv.invoice_number}
-                currency={currency}
-                rate={ctx.rate}
-              />
-            )}
           </CardContent>
         </Card>
       )}
