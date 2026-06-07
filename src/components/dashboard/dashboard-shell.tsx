@@ -18,6 +18,7 @@ import {
 import { signOut } from "@/server/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccentToggle } from "@/components/accent-toggle";
+import { LanguageToggle } from "@/components/settings/language-toggle";
 import { NAV } from "@/components/dashboard/nav-config";
 import { BranchSwitcher, type BranchOption } from "@/components/dashboard/branch-switcher";
 
@@ -183,6 +184,7 @@ export function DashboardShell({
               <Bell className="size-5" />
               <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
             </Link>
+            <LanguageToggle />
             <AccentToggle />
             <ThemeToggle />
 

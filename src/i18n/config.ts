@@ -15,6 +15,12 @@ export const localeNames: Record<Locale, string> = {
   km: "ខ្មែរ (Khmer)",
 };
 
+/** Compact labels for the top-bar toggle. */
+export const localeShort: Record<Locale, string> = {
+  en: "EN",
+  km: "ខ្មែរ",
+};
+
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
 export function isLocale(value: unknown): value is Locale {
