@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listAppointmentsInRange, listQueue } from "@/lib/db/queries/appointments";
@@ -32,11 +33,13 @@ export default async function AppointmentsPage({
 }) {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("appointments");
+  const locale = await getLocale();
   if (!(await hasPermission(PERMISSIONS.APPOINTMENTS_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view appointments.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -54,19 +57,19 @@ export default async function AppointmentsPage({
     to = addDays(from, 1);
     prev = addDays(anchor, -1);
     next = addDays(anchor, 1);
-    label = anchor.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    label = anchor.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   } else if (view === "week") {
     from = startOfWeek(anchor);
     to = addDays(from, 7);
     prev = addDays(anchor, -7);
     next = addDays(anchor, 7);
-    label = `Week of ${from.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+    label = t("weekOf", { date: from.toLocaleDateString(locale, { month: "short", day: "numeric" }) });
   } else {
     from = startOfMonth(anchor);
     to = endOfMonth(anchor);
     prev = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1);
     next = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 1);
-    label = anchor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    label = anchor.toLocaleDateString(locale, { month: "long", year: "numeric" });
   }
 
   const { activeId, primaryId } = await getActiveBranchContext();
@@ -80,12 +83,12 @@ export default async function AppointmentsPage({
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Calendar}
-        title="Appointments"
-        subtitle={`${appointments.length} in view · ${queue.length} waiting`}
+        title={t("title")}
+        subtitle={t("summary", { inView: appointments.length, waiting: queue.length })}
         actions={
           canWrite && (
             <HeaderAction href={`/appointments/new?date=${ymd(anchor)}`}>
-              <Plus /> New appointment
+              <Plus /> {t("newAppointment")}
             </HeaderAction>
           )
         }

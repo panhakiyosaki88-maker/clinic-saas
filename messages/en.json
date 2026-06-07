@@ -235,5 +235,54 @@
       "deleting": "Deleting…",
       "confirm": "Delete permanently"
     }
+  },
+  "appointments": {
+    "title": "Appointments",
+    "noPermission": "You don't have permission to view appointments.",
+    "summary": "{inView} in view · {waiting} waiting",
+    "newAppointment": "New appointment",
+    "today": "Today",
+    "weekOf": "Week of {date}",
+    "view": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "waiting": "Waiting",
+      "in_consultation": "In Consultation",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No Show"
+    },
+    "action": {
+      "checkIn": "Check in",
+      "cancel": "Cancel",
+      "noShow": "No show",
+      "start": "Start",
+      "complete": "Complete"
+    },
+    "day": {
+      "empty": "No appointments."
+    },
+    "queue": {
+      "title": "Queue ({count})",
+      "empty": "No one waiting."
+    },
+    "month": {
+      "appts": "{count, plural, one {# appt} other {# appts}}"
+    },
+    "labels": {
+      "walkIn": "walk-in",
+      "unassigned": "Unassigned"
+    },
+    "delete": {
+      "delete": "Delete",
+      "sure": "Sure?",
+      "deleting": "Deleting…",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    }
   }
 }

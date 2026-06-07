@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { AppointmentWithNames } from "@/lib/db/queries/appointments";
 import { timeLabel } from "@/lib/date";
 import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
@@ -6,15 +7,16 @@ import { StatusBadge } from "./status-badge";
 import { StatusControl } from "./status-control";
 import { Card, CardContent } from "@/components/ui/card";
 
-export function DayView({
+export async function DayView({
   appointments,
   canWrite,
 }: {
   appointments: AppointmentWithNames[];
   canWrite: boolean;
 }) {
+  const t = await getTranslations("appointments");
   if (appointments.length === 0) {
-    return <p className="px-1 py-8 text-center text-sm text-[var(--muted-foreground)]">No appointments.</p>;
+    return <p className="px-1 py-8 text-center text-sm text-[var(--muted-foreground)]">{t("day.empty")}</p>;
   }
   return (
     <Card>
@@ -23,7 +25,7 @@ export function DayView({
           <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
             <div className="flex items-center gap-3">
               <span className="w-14 font-mono text-sm text-[var(--muted-foreground)]">
-                {a.is_walk_in ? "walk-in" : timeLabel(a.scheduled_at)}
+                {a.is_walk_in ? t("labels.walkIn") : timeLabel(a.scheduled_at)}
               </span>
               <div>
                 <Link href={`/appointments/${a.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
@@ -31,7 +33,7 @@ export function DayView({
                 </Link>
                 <p className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
                   {a.doctor_name && <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={32} />}
-                  <span>{a.doctor_name ?? "Unassigned"}{a.reason ? ` · ${a.reason}` : ""}</span>
+                  <span>{a.doctor_name ?? t("labels.unassigned")}{a.reason ? ` · ${a.reason}` : ""}</span>
                 </p>
               </div>
             </div>

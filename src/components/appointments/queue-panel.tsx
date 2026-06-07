@@ -1,17 +1,19 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { QueueEntry } from "@/lib/db/queries/appointments";
 import { StatusControl } from "./status-control";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function QueuePanel({ queue, canWrite }: { queue: QueueEntry[]; canWrite: boolean }) {
+export async function QueuePanel({ queue, canWrite }: { queue: QueueEntry[]; canWrite: boolean }) {
+  const t = await getTranslations("appointments.queue");
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Queue ({queue.length})</CardTitle>
+        <CardTitle>{t("title", { count: queue.length })}</CardTitle>
       </CardHeader>
       <CardContent>
         {queue.length === 0 ? (
-          <p className="text-sm text-[var(--muted-foreground)]">No one waiting.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
         ) : (
           <ol className="space-y-2">
             {queue.map((q) => (

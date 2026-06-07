@@ -1,23 +1,24 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { changeAppointmentStatus } from "@/server/actions/appointments";
 import type { AppointmentStatusValue } from "@/lib/validations/appointment";
 import { Button } from "@/components/ui/button";
 
-/** Next-step actions available from each status. */
-const NEXT: Partial<Record<AppointmentStatusValue, { to: AppointmentStatusValue; label: string }[]>> = {
+/** Next-step actions available from each status (labelKey → appointments.action). */
+const NEXT: Partial<Record<AppointmentStatusValue, { to: AppointmentStatusValue; labelKey: string }[]>> = {
   scheduled: [
-    { to: "waiting", label: "Check in" },
-    { to: "cancelled", label: "Cancel" },
-    { to: "no_show", label: "No show" },
+    { to: "waiting", labelKey: "checkIn" },
+    { to: "cancelled", labelKey: "cancel" },
+    { to: "no_show", labelKey: "noShow" },
   ],
   waiting: [
-    { to: "in_consultation", label: "Start" },
-    { to: "cancelled", label: "Cancel" },
+    { to: "in_consultation", labelKey: "start" },
+    { to: "cancelled", labelKey: "cancel" },
   ],
-  in_consultation: [{ to: "completed", label: "Complete" }],
+  in_consultation: [{ to: "completed", labelKey: "complete" }],
 };
 
 export function StatusControl({
@@ -27,6 +28,7 @@ export function StatusControl({
   appointmentId: string;
   status: AppointmentStatusValue;
 }) {
+  const t = useTranslations("appointments.action");
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const actions = NEXT[status] ?? [];
@@ -49,7 +51,7 @@ export function StatusControl({
           disabled={pending}
           onClick={() => go(a.to)}
         >
-          {a.label}
+          {t(a.labelKey)}
         </Button>
       ))}
     </div>

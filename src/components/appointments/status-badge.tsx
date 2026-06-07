@@ -1,4 +1,7 @@
-import { STATUS_LABELS, type AppointmentStatusValue } from "@/lib/validations/appointment";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { type AppointmentStatusValue } from "@/lib/validations/appointment";
 
 const TONE: Record<AppointmentStatusValue, string> = {
   scheduled: "bg-[var(--secondary)] text-[var(--secondary-foreground)]",
@@ -10,9 +13,10 @@ const TONE: Record<AppointmentStatusValue, string> = {
 };
 
 export function StatusBadge({ status }: { status: AppointmentStatusValue }) {
+  const t = useTranslations("appointments.status");
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE[status]}`}>
-      {STATUS_LABELS[status]}
+      {t(status)}
     </span>
   );
 }

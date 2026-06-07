@@ -235,5 +235,54 @@
       "deleting": "កំពុងលុប…",
       "confirm": "លុបជាអចិន្ត្រៃយ៍"
     }
+  },
+  "appointments": {
+    "title": "ការណាត់ជួប",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលការណាត់ជួបទេ។",
+    "summary": "{inView} ក្នុងទិដ្ឋភាព · {waiting} កំពុងរង់ចាំ",
+    "newAppointment": "ការណាត់ជួបថ្មី",
+    "today": "ថ្ងៃនេះ",
+    "weekOf": "សប្តាហ៍ {date}",
+    "view": {
+      "day": "ថ្ងៃ",
+      "week": "សប្តាហ៍",
+      "month": "ខែ"
+    },
+    "status": {
+      "scheduled": "បានកំណត់",
+      "waiting": "កំពុងរង់ចាំ",
+      "in_consultation": "កំពុងពិគ្រោះ",
+      "completed": "បានបញ្ចប់",
+      "cancelled": "បានបោះបង់",
+      "no_show": "មិនបានមក"
+    },
+    "action": {
+      "checkIn": "ចូល",
+      "cancel": "បោះបង់",
+      "noShow": "មិនបានមក",
+      "start": "ចាប់ផ្តើម",
+      "complete": "បញ្ចប់"
+    },
+    "day": {
+      "empty": "គ្មានការណាត់ជួប។"
+    },
+    "queue": {
+      "title": "ជួររង់ចាំ ({count})",
+      "empty": "គ្មាននរណារង់ចាំ។"
+    },
+    "month": {
+      "appts": "{count, plural, other {# ការណាត់ជួប}}"
+    },
+    "labels": {
+      "walkIn": "មកផ្ទាល់",
+      "unassigned": "មិនបានកំណត់"
+    },
+    "delete": {
+      "delete": "លុប",
+      "sure": "ប្រាកដ?",
+      "deleting": "កំពុងលុប…",
+      "confirm": "បញ្ជាក់",
+      "cancel": "បោះបង់"
+    }
   }
 }

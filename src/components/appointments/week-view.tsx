@@ -1,14 +1,18 @@
 import Link from "next/link";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { AppointmentWithNames } from "@/lib/db/queries/appointments";
-import { addDays, ymd, timeLabel, isSameDay, WEEKDAYS } from "@/lib/date";
+import { addDays, ymd, timeLabel, isSameDay } from "@/lib/date";
 
-export function WeekView({
+export async function WeekView({
   appointments,
   weekStart,
 }: {
   appointments: AppointmentWithNames[];
   weekStart: Date;
 }) {
+  const t = await getTranslations("appointments");
+  const locale = await getLocale();
+  const weekdayFmt = new Intl.DateTimeFormat(locale, { weekday: "short" });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const today = new Date();
 
@@ -28,7 +32,7 @@ export function WeekView({
               href={`/appointments?view=day&date=${ymd(d)}`}
               className={`mb-2 block text-xs font-medium ${isSameDay(d, today) ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]"}`}
             >
-              {WEEKDAYS[d.getDay()]} {d.getDate()}
+              {weekdayFmt.format(d)} {d.getDate()}
             </Link>
             <div className="space-y-1">
               {list.map((a) => (
@@ -36,7 +40,7 @@ export function WeekView({
                   key={a.id}
                   href={`/appointments/${a.id}`}
                   className="block truncate rounded bg-[var(--accent)] px-1.5 py-1 text-xs hover:opacity-80"
-                  title={`${a.patient_name} — ${a.doctor_name ?? "Unassigned"}`}
+                  title={`${a.patient_name} — ${a.doctor_name ?? t("labels.unassigned")}`}
                 >
                   <span className="font-mono">{a.is_walk_in ? "•" : timeLabel(a.scheduled_at)}</span>{" "}
                   {a.patient_name}
