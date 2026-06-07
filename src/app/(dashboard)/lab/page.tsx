@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listLabRequests } from "@/lib/db/queries/lab";
@@ -17,11 +18,13 @@ export const metadata = { title: "Laboratory" };
 export default async function LabPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("lab");
+  const locale = await getLocale();
   if (!(await hasPermission(PERMISSIONS.LAB_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view the laboratory.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -82,22 +85,22 @@ export default async function LabPage() {
     return { ...g, status, finish: status === "completed" ? g.finish : null };
   });
 
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString() : "—");
+  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale) : "—");
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={FlaskConical}
-        title="Laboratory"
-        subtitle={`${patients.length} ${patients.length === 1 ? "patient" : "patients"} · ${requests.length} ${requests.length === 1 ? "test" : "tests"}`}
+        title={t("title")}
+        subtitle={t("summary", { patients: patients.length, tests: requests.length })}
         actions={
           canWrite && (
             <>
               <HeaderAction href="/lab/categories" variant="outline">
-                <Tags /> Categories
+                <Tags /> {t("categories")}
               </HeaderAction>
               <HeaderAction href="/lab/new">
-                <Plus /> New request
+                <Plus /> {t("newRequest")}
               </HeaderAction>
             </>
           )
@@ -107,16 +110,16 @@ export default async function LabPage() {
       <Card className="overflow-hidden">
         <CardContent className="p-0">
           {patients.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400">No lab requests yet.</p>
+            <p className="p-6 text-sm text-slate-400">{t("empty")}</p>
           ) : (
             <Table>
               <THead>
                 <tr>
-                  <TH>Patient</TH>
-                  <TH>Tests</TH>
-                  <TH>Status</TH>
-                  <TH>Start Date</TH>
-                  <TH>Finish Date</TH>
+                  <TH>{t("table.patient")}</TH>
+                  <TH>{t("table.tests")}</TH>
+                  <TH>{t("table.status")}</TH>
+                  <TH>{t("table.startDate")}</TH>
+                  <TH>{t("table.finishDate")}</TH>
                 </tr>
               </THead>
               <TBody>

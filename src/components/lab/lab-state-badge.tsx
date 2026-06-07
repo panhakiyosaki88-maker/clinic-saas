@@ -1,4 +1,7 @@
-import { PATIENT_LAB_STATE_LABELS, type PatientLabState } from "@/lib/validations/lab";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { type PatientLabState } from "@/lib/validations/lab";
 
 const TONE: Record<PatientLabState, string> = {
   requested: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
@@ -8,9 +11,10 @@ const TONE: Record<PatientLabState, string> = {
 
 /** Read-only patient-level lab state (Pending / In Progress / Finish). */
 export function LabStateBadge({ status }: { status: PatientLabState }) {
+  const t = useTranslations("lab.state");
   return (
     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${TONE[status]}`}>
-      {PATIENT_LAB_STATE_LABELS[status]}
+      {t(status)}
     </span>
   );
 }

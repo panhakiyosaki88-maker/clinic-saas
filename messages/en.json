@@ -425,6 +425,26 @@
       "inactive": "Inactive"
     }
   },
+  "lab": {
+    "title": "Laboratory",
+    "noPermission": "You don't have permission to view the laboratory.",
+    "summary": "{patients, plural, one {# patient} other {# patients}} · {tests, plural, one {# test} other {# tests}}",
+    "categories": "Categories",
+    "newRequest": "New request",
+    "empty": "No lab requests yet.",
+    "table": {
+      "patient": "Patient",
+      "tests": "Tests",
+      "status": "Status",
+      "startDate": "Start Date",
+      "finishDate": "Finish Date"
+    },
+    "state": {
+      "requested": "Pending",
+      "processing": "In Progress",
+      "completed": "Finish"
+    }
+  },
   "pharmacy": {
     "title": "Pharmacy",
     "noPermission": "You don't have permission to view the pharmacy.",

@@ -425,6 +425,26 @@
       "inactive": "អសកម្ម"
     }
   },
+  "lab": {
+    "title": "មន្ទីរពិសោធន៍",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលមន្ទីរពិសោធន៍ទេ។",
+    "summary": "{patients, plural, other {អ្នកជំងឺ #}} · {tests, plural, other {តេស្ត #}}",
+    "categories": "ប្រភេទ",
+    "newRequest": "សំណើថ្មី",
+    "empty": "មិនទាន់មានសំណើពិសោធន៍។",
+    "table": {
+      "patient": "អ្នកជំងឺ",
+      "tests": "តេស្ត",
+      "status": "ស្ថានភាព",
+      "startDate": "ថ្ងៃចាប់ផ្តើម",
+      "finishDate": "ថ្ងៃបញ្ចប់"
+    },
+    "state": {
+      "requested": "កំពុងរង់ចាំ",
+      "processing": "កំពុងដំណើរការ",
+      "completed": "បានបញ្ចប់"
+    }
+  },
   "pharmacy": {
     "title": "ឱសថស្ថាន",
     "noPermission": "អ្នកគ្មានសិទ្ធិមើលឱសថស្ថានទេ។",
