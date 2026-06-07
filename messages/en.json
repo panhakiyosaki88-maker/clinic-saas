@@ -96,6 +96,12 @@
       "expiringBatches": "{count, plural, one {# stock batch is expiring within 60 days.} other {# stock batches are expiring within 60 days.}}",
       "allCompleted": "All of today's appointments are completed — great work!"
     },
+    "timeAgo": {
+      "justNow": "just now",
+      "minutes": "{m}m ago",
+      "hours": "{h}h ago",
+      "days": "{d}d ago"
+    },
     "action": {
       "reports": "Reports",
       "billing": "Billing",
