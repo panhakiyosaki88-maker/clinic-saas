@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
@@ -7,7 +6,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Pill, Plus } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
-import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
+import { PrescriptionsTable } from "@/components/prescriptions/prescriptions-table";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Prescriptions" };
@@ -44,35 +43,22 @@ export default async function PrescriptionsPage() {
         }
       />
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {prescriptions.length === 0 ? (
             <p className="p-6 text-sm text-[var(--muted-foreground)]">No prescriptions yet.</p>
           ) : (
-            <ul className="divide-y divide-[var(--border)]">
-              {prescriptions.map((p) => (
-                <li key={p.id} className="flex items-center justify-between p-4">
-                  <div>
-                    <Link href={`/prescriptions/${p.id}`} className="font-medium text-[var(--primary)] hover:underline">
-                      {p.patient_name}
-                    </Link>
-                    <p className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
-                      <span>
-                        {new Date(p.prescribed_at).toLocaleDateString()} · {p.item_count} item
-                        {p.item_count === 1 ? "" : "s"}
-                      </span>
-                      {p.doctor_name && (
-                        <span className="inline-flex items-center gap-1">
-                          ·<DoctorAvatar name={p.doctor_name} avatarPath={p.doctor_avatar_path} size={32} />
-                          {p.doctor_name}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <span className="font-mono text-xs text-[var(--muted-foreground)]">{p.patient_number}</span>
-                </li>
-              ))}
-            </ul>
+            <PrescriptionsTable
+              rows={prescriptions.map((p) => ({
+                id: p.id,
+                patient_number: p.patient_number,
+                patient_name: p.patient_name,
+                doctor_name: p.doctor_name,
+                doctor_avatar_path: p.doctor_avatar_path,
+                prescribed_at: p.prescribed_at,
+                item_count: p.item_count,
+              }))}
+            />
           )}
         </CardContent>
       </Card>
