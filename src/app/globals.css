@@ -136,6 +136,9 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* Latin (Inter) first, then Khmer for per-glyph fallback on km UI text. */
+  --font-sans: var(--font-inter), var(--font-khmer), ui-sans-serif, system-ui,
+    sans-serif;
 }
 
 @layer base {

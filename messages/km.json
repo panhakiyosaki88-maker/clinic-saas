@@ -1,0 +1,37 @@
+{
+  "common": {
+    "save": "រក្សាទុក",
+    "cancel": "បោះបង់",
+    "language": "ភាសា"
+  },
+  "nav": {
+    "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+    "appointments": "ការណាត់ជួប",
+    "patients": "អ្នកជំងឺ",
+    "doctors": "វេជ្ជបណ្ឌិត",
+    "prescriptions": "វេជ្ជបញ្ជា",
+    "lab": "មន្ទីរពិសោធន៍",
+    "pharmacy": "ឱសថស្ថាន",
+    "billing": "វិក្កយបត្រ",
+    "reports": "របាយការណ៍",
+    "notifications": "ការជូនដំណឹង",
+    "settings": "ការកំណត់"
+  },
+  "shell": {
+    "platformAdmin": "អ្នកគ្រប់គ្រងប្រព័ន្ធ",
+    "collapse": "បង្រួម",
+    "signOut": "ចាកចេញ",
+    "subscription": "ការជាវ",
+    "account": "គណនី",
+    "notifications": "ការជូនដំណឹង",
+    "searchPlaceholder": "ស្វែងរកអ្នកជំងឺ វេជ្ជបណ្ឌិត វិក្កយបត្រ…"
+  },
+  "settings": {
+    "language": {
+      "title": "ភាសា",
+      "description": "ជ្រើសរើសភាសាសម្រាប់ផ្ទាំងប្រើប្រាស់។ ពាក្យវេជ្ជសាស្ត្រ (ឈ្មោះថ្នាំ ការធ្វើតេស្ត ការវិនិច្ឆ័យ) នៅតែជាភាសាអង់គ្លេសជានិច្ច។",
+      "english": "English",
+      "khmer": "ខ្មែរ (Khmer)"
+    }
+  }
+}

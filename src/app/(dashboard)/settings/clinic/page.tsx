@@ -1,12 +1,20 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Building2 } from "lucide-react";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ClinicProfileForm } from "@/components/settings/clinic-profile-form";
 import { ClinicLogoUploader } from "@/components/settings/clinic-logo-uploader";
+import { LanguageSwitcher } from "@/components/settings/language-switcher";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const metadata = { title: "General · Settings" };
 
@@ -24,10 +32,21 @@ export default async function ClinicSettingsPage() {
   if (!clinic) redirect("/onboarding");
 
   const canManage = await hasPermission(PERMISSIONS.CLINIC_MANAGE);
+  const tLang = await getTranslations("settings.language");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <PageHeader icon={Building2} title="General" subtitle="Your clinic profile" />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{tLang("title")}</CardTitle>
+          <CardDescription>{tLang("description")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LanguageSwitcher />
+        </CardContent>
+      </Card>
 
       {canManage && (
         <Card>

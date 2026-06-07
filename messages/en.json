@@ -1,0 +1,37 @@
+{
+  "common": {
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "language": "Language"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "appointments": "Appointments",
+    "patients": "Patients",
+    "doctors": "Doctors",
+    "prescriptions": "Prescriptions",
+    "lab": "Laboratory",
+    "pharmacy": "Pharmacy",
+    "billing": "Billing",
+    "reports": "Reports",
+    "notifications": "Notifications",
+    "settings": "Settings"
+  },
+  "shell": {
+    "platformAdmin": "Platform admin",
+    "collapse": "Collapse",
+    "signOut": "Sign out",
+    "subscription": "Subscription",
+    "account": "Account",
+    "notifications": "Notifications",
+    "searchPlaceholder": "Search patients, doctors, invoices…"
+  },
+  "settings": {
+    "language": {
+      "title": "Language",
+      "description": "Choose the display language for the interface. Medical terms (medicine names, lab tests, diagnoses) always stay in English.",
+      "english": "English",
+      "khmer": "ខ្មែរ (Khmer)"
+    }
+  }
+}
