@@ -1,11 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { MapPin } from "lucide-react";
-import { getBranch } from "@/lib/db/queries/clinic";
+import { getBranch, getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { BranchForm } from "@/components/settings/branch-form";
+import { PaymentQrUploader } from "@/components/settings/payment-qr-uploader";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Edit branch · Settings" };
 
@@ -18,8 +19,8 @@ export default async function EditBranchPage({
 
   if (!(await hasPermission(PERMISSIONS.CLINIC_MANAGE))) redirect("/settings/branches");
 
-  const branch = await getBranch(id);
-  if (!branch) notFound();
+  const [branch, clinic] = await Promise.all([getBranch(id), getCurrentClinic()]);
+  if (!branch || !clinic) notFound();
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -36,6 +37,15 @@ export default async function EditBranchPage({
               isPrimary: branch.is_primary,
             }}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment QR</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PaymentQrUploader clinicId={clinic.id} branchId={branch.id} qrPath={branch.payment_qr_path} />
         </CardContent>
       </Card>
     </main>

@@ -208,6 +208,7 @@ export interface Database {
           code: string | null;
           address: string | null;
           phone: string | null;
+          payment_qr_path: string | null;
           is_primary: boolean;
           created_at: string;
           updated_at: string;
@@ -221,6 +222,7 @@ export interface Database {
           code?: string | null;
           address?: string | null;
           phone?: string | null;
+          payment_qr_path?: string | null;
           is_primary?: boolean;
           created_at?: string;
           updated_at?: string;

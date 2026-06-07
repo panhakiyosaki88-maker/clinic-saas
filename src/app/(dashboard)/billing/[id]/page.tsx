@@ -8,6 +8,7 @@ import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext, formatIn, usdToKhr } from "@/lib/billing/currency";
 import { Money } from "@/components/billing/money";
 import { buildKhqr } from "@/lib/billing/khqr";
+import { paymentQrUrl } from "@/lib/payment-qr";
 import { KhqrPanel } from "@/components/billing/khqr-panel";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -63,8 +64,13 @@ export default async function InvoiceDetailPage({
   })).filter((g) => g.items.length > 0);
 
   const currency = ctx.primary;
+
+  // An uploaded branch payment QR takes precedence over the generated KHQR.
+  const qrUrl = paymentQrUrl(inv.payment_qr_path);
+  const showPaymentQr = !!qrUrl && active && !isDraft && Number(inv.balance) > 0;
+
   const khqrPayload =
-    settings?.khqr_merchant_account && active && !isDraft && Number(inv.balance) > 0
+    !qrUrl && settings?.khqr_merchant_account && active && !isDraft && Number(inv.balance) > 0
       ? buildKhqr({
           merchantAccount: settings.khqr_merchant_account,
           merchantName: settings.khqr_merchant_name || inv.clinic_name,
@@ -157,6 +163,17 @@ export default async function InvoiceDetailPage({
         </p>
 
         {inv.notes && <p className="mt-6 whitespace-pre-wrap text-sm text-[var(--muted-foreground)]">{inv.notes}</p>}
+
+        {showPaymentQr && (
+          <div className="mt-6 border-t border-[var(--border)] pt-6 text-center">
+            <p className="text-sm font-medium">Scan to pay</p>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              {inv.invoice_number} · {one(Number(inv.balance))}
+            </p>
+            {/* eslint-disable-next-line @next/next/no-img-element -- public Storage URL, prints on the invoice */}
+            <img src={qrUrl!} alt="Payment QR" className="mx-auto mt-3 size-40 object-contain" />
+          </div>
+        )}
       </article>
 
       {canWrite && active && !isDraft && Number(inv.balance) > 0 && (

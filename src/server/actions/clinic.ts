@@ -187,6 +187,37 @@ export async function setClinicLogo(logoPath: string | null): Promise<ActionResu
   return ok(undefined);
 }
 
+/** Sets (or clears) a branch's payment QR path after a client upload to Storage. */
+export async function setBranchPaymentQr(
+  branchId: string,
+  qrPath: string | null
+): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.CLINIC_MANAGE);
+  if (qrPath && !qrPath.startsWith(`${clinicId}/`)) return fail("Invalid file path.");
+
+  const supabase = await createClient();
+  // Best-effort removal of the previous QR object.
+  const { data: prev } = await supabase
+    .from("branches")
+    .select("payment_qr_path")
+    .eq("id", branchId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+  if (prev?.payment_qr_path && prev.payment_qr_path !== qrPath) {
+    await supabase.storage.from("payment-qrs").remove([prev.payment_qr_path]);
+  }
+
+  const { error } = await supabase
+    .from("branches")
+    .update({ payment_qr_path: qrPath })
+    .eq("id", branchId)
+    .eq("clinic_id", clinicId);
+  if (error) return fail(error.message);
+
+  revalidatePath("/settings/branches");
+  return ok(undefined);
+}
+
 /** Clinic owner adds a branch (RLS + insert policy enforce clinic + role). */
 export async function createBranch(
   input: CreateBranchInput

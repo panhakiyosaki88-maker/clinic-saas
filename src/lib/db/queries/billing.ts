@@ -160,13 +160,17 @@ export interface InvoiceDetail extends InvoiceWithPatient {
   items: InvoiceItem[];
   payments: Payment[];
   clinic_name: string;
+  /** The invoice branch's payment QR (or the primary branch's, when unassigned). */
+  payment_qr_path: string | null;
 }
 
 export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("invoices")
-    .select(`*, patients ( full_name, patient_number ), clinics ( name ), invoice_items ( * ), payments ( * )`)
+    .select(
+      `*, patients ( full_name, patient_number ), clinics ( name ), branches ( payment_qr_path ), invoice_items ( * ), payments ( * )`
+    )
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle();
@@ -176,17 +180,33 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   const row = data as unknown as Invoice & {
     patients: { full_name: string; patient_number: string } | null;
     clinics: { name: string } | null;
+    branches: { payment_qr_path: string | null } | null;
     invoice_items: InvoiceItem[] | null;
     payments: Payment[] | null;
   };
   const items = (row.invoice_items ?? []).slice().sort((a, b) => a.sort_order - b.sort_order);
   const payments = (row.payments ?? []).slice().sort((a, b) => +new Date(b.paid_at) - +new Date(a.paid_at));
 
+  // Use the invoice branch's QR; an unassigned invoice (branch_id null) bills on
+  // the clinic's primary branch, so fall back to the primary branch's QR.
+  let payment_qr_path = row.branches?.payment_qr_path ?? null;
+  if (!payment_qr_path && !row.branch_id) {
+    const { data: primary } = await supabase
+      .from("branches")
+      .select("payment_qr_path")
+      .eq("clinic_id", row.clinic_id)
+      .eq("is_primary", true)
+      .is("deleted_at", null)
+      .maybeSingle();
+    payment_qr_path = primary?.payment_qr_path ?? null;
+  }
+
   return {
     ...row,
     patient_name: row.patients?.full_name ?? null,
     patient_number: row.patients?.patient_number ?? null,
     clinic_name: row.clinics?.name ?? "",
+    payment_qr_path,
     items,
     payments,
   };
