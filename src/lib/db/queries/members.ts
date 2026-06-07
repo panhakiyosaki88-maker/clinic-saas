@@ -89,3 +89,54 @@ export async function listAssignableRoles(): Promise<AssignableRole[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+export interface RoleGuideEntry {
+  key: string;
+  name: string;
+  description: string | null;
+  /** Capabilities grouped by module, derived live from role_permissions. */
+  groups: { category: string; items: string[] }[];
+}
+
+/**
+ * The role reference shown on the Staff page: every assignable role with the
+ * concrete capabilities it grants. Built from the role → permission mapping in
+ * the database, so it stays accurate automatically whenever roles or their
+ * permissions change — there is no hard-coded list of "what each role can do".
+ */
+export async function listRoleGuide(): Promise<RoleGuideEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("roles")
+    .select(
+      `key, name, description, role_permissions ( permissions ( category, description ) )`
+    )
+    .neq("key", "super_admin")
+    .order("name", { ascending: true });
+  if (error) throw error;
+
+  type Row = {
+    key: string;
+    name: string;
+    description: string | null;
+    role_permissions:
+      | { permissions: { category: string; description: string } | null }[]
+      | null;
+  };
+
+  return ((data ?? []) as unknown as Row[]).map((r) => {
+    // Group permission descriptions by their module category.
+    const byCategory = new Map<string, string[]>();
+    for (const rp of r.role_permissions ?? []) {
+      const p = rp.permissions;
+      if (!p) continue;
+      const items = byCategory.get(p.category) ?? [];
+      if (!items.includes(p.description)) items.push(p.description);
+      byCategory.set(p.category, items);
+    }
+    const groups = [...byCategory.entries()]
+      .map(([category, items]) => ({ category, items: items.sort() }))
+      .sort((a, b) => a.category.localeCompare(b.category));
+    return { key: r.key, name: r.name, description: r.description, groups };
+  });
+}

@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
-import { listMembers, listAssignableRoles } from "@/lib/db/queries/members";
+import { listMembers, listAssignableRoles, listRoleGuide } from "@/lib/db/queries/members";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { UserCog } from "lucide-react";
 import { AddUserForm } from "@/components/members/add-user-form";
 import { MemberList } from "@/components/members/member-list";
+import { RolesGuide } from "@/components/members/roles-guide";
 import { PageHeader } from "@/components/page-header";
 import {
   Card,
@@ -22,7 +23,11 @@ export default async function StaffPage() {
   if (!clinic) redirect("/onboarding");
 
   const canManage = await hasPermission(PERMISSIONS.STAFF_MANAGE);
-  const [members, roles] = await Promise.all([listMembers(), listAssignableRoles()]);
+  const [members, roles, roleGuide] = await Promise.all([
+    listMembers(),
+    listAssignableRoles(),
+    listRoleGuide(),
+  ]);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -52,6 +57,19 @@ export default async function StaffPage() {
         </CardHeader>
         <CardContent>
           <MemberList members={members} roles={roles} canManage={canManage} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Roles &amp; what they can do</CardTitle>
+          <CardDescription>
+            Pick the role that matches a person&apos;s job. This list reflects the
+            access each role currently grants.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RolesGuide roles={roleGuide} />
         </CardContent>
       </Card>
     </main>
