@@ -150,30 +150,33 @@ export default async function InvoiceDetailPage({
           </tbody>
         </table>
 
-        <div className="ml-auto mt-4 max-w-xs space-y-1 text-sm">
-          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{one(inv.subtotal)}</span></div>
-          {Number(inv.discount) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Discount</span><span className="tabular-nums">−{one(inv.discount)}</span></div>}
-          {Number(inv.tax) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Tax</span><span className="tabular-nums">{one(inv.tax)}</span></div>}
-          <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-1 font-semibold"><span>Total</span><Money usd={Number(inv.total)} ctx={ctx} /></div>
-          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Paid</span><span className="tabular-nums">{one(inv.amount_paid)}</span></div>
-          <div className="flex items-baseline justify-between gap-2 font-semibold"><span>Balance</span><Money usd={Number(inv.balance)} ctx={ctx} /></div>
+        <div className="mt-4 flex items-start justify-between gap-4">
+          {showPaymentQr ? (
+            <div className="text-center">
+              <p className="text-xs font-medium">Scan to pay</p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- public Storage URL, prints on the invoice */}
+              <img src={qrUrl!} alt="Payment QR" className="mt-1 size-32 object-contain" />
+            </div>
+          ) : (
+            <div />
+          )}
+
+          <div className="max-w-xs flex-1 sm:max-w-[16rem]">
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{one(inv.subtotal)}</span></div>
+              {Number(inv.discount) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Discount</span><span className="tabular-nums">−{one(inv.discount)}</span></div>}
+              {Number(inv.tax) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Tax</span><span className="tabular-nums">{one(inv.tax)}</span></div>}
+              <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-1 font-semibold"><span>Total</span><Money usd={Number(inv.total)} ctx={ctx} /></div>
+              <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Paid</span><span className="tabular-nums">{one(inv.amount_paid)}</span></div>
+              <div className="flex items-baseline justify-between gap-2 font-semibold"><span>Balance</span><Money usd={Number(inv.balance)} ctx={ctx} /></div>
+            </div>
+            <p className="mt-1 text-right text-[10px] text-[var(--muted-foreground)]">
+              1 USD = {ctx.rate.toLocaleString()} KHR
+            </p>
+          </div>
         </div>
-        <p className="ml-auto mt-1 max-w-xs text-right text-[10px] text-[var(--muted-foreground)]">
-          1 USD = {ctx.rate.toLocaleString()} KHR
-        </p>
 
         {inv.notes && <p className="mt-6 whitespace-pre-wrap text-sm text-[var(--muted-foreground)]">{inv.notes}</p>}
-
-        {showPaymentQr && (
-          <div className="mt-6 border-t border-[var(--border)] pt-6 text-center">
-            <p className="text-sm font-medium">Scan to pay</p>
-            <p className="text-xs text-[var(--muted-foreground)]">
-              {inv.invoice_number} · {one(Number(inv.balance))}
-            </p>
-            {/* eslint-disable-next-line @next/next/no-img-element -- public Storage URL, prints on the invoice */}
-            <img src={qrUrl!} alt="Payment QR" className="mx-auto mt-3 size-40 object-contain" />
-          </div>
-        )}
       </article>
 
       {canWrite && active && !isDraft && Number(inv.balance) > 0 && (
