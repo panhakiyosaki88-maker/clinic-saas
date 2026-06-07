@@ -8,9 +8,11 @@ import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   inviteMemberSchema,
+  createStaffSchema,
   changeRoleSchema,
   membershipIdSchema,
   type InviteMemberInput,
+  type CreateStaffInput,
   type ChangeRoleInput,
 } from "@/lib/validations/member";
 import { ok, fail, type ActionResult } from "./types";
@@ -100,6 +102,76 @@ export async function inviteMember(
 
   revalidatePath("/settings/staff");
   return ok({ status: "invited" });
+}
+
+/**
+ * Clinic owner creates a ready-to-use staff login directly: an email + password
+ * account that is pre-approved and active in this clinic, so the staff member
+ * can sign in immediately. Unlike inviteMember, this skips both the self-signup
+ * and the Super Admin approval steps (the clinic owner is trusted for their own
+ * staff). Service-role admin client is required to create the auth user and to
+ * stamp the JWT claims RLS reads.
+ */
+export async function createStaffUser(
+  input: CreateStaffInput
+): Promise<ActionResult<{ userId: string }>> {
+  const { clinicId, user } = await requirePermission(PERMISSIONS.STAFF_MANAGE);
+  const parsed = createStaffSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  }
+  const { name, password, roleKey } = parsed.data;
+  const email = parsed.data.email.toLowerCase();
+  const phone = parsed.data.phone?.trim() || null;
+  const admin = createAdminClient();
+
+  const roleId = await systemRoleId(admin, roleKey);
+  if (!roleId) return fail("Unknown role.");
+
+  // Reject duplicates up front for a clear message (createUser would also error).
+  if (await lookupUserId(admin, email)) {
+    return fail("A user with that email already exists.", { email: ["Already in use"] });
+  }
+
+  // Create the auth user, already confirmed (can log in) with the clinic claims
+  // baked into app_metadata so RLS recognizes them on first sign-in.
+  const { data: created, error: createErr } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: name, ...(phone ? { phone } : {}) },
+    app_metadata: { clinic_id: clinicId, role: roleKey },
+  });
+  if (createErr || !created.user) {
+    return fail(createErr?.message ?? "Could not create the user.");
+  }
+  const newUserId = created.user.id;
+
+  // The handle_new_user trigger inserts a `pending` profile; approve it so the
+  // account isn't gated by Super Admin approval.
+  const { error: profErr } = await admin
+    .from("profiles")
+    .update({ status: "approved", approved_at: new Date().toISOString(), approved_by: user.id })
+    .eq("id", newUserId);
+  if (profErr) {
+    await admin.auth.admin.deleteUser(newUserId);
+    return fail(profErr.message);
+  }
+
+  // Active membership in this clinic.
+  const { error: memErr } = await admin.from("memberships").insert({
+    clinic_id: clinicId,
+    user_id: newUserId,
+    role_id: roleId,
+    status: "active",
+  });
+  if (memErr) {
+    await admin.auth.admin.deleteUser(newUserId);
+    return fail(memErr.message);
+  }
+
+  revalidatePath("/settings/staff");
+  return ok({ userId: newUserId });
 }
 
 async function lookupUserId(

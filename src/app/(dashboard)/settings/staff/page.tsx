@@ -4,7 +4,7 @@ import { listMembers, listAssignableRoles } from "@/lib/db/queries/members";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { UserCog } from "lucide-react";
-import { InviteForm } from "@/components/members/invite-form";
+import { AddUserForm } from "@/components/members/add-user-form";
 import { MemberList } from "@/components/members/member-list";
 import { PageHeader } from "@/components/page-header";
 import {
@@ -35,13 +35,13 @@ export default async function StaffPage() {
       {canManage && (
         <Card>
           <CardHeader>
-            <CardTitle>Invite a team member</CardTitle>
+            <CardTitle>Add a team member</CardTitle>
             <CardDescription>
-              They&apos;ll get access as soon as they sign up with this email.
+              Create their login with a password — they can sign in right away.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <InviteForm roles={roles} />
+            <AddUserForm roles={roles} />
           </CardContent>
         </Card>
       )}
