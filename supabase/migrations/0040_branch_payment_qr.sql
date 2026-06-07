@@ -1,5 +1,5 @@
 -- ============================================================================
--- Migration 0033 — Branch payment QR (public bucket + branches.payment_qr_path)
+-- Migration 0040 — Branch payment QR (public bucket + branches.payment_qr_path)
 -- ----------------------------------------------------------------------------
 -- A branch's payment QR is a static image (ABA/Wing/bank/printed KHQR) that
 -- patients scan to pay. It is meant to be scanned by anyone, so it lives in a

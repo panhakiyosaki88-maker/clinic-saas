@@ -1,7 +1,7 @@
 /**
  * Builds the public URL for a branch's payment QR from its stored object path.
  *
- * Payment QRs live in the PUBLIC `payment-qrs` bucket (migration 0033), so the
+ * Payment QRs live in the PUBLIC `payment-qrs` bucket (migration 0040), so the
  * URL is stable and needs no signing — it can render anywhere, on the server or
  * the client (including the printed invoice). Returns null when none is set.
  */
