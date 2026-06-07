@@ -51,7 +51,7 @@ export function ServicePriceForm({
         return;
       }
       if (!isEdit) form.reset();
-      router.push("/billing/catalog");
+      router.push("/settings/billing/catalog");
       router.refresh();
     });
   }
@@ -95,7 +95,7 @@ export function ServicePriceForm({
       <div className="flex gap-2 sm:col-span-2">
         <Button type="submit" size="sm" disabled={pending}>{pending ? "Saving…" : isEdit ? "Save changes" : "Add price"}</Button>
         {isEdit && (
-          <Button type="button" variant="ghost" size="sm" onClick={() => { router.push("/billing/catalog"); router.refresh(); }}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => { router.push("/settings/billing/catalog"); router.refresh(); }}>
             Cancel
           </Button>
         )}

@@ -1,4 +1,4 @@
-import { Building2, MapPin, UserCog, CreditCard, type LucideIcon } from "lucide-react";
+import { Building2, MapPin, UserCog, CreditCard, Receipt, type LucideIcon } from "lucide-react";
 import { PERMISSIONS, type Permission } from "@/lib/auth/permissions";
 
 export interface SettingsSection {
@@ -30,6 +30,13 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: "Manage your clinic's physical locations",
     icon: MapPin,
     permission: PERMISSIONS.CLINIC_MANAGE,
+  },
+  {
+    href: "/settings/billing",
+    label: "Billing",
+    description: "Price catalog, procedures, memberships & payment settings",
+    icon: Receipt,
+    permission: PERMISSIONS.BILLING_READ,
   },
   {
     href: "/settings/staff",

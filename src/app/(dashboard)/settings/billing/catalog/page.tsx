@@ -8,7 +8,6 @@ import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, type ServiceCategoryValue 
 import { formatUSD } from "@/lib/billing/currency";
 import { Tags } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
-import { BillingTabs } from "@/components/billing/billing-tabs";
 import { ServicePriceForm } from "@/components/billing/service-price-form";
 import { CatalogRowActions } from "@/components/billing/catalog-row-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,18 +36,17 @@ export default async function CatalogPage({
   const branchOpts = branches.map((b) => ({ id: b.id, name: b.name }));
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+    <>
       <PageHeader
         icon={Tags}
         title="Price catalog"
         subtitle={`${prices.length} ${showArchived ? "items (incl. archived)" : "active prices"}`}
         actions={
-          <HeaderAction href={showArchived ? "/billing/catalog" : "/billing/catalog?archived=1"} variant="outline">
+          <HeaderAction href={showArchived ? "/settings/billing/catalog" : "/settings/billing/catalog?archived=1"} variant="outline">
             {showArchived ? "Hide archived" : "Show archived"}
           </HeaderAction>
         }
       />
-      <BillingTabs />
 
       {canWrite && (
         <Card>
@@ -100,6 +98,6 @@ export default async function CatalogPage({
       {prices.length === 0 && (
         <Card><CardContent><p className="py-6 text-sm text-[var(--muted-foreground)]">No prices yet.</p></CardContent></Card>
       )}
-    </main>
+    </>
   );
 }

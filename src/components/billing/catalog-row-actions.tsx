@@ -15,7 +15,7 @@ export function CatalogRowActions({ id, archived }: { id: string; archived: bool
     <div className="flex items-center justify-end gap-1">
       {!archived && (
         <Button asChild variant="ghost" size="sm">
-          <Link href={`/billing/catalog?edit=${id}`}>Edit</Link>
+          <Link href={`/settings/billing/catalog?edit=${id}`}>Edit</Link>
         </Button>
       )}
       <Button

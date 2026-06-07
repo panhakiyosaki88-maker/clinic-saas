@@ -5,14 +5,13 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Settings } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { BillingTabs } from "@/components/billing/billing-tabs";
 import { BillingSettingsForm } from "@/components/billing/billing-settings-form";
 import { PaymentQrUploader } from "@/components/settings/payment-qr-uploader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const metadata = { title: "Billing settings" };
+export const metadata = { title: "Payment settings" };
 
-export default async function BillingSettingsPage() {
+export default async function PaymentSettingsPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_WRITE))) redirect("/billing");
@@ -22,13 +21,12 @@ export default async function BillingSettingsPage() {
   const multiBranch = branches.length > 1;
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+    <>
       <PageHeader
         icon={Settings}
-        title="Billing settings"
+        title="Payment settings"
         subtitle="Per-branch KHQR, payment QR, currency and defaults"
       />
-      <BillingTabs />
 
       {branches.length === 0 ? (
         <Card>
@@ -66,6 +64,6 @@ export default async function BillingSettingsPage() {
           </Card>
         ))
       )}
-    </main>
+    </>
   );
 }

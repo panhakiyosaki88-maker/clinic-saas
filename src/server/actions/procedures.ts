@@ -29,7 +29,7 @@ export async function createProcedure(input: ProcedureInput): Promise<ActionResu
     .single();
   if (error || !data) return fail(error?.message ?? "Could not create procedure.");
 
-  revalidatePath("/billing/procedures");
+  revalidatePath("/settings/billing/procedures");
   return ok({ id: data.id });
 }
 
@@ -53,7 +53,7 @@ export async function updateProcedure(id: string, input: ProcedureInput): Promis
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
-  revalidatePath("/billing/procedures");
+  revalidatePath("/settings/billing/procedures");
   return ok(undefined);
 }
 
@@ -66,6 +66,6 @@ export async function deleteProcedure(id: string): Promise<ActionResult> {
     .eq("id", id)
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
-  revalidatePath("/billing/procedures");
+  revalidatePath("/settings/billing/procedures");
   return ok(undefined);
 }

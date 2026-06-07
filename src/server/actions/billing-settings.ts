@@ -46,6 +46,6 @@ export async function saveBillingSettings(input: BillingSettingsInput): Promise<
     { onConflict: "clinic_id,branch_id" }
   );
   if (error) return fail(error.message);
-  revalidatePath("/billing/settings");
+  revalidatePath("/settings/billing/payment");
   return ok(undefined);
 }

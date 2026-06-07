@@ -25,7 +25,7 @@ export async function createServicePrice(input: ServicePriceInput): Promise<Acti
     created_by: user.id,
   });
   if (error) return fail(error.message);
-  revalidatePath("/billing/catalog");
+  revalidatePath("/settings/billing/catalog");
   return ok(undefined);
 }
 
@@ -49,7 +49,7 @@ export async function updateServicePrice(id: string, input: ServicePriceInput): 
     .eq("id", id)
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
-  revalidatePath("/billing/catalog");
+  revalidatePath("/settings/billing/catalog");
   return ok(undefined);
 }
 
@@ -63,7 +63,7 @@ export async function setServicePriceArchived(id: string, archived: boolean): Pr
     .eq("id", id)
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
-  revalidatePath("/billing/catalog");
+  revalidatePath("/settings/billing/catalog");
   return ok(undefined);
 }
 
@@ -81,6 +81,6 @@ export async function deleteServicePrice(id: string): Promise<ActionResult> {
     .eq("id", id)
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
-  revalidatePath("/billing/catalog");
+  revalidatePath("/settings/billing/catalog");
   return ok(undefined);
 }

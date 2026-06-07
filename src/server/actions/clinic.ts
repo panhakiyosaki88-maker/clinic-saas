@@ -214,7 +214,7 @@ export async function setBranchPaymentQr(
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
-  revalidatePath("/billing/settings");
+  revalidatePath("/settings/billing/payment");
   return ok(undefined);
 }
 
@@ -234,7 +234,7 @@ export async function setBranchPaymentQrCaption(
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
-  revalidatePath("/billing/settings");
+  revalidatePath("/settings/billing/payment");
   return ok(undefined);
 }
 

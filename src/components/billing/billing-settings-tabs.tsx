@@ -4,22 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/billing", label: "Dashboard", exact: true },
-  { href: "/billing/workspace", label: "Workspace" },
-  { href: "/billing/invoices", label: "Invoices" },
-  { href: "/billing/payments", label: "Payments" },
-  { href: "/billing/debt", label: "Debt" },
-  { href: "/billing/reports", label: "Reports" },
-  { href: "/billing/audit", label: "Audit" },
+  { href: "/settings/billing/catalog", label: "Price catalog" },
+  { href: "/settings/billing/procedures", label: "Procedures" },
+  { href: "/settings/billing/memberships", label: "Memberships" },
+  { href: "/settings/billing/payment", label: "Payment settings" },
 ];
 
-/** Sub-navigation shared across the billing pages. */
-export function BillingTabs() {
+/** Sub-navigation shared across the billing configuration pages (under Settings). */
+export function BillingSettingsTabs() {
   const pathname = usePathname();
   return (
     <nav className="flex flex-wrap gap-1 border-b border-[var(--border)]">
       {TABS.map((t) => {
-        const active = "exact" in t && t.exact ? pathname === t.href : pathname.startsWith(t.href);
+        const active = pathname.startsWith(t.href);
         return (
           <Link
             key={t.href}

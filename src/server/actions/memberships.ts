@@ -36,7 +36,7 @@ export async function createMembershipPlan(input: MembershipPlanInput): Promise<
     .single();
   if (error || !data) return fail(error?.message ?? "Could not create plan.");
 
-  revalidatePath("/billing/memberships");
+  revalidatePath("/settings/billing/memberships");
   return ok({ id: data.id });
 }
 
@@ -62,7 +62,7 @@ export async function updateMembershipPlan(id: string, input: MembershipPlanInpu
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
-  revalidatePath("/billing/memberships");
+  revalidatePath("/settings/billing/memberships");
   return ok(undefined);
 }
 
@@ -75,7 +75,7 @@ export async function deleteMembershipPlan(id: string): Promise<ActionResult> {
     .eq("id", id)
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
-  revalidatePath("/billing/memberships");
+  revalidatePath("/settings/billing/memberships");
   return ok(undefined);
 }
 
