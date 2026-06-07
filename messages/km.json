@@ -425,6 +425,27 @@
       "inactive": "អសកម្ម"
     }
   },
+  "pharmacy": {
+    "title": "ឱសថស្ថាន",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលឱសថស្ថានទេ។",
+    "summary": "{count, plural, other {ឱសថ #}} · {low} ខ្វះ · {expiring} ផុតកំណត់",
+    "newMedicine": "ឱសថថ្មី",
+    "lowStock": "ស្តុកខ្វះ ({count})",
+    "allGood": "គ្រប់គ្រាន់។",
+    "expiringSoon": "ជិតផុតកំណត់ ({count})",
+    "nothingExpiring": "គ្មានអ្វីផុតកំណត់។",
+    "empty": {
+      "noMatch": "គ្មានឱសថត្រូវនឹងការស្វែងរករបស់អ្នក។",
+      "none": "មិនទាន់មានឱសថ។"
+    },
+    "table": {
+      "name": "ឈ្មោះ",
+      "sku": "SKU",
+      "category": "ប្រភេទ",
+      "stock": "ស្តុក",
+      "price": "តម្លៃ"
+    }
+  },
   "errors": {
     "fixFields": "សូមកែតម្រូវវាលដែលបានបន្លិច។",
     "invalidRequest": "សំណើមិនត្រឹមត្រូវ។",

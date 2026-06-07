@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listMedicines, lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
 import { hasPermission } from "@/lib/auth/guard";
@@ -19,11 +20,12 @@ export default async function PharmacyPage({
 }) {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("pharmacy");
   if (!(await hasPermission(PERMISSIONS.PHARMACY_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view the pharmacy.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -41,12 +43,12 @@ export default async function PharmacyPage({
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Package}
-        title="Pharmacy"
-        subtitle={`${medicines.length} ${medicines.length === 1 ? "medicine" : "medicines"} · ${lowStock.length} low · ${expiring.length} expiring`}
+        title={t("title")}
+        subtitle={t("summary", { count: medicines.length, low: lowStock.length, expiring: expiring.length })}
         actions={
           canWrite && (
             <HeaderAction href="/pharmacy/new">
-              <Plus /> New medicine
+              <Plus /> {t("newMedicine")}
             </HeaderAction>
           )
         }
@@ -60,10 +62,10 @@ export default async function PharmacyPage({
       {(lowStock.length > 0 || expiring.length > 0) && (
         <div className="grid gap-4 sm:grid-cols-2">
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Low stock ({lowStock.length})</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">{t("lowStock", { count: lowStock.length })}</CardTitle></CardHeader>
             <CardContent className="space-y-1">
               {lowStock.length === 0 ? (
-                <p className="text-sm text-[var(--muted-foreground)]">All good.</p>
+                <p className="text-sm text-[var(--muted-foreground)]">{t("allGood")}</p>
               ) : (
                 lowStock.slice(0, 8).map((m) => (
                   <div key={m.id} className="flex justify-between text-sm">
@@ -75,10 +77,10 @@ export default async function PharmacyPage({
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Expiring soon ({expiring.length})</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">{t("expiringSoon", { count: expiring.length })}</CardTitle></CardHeader>
             <CardContent className="space-y-1">
               {expiring.length === 0 ? (
-                <p className="text-sm text-[var(--muted-foreground)]">Nothing expiring.</p>
+                <p className="text-sm text-[var(--muted-foreground)]">{t("nothingExpiring")}</p>
               ) : (
                 expiring.slice(0, 8).map((b) => (
                   <div key={b.id} className="flex justify-between text-sm">
@@ -98,17 +100,17 @@ export default async function PharmacyPage({
         <CardContent className="p-0">
           {medicines.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">
-              {q ? "No medicines match your search." : "No medicines yet."}
+              {q ? t("empty.noMatch") : t("empty.none")}
             </p>
           ) : (
             <Table>
               <THead>
                 <tr>
-                  <TH>Name</TH>
-                  <TH>SKU</TH>
-                  <TH>Category</TH>
-                  <TH className="text-right">Stock</TH>
-                  <TH className="text-right">Price</TH>
+                  <TH>{t("table.name")}</TH>
+                  <TH>{t("table.sku")}</TH>
+                  <TH>{t("table.category")}</TH>
+                  <TH className="text-right">{t("table.stock")}</TH>
+                  <TH className="text-right">{t("table.price")}</TH>
                 </tr>
               </THead>
               <TBody>

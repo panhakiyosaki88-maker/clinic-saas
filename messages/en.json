@@ -425,6 +425,27 @@
       "inactive": "Inactive"
     }
   },
+  "pharmacy": {
+    "title": "Pharmacy",
+    "noPermission": "You don't have permission to view the pharmacy.",
+    "summary": "{count, plural, one {# medicine} other {# medicines}} · {low} low · {expiring} expiring",
+    "newMedicine": "New medicine",
+    "lowStock": "Low stock ({count})",
+    "allGood": "All good.",
+    "expiringSoon": "Expiring soon ({count})",
+    "nothingExpiring": "Nothing expiring.",
+    "empty": {
+      "noMatch": "No medicines match your search.",
+      "none": "No medicines yet."
+    },
+    "table": {
+      "name": "Name",
+      "sku": "SKU",
+      "category": "Category",
+      "stock": "Stock",
+      "price": "Price"
+    }
+  },
   "errors": {
     "fixFields": "Please fix the highlighted fields.",
     "invalidRequest": "Invalid request.",
