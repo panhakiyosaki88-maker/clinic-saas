@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Languages } from "lucide-react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { setUserLocale } from "@/i18n/locale";
-import { locales, localeNames, localeShort, type Locale } from "@/i18n/config";
+import { locales, localeNames, type Locale } from "@/i18n/config";
+import { LocaleFlag } from "@/components/settings/flags";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -34,12 +34,8 @@ export function LanguageToggle() {
       title={localeNames[next]}
       disabled={pending}
       onClick={toggle}
-      className="relative"
     >
-      <Languages />
-      <span className="absolute -bottom-0.5 right-0 rounded bg-[var(--background)] px-0.5 text-[9px] font-semibold leading-none">
-        {localeShort[current]}
-      </span>
+      <LocaleFlag locale={current} />
     </Button>
   );
 }
