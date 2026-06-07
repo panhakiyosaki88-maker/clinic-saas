@@ -192,7 +192,7 @@ export async function setBranchPaymentQr(
   branchId: string,
   qrPath: string | null
 ): Promise<ActionResult> {
-  const { clinicId } = await requirePermission(PERMISSIONS.CLINIC_MANAGE);
+  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
   if (qrPath && !qrPath.startsWith(`${clinicId}/`)) return fail("Invalid file path.");
 
   const supabase = await createClient();
@@ -214,7 +214,7 @@ export async function setBranchPaymentQr(
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
-  revalidatePath("/settings/branches");
+  revalidatePath("/billing/settings");
   return ok(undefined);
 }
 
@@ -223,7 +223,7 @@ export async function setBranchPaymentQrCaption(
   branchId: string,
   caption: string
 ): Promise<ActionResult> {
-  const { clinicId } = await requirePermission(PERMISSIONS.CLINIC_MANAGE);
+  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
   const trimmed = caption.trim().slice(0, 120);
 
   const supabase = await createClient();
@@ -234,7 +234,7 @@ export async function setBranchPaymentQrCaption(
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);
 
-  revalidatePath("/settings/branches");
+  revalidatePath("/billing/settings");
   return ok(undefined);
 }
 
