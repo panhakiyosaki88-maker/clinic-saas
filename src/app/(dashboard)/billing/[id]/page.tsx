@@ -156,6 +156,9 @@ export default async function InvoiceDetailPage({
               <p className="text-xs font-medium">Scan to pay</p>
               {/* eslint-disable-next-line @next/next/no-img-element -- public Storage URL, prints on the invoice */}
               <img src={qrUrl!} alt="Payment QR" className="mt-1 size-32 object-contain" />
+              {inv.payment_qr_caption && (
+                <p className="mt-1 max-w-32 text-[10px] text-[var(--muted-foreground)]">{inv.payment_qr_caption}</p>
+              )}
             </div>
           ) : (
             <div />

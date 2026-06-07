@@ -45,7 +45,12 @@ export default async function EditBranchPage({
           <CardTitle>Payment QR</CardTitle>
         </CardHeader>
         <CardContent>
-          <PaymentQrUploader clinicId={clinic.id} branchId={branch.id} qrPath={branch.payment_qr_path} />
+          <PaymentQrUploader
+            clinicId={clinic.id}
+            branchId={branch.id}
+            qrPath={branch.payment_qr_path}
+            caption={branch.payment_qr_caption}
+          />
         </CardContent>
       </Card>
     </main>

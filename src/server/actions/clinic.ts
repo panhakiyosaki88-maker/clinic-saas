@@ -218,6 +218,26 @@ export async function setBranchPaymentQr(
   return ok(undefined);
 }
 
+/** Sets (or clears) the caption shown under a branch's payment QR on invoices. */
+export async function setBranchPaymentQrCaption(
+  branchId: string,
+  caption: string
+): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.CLINIC_MANAGE);
+  const trimmed = caption.trim().slice(0, 120);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("branches")
+    .update({ payment_qr_caption: trimmed || null })
+    .eq("id", branchId)
+    .eq("clinic_id", clinicId);
+  if (error) return fail(error.message);
+
+  revalidatePath("/settings/branches");
+  return ok(undefined);
+}
+
 /** Clinic owner adds a branch (RLS + insert policy enforce clinic + role). */
 export async function createBranch(
   input: CreateBranchInput

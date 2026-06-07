@@ -29,6 +29,7 @@
     "qrcode": "^1.5.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-image-crop": "^11.0.10",
     "recharts": "^3.8.1",
     "tailwind-merge": "^2.5.4",
     "zod": "^3.23.8"

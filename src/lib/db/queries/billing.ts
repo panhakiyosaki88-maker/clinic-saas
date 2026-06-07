@@ -162,6 +162,8 @@ export interface InvoiceDetail extends InvoiceWithPatient {
   clinic_name: string;
   /** The invoice branch's payment QR (or the primary branch's, when unassigned). */
   payment_qr_path: string | null;
+  /** Caption shown under the payment QR. */
+  payment_qr_caption: string | null;
 }
 
 export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
@@ -169,7 +171,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   const { data, error } = await supabase
     .from("invoices")
     .select(
-      `*, patients ( full_name, patient_number ), clinics ( name ), branches ( payment_qr_path ), invoice_items ( * ), payments ( * )`
+      `*, patients ( full_name, patient_number ), clinics ( name ), branches ( payment_qr_path, payment_qr_caption ), invoice_items ( * ), payments ( * )`
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -180,7 +182,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   const row = data as unknown as Invoice & {
     patients: { full_name: string; patient_number: string } | null;
     clinics: { name: string } | null;
-    branches: { payment_qr_path: string | null } | null;
+    branches: { payment_qr_path: string | null; payment_qr_caption: string | null } | null;
     invoice_items: InvoiceItem[] | null;
     payments: Payment[] | null;
   };
@@ -190,15 +192,17 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   // Use the invoice branch's QR; an unassigned invoice (branch_id null) bills on
   // the clinic's primary branch, so fall back to the primary branch's QR.
   let payment_qr_path = row.branches?.payment_qr_path ?? null;
+  let payment_qr_caption = row.branches?.payment_qr_caption ?? null;
   if (!payment_qr_path && !row.branch_id) {
     const { data: primary } = await supabase
       .from("branches")
-      .select("payment_qr_path")
+      .select("payment_qr_path, payment_qr_caption")
       .eq("clinic_id", row.clinic_id)
       .eq("is_primary", true)
       .is("deleted_at", null)
       .maybeSingle();
     payment_qr_path = primary?.payment_qr_path ?? null;
+    payment_qr_caption = primary?.payment_qr_caption ?? null;
   }
 
   return {
@@ -207,6 +211,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
     patient_number: row.patients?.patient_number ?? null,
     clinic_name: row.clinics?.name ?? "",
     payment_qr_path,
+    payment_qr_caption,
     items,
     payments,
   };
