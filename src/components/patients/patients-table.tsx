@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
@@ -26,19 +27,20 @@ type SortKey = keyof Pick<
 >;
 type Kind = "text" | "number" | "date";
 
-const COLUMNS: { key: SortKey; label: string; kind: Kind }[] = [
-  { key: "patient_number", label: "Number", kind: "text" },
-  { key: "full_name", label: "Name", kind: "text" },
-  { key: "gender", label: "Gender", kind: "text" },
-  { key: "age", label: "Age", kind: "number" },
-  { key: "blood_type", label: "Blood", kind: "text" },
-  { key: "phone", label: "Phone", kind: "text" },
-  { key: "created_at", label: "Registered", kind: "date" },
-  { key: "last_visit_date", label: "Last visit", kind: "date" },
-  { key: "visit_count", label: "Visits", kind: "number" },
+const COLUMNS: { key: SortKey; labelKey: string; kind: Kind }[] = [
+  { key: "patient_number", labelKey: "number", kind: "text" },
+  { key: "full_name", labelKey: "name", kind: "text" },
+  { key: "gender", labelKey: "gender", kind: "text" },
+  { key: "age", labelKey: "age", kind: "number" },
+  { key: "blood_type", labelKey: "blood", kind: "text" },
+  { key: "phone", labelKey: "phone", kind: "text" },
+  { key: "created_at", labelKey: "registered", kind: "date" },
+  { key: "last_visit_date", labelKey: "lastVisit", kind: "date" },
+  { key: "visit_count", labelKey: "visits", kind: "number" },
 ];
 
-const fmtDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString() : "—");
+const fmtDate = (d: string | null | undefined, locale: string) =>
+  d ? new Date(d).toLocaleDateString(locale) : "—";
 
 function compare(a: PatientRow, b: PatientRow, key: SortKey, kind: Kind, dir: 1 | -1): number {
   const av = a[key];
@@ -64,6 +66,8 @@ export function PatientsTable({
   rows: PatientRow[];
   canWrite: boolean;
 }) {
+  const t = useTranslations("patients");
+  const locale = useLocale();
   const [filter, setFilter] = React.useState("");
   const [sort, setSort] = React.useState<{ key: SortKey; dir: 1 | -1 } | null>(null);
 
@@ -98,13 +102,13 @@ export function PatientsTable({
           type="search"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter shown patients by number, name, gender, blood, phone…"
+          placeholder={t("table.filterPlaceholder")}
           className="h-9"
         />
       </div>
 
       {view.length === 0 ? (
-        <p className="p-6 text-sm text-slate-400">No patients match your filter.</p>
+        <p className="p-6 text-sm text-slate-400">{t("table.noMatch")}</p>
       ) : (
         <Table>
           <THead>
@@ -119,13 +123,13 @@ export function PatientsTable({
                       onClick={() => toggleSort(c.key)}
                       className={`-mx-1 inline-flex items-center gap-1 rounded px-1 hover:text-slate-900 dark:hover:text-slate-100 ${active ? "text-slate-900 dark:text-slate-100" : ""}`}
                     >
-                      {c.label}
+                      {t(`table.${c.labelKey}`)}
                       <Icon className={`h-3.5 w-3.5 ${active ? "" : "opacity-40"}`} />
                     </button>
                   </TH>
                 );
               })}
-              {canWrite && <TH className="text-right">Actions</TH>}
+              {canWrite && <TH className="text-right">{t("table.actions")}</TH>}
             </tr>
           </THead>
           <TBody>
@@ -137,14 +141,16 @@ export function PatientsTable({
                     {p.full_name}
                   </Link>
                 </TD>
-                <TD className="capitalize text-slate-500 dark:text-slate-400">{p.gender ?? "—"}</TD>
+                <TD className="text-slate-500 dark:text-slate-400">
+                  {p.gender ? (t.has(`gender.${p.gender}`) ? t(`gender.${p.gender}`) : p.gender) : "—"}
+                </TD>
                 <TD className="text-slate-500 dark:text-slate-400">{p.age !== null ? p.age : "—"}</TD>
                 <TD className="text-slate-500 dark:text-slate-400">
                   {p.blood_type && p.blood_type !== "unknown" ? p.blood_type : "—"}
                 </TD>
                 <TD className="text-slate-500 dark:text-slate-400">{p.phone ?? "—"}</TD>
-                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.created_at)}</TD>
-                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.last_visit_date)}</TD>
+                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.created_at, locale)}</TD>
+                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.last_visit_date, locale)}</TD>
                 <TD className="text-slate-500 dark:text-slate-400">{p.visit_count}</TD>
                 {canWrite && (
                   <TD className="text-right">

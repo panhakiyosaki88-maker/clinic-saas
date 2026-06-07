@@ -179,5 +179,61 @@
       "prevMonth": "Previous month",
       "nextMonth": "Next month"
     }
+  },
+  "patients": {
+    "title": "Patients",
+    "registered": "{count, plural, one {# patient registered} other {# patients registered}}",
+    "newPatient": "New patient",
+    "noPermission": "You don't have permission to view patients.",
+    "filter": {
+      "allGenders": "All genders",
+      "allBloodTypes": "All blood types",
+      "unknown": "Unknown",
+      "allTags": "All tags",
+      "apply": "Filter",
+      "clear": "Clear"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "empty": {
+      "noMatch": "No patients match your filters.",
+      "none": "No patients yet."
+    },
+    "pager": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {current} of {total}"
+    },
+    "table": {
+      "number": "Number",
+      "name": "Name",
+      "gender": "Gender",
+      "age": "Age",
+      "blood": "Blood",
+      "phone": "Phone",
+      "registered": "Registered",
+      "lastVisit": "Last visit",
+      "visits": "Visits",
+      "actions": "Actions",
+      "filterPlaceholder": "Filter shown patients by number, name, gender, blood, phone…",
+      "noMatch": "No patients match your filter."
+    },
+    "search": {
+      "placeholder": "Search name, number, phone…",
+      "aria": "Search patients"
+    },
+    "purge": {
+      "delete": "Delete {name}",
+      "title": "Delete patient permanently",
+      "warning": "This permanently deletes <b>{name}</b> and everything linked to them — visits, prescriptions, lab work, and all uploaded documents and files. This cannot be undone.",
+      "confirmPrompt": "Type <b>{name}</b> to confirm:",
+      "namePlaceholder": "Patient's full name",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "confirm": "Delete permanently"
+    }
   }
 }

@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 
 export function PatientSearch() {
+  const t = useTranslations("patients");
   const router = useRouter();
   const params = useSearchParams();
   const [value, setValue] = React.useState(params.get("q") ?? "");
@@ -19,10 +21,10 @@ export function PatientSearch() {
     <form onSubmit={onSubmit} className="w-full max-w-xs">
       <Input
         type="search"
-        placeholder="Search name, number, phone…"
+        placeholder={t("search.placeholder")}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        aria-label="Search patients"
+        aria-label={t("search.aria")}
       />
     </form>
   );

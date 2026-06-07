@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatients, listClinicTags, patientAge } from "@/lib/db/queries/patients";
@@ -26,12 +27,13 @@ export default async function PatientsPage({
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
 
+  const t = await getTranslations("patients");
   const canRead = await hasPermission(PERMISSIONS.PATIENTS_READ);
   if (!canRead) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view patients.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -65,12 +67,12 @@ export default async function PatientsPage({
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Users}
-        title="Patients"
-        subtitle={`${total} ${total === 1 ? "patient" : "patients"} registered`}
+        title={t("title")}
+        subtitle={t("registered", { count: total })}
         actions={
           canWrite && (
             <HeaderAction href="/patients/new">
-              <Plus /> New patient
+              <Plus /> {t("newPatient")}
             </HeaderAction>
           )
         }
@@ -80,29 +82,29 @@ export default async function PatientsPage({
         <form method="get" className="flex flex-wrap items-center gap-2">
           {q && <input type="hidden" name="q" value={q} />}
           <select name="gender" defaultValue={gender ?? ""} className={selectClass}>
-            <option value="">All genders</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
+            <option value="">{t("filter.allGenders")}</option>
+            <option value="male">{t("gender.male")}</option>
+            <option value="female">{t("gender.female")}</option>
+            <option value="other">{t("gender.other")}</option>
           </select>
           <select name="blood" defaultValue={blood ?? ""} className={selectClass}>
-            <option value="">All blood types</option>
+            <option value="">{t("filter.allBloodTypes")}</option>
             {BLOOD_TYPES.map((b) => (
-              <option key={b} value={b}>{b === "unknown" ? "Unknown" : b}</option>
+              <option key={b} value={b}>{b === "unknown" ? t("filter.unknown") : b}</option>
             ))}
           </select>
           {clinicTags.length > 0 && (
             <select name="tag" defaultValue={tag ?? ""} className={selectClass}>
-              <option value="">All tags</option>
-              {clinicTags.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
+              <option value="">{t("filter.allTags")}</option>
+              {clinicTags.map((ct) => (
+                <option key={ct.id} value={ct.id}>{ct.name}</option>
               ))}
             </select>
           )}
-          <Button type="submit" variant="outline" size="sm">Filter</Button>
+          <Button type="submit" variant="outline" size="sm">{t("filter.apply")}</Button>
           {(gender || blood || tag) && (
             <Button asChild variant="ghost" size="sm">
-              <Link href={`/patients${q ? `?q=${encodeURIComponent(q)}` : ""}`}>Clear</Link>
+              <Link href={`/patients${q ? `?q=${encodeURIComponent(q)}` : ""}`}>{t("filter.clear")}</Link>
             </Button>
           )}
         </form>
@@ -113,7 +115,7 @@ export default async function PatientsPage({
         <CardContent className="p-0">
           {rows.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">
-              {q || gender || blood || tag ? "No patients match your filters." : "No patients yet."}
+              {q || gender || blood || tag ? t("empty.noMatch") : t("empty.none")}
             </p>
           ) : (
             <PatientsTable
@@ -138,13 +140,13 @@ export default async function PatientsPage({
       {pageCount > 1 && (
         <div className="flex items-center justify-between text-sm">
           <Button asChild variant="outline" size="sm" disabled={current <= 1}>
-            <Link href={pageHref(Math.max(1, current - 1))}>Previous</Link>
+            <Link href={pageHref(Math.max(1, current - 1))}>{t("pager.previous")}</Link>
           </Button>
           <span className="text-[var(--muted-foreground)]">
-            Page {current} of {pageCount}
+            {t("pager.pageOf", { current, total: pageCount })}
           </span>
           <Button asChild variant="outline" size="sm" disabled={current >= pageCount}>
-            <Link href={pageHref(Math.min(pageCount, current + 1))}>Next</Link>
+            <Link href={pageHref(Math.min(pageCount, current + 1))}>{t("pager.next")}</Link>
           </Button>
         </div>
       )}
