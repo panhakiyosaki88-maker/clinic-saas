@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getAppointment } from "@/lib/db/queries/appointments";
@@ -26,11 +27,12 @@ export default async function EditAppointmentPage({
   ]);
   if (!appointment) notFound();
 
+  const t = await getTranslations("appointments.form");
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
-        <BackLink label="← Appointment" fallback={`/appointments/${id}`} />
-        <h1 className="mt-1 text-2xl font-bold">Edit appointment</h1>
+        <BackLink label={t("backToOne")} fallback={`/appointments/${id}`} />
+        <h1 className="mt-1 text-2xl font-bold">{t("editTitle")}</h1>
       </header>
       <AppointmentForm
         patients={[]}

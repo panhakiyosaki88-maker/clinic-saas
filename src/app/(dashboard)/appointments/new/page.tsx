@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
@@ -20,6 +21,7 @@ export default async function NewAppointmentPage({
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.APPOINTMENTS_WRITE))) redirect("/appointments");
 
+  const t = await getTranslations("appointments.form");
   const sp = await searchParams;
   const [patients, doctors, consultingByPatient, { branches, activeId, primaryId }] = await Promise.all([
     listPatientOptions(),
@@ -31,8 +33,8 @@ export default async function NewAppointmentPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
-        <BackLink label="← Appointments" fallback="/appointments" />
-        <h1 className="mt-1 text-2xl font-bold">New appointment</h1>
+        <BackLink label={t("backToList")} fallback="/appointments" />
+        <h1 className="mt-1 text-2xl font-bold">{t("newTitle")}</h1>
       </header>
       <AppointmentForm
         patients={patients}

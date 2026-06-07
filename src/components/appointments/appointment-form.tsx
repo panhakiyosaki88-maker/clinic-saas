@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createAppointment, updateAppointment } from "@/server/actions/appointments";
 import type { AppointmentWithNames } from "@/lib/db/queries/appointments";
@@ -38,6 +39,7 @@ export function AppointmentForm({
   defaultDate?: string;
   defaultWalkIn?: boolean;
 }) {
+  const t = useTranslations("appointments.form");
   const router = useRouter();
   const isEdit = !!appointment;
   const [pending, startTransition] = React.useTransition();
@@ -111,14 +113,14 @@ export function AppointmentForm({
     <form onSubmit={onSubmit} className="space-y-4">
       {isEdit ? (
         <div className="space-y-2">
-          <Label>Patient</Label>
+          <Label>{t("patient")}</Label>
           <p className="text-sm font-medium">{appointment!.patient_name}</p>
         </div>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="patientId">Patient</Label>
+          <Label htmlFor="patientId">{t("patient")}</Label>
           <select id="patientId" name="patientId" className={selectClass} value={patientId} onChange={(e) => onPatientChange(e.target.value)} required>
-            <option value="" disabled>Select a patient…</option>
+            <option value="" disabled>{t("selectPatient")}</option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
@@ -130,9 +132,9 @@ export function AppointmentForm({
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="doctorId">Doctor</Label>
+        <Label htmlFor="doctorId">{t("doctor")}</Label>
         <select id="doctorId" name="doctorId" className={selectClass} value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
-          <option value="">Unassigned</option>
+          <option value="">{t("unassigned")}</option>
           {doctors.map((d) => (
             <option key={d.id} value={d.id}>{d.full_name}</option>
           ))}
@@ -141,9 +143,9 @@ export function AppointmentForm({
 
       {branches.length > 0 && (
         <div className="space-y-2">
-          <Label htmlFor="branchId">Branch (optional)</Label>
+          <Label htmlFor="branchId">{t("branch")}</Label>
           <select id="branchId" name="branchId" className={selectClass} defaultValue={appointment?.branch_id ?? defaultBranchId ?? ""}>
-            <option value="">No branch</option>
+            <option value="">{t("noBranch")}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
@@ -154,38 +156,38 @@ export function AppointmentForm({
       {!isEdit && (
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={walkIn} onChange={(e) => setWalkIn(e.target.checked)} />
-          Walk-in (add straight to today&apos;s queue)
+          {t("walkInOption")}
         </label>
       )}
 
       {!walkIn && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="scheduledDate">Date</Label>
+            <Label htmlFor="scheduledDate">{t("date")}</Label>
             <Input id="scheduledDate" name="scheduledDate" type="date" defaultValue={initialDate} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="scheduledTime">Time</Label>
+            <Label htmlFor="scheduledTime">{t("time")}</Label>
             <Input id="scheduledTime" name="scheduledTime" type="time" defaultValue={initialTime} />
             {fieldErrors.scheduledTime?.map((m) => (
               <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
             ))}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="durationMinutes">Duration (min)</Label>
+            <Label htmlFor="durationMinutes">{t("durationField")}</Label>
             <Input id="durationMinutes" name="durationMinutes" type="number" defaultValue={appointment?.duration_minutes ?? 30} />
           </div>
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="reason">Reason</Label>
+        <Label htmlFor="reason">{t("reason")}</Label>
         <Textarea id="reason" name="reason" defaultValue={appointment?.reason ?? ""} />
       </div>
 
       {isEdit && (
         <div className="space-y-2">
-          <Label htmlFor="notes">Notes</Label>
+          <Label htmlFor="notes">{t("notes")}</Label>
           <Textarea id="notes" name="notes" defaultValue={appointment?.notes ?? ""} />
         </div>
       )}
@@ -196,10 +198,10 @@ export function AppointmentForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : isEdit ? "Save changes" : "Create appointment"}
+          {pending ? t("saving") : isEdit ? t("save") : t("create")}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>
-          Cancel
+          {t("cancel")}
         </Button>
       </div>
     </form>

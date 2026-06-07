@@ -283,6 +283,46 @@
       "deleting": "Deleting…",
       "confirm": "Confirm",
       "cancel": "Cancel"
+    },
+    "detail": {
+      "back": "← Appointments",
+      "edit": "Edit",
+      "updateStatus": "Update status",
+      "details": "Details",
+      "patient": "Patient",
+      "doctor": "Doctor",
+      "when": "When",
+      "duration": "Duration",
+      "reason": "Reason",
+      "notes": "Notes",
+      "checkedIn": "Checked in",
+      "completed": "Completed",
+      "walkIn": "Walk-in",
+      "unassigned": "Unassigned",
+      "minutes": "{min} min",
+      "viewPatient": "View patient profile →"
+    },
+    "form": {
+      "newTitle": "New appointment",
+      "editTitle": "Edit appointment",
+      "backToList": "← Appointments",
+      "backToOne": "← Appointment",
+      "patient": "Patient",
+      "selectPatient": "Select a patient…",
+      "doctor": "Doctor",
+      "unassigned": "Unassigned",
+      "branch": "Branch (optional)",
+      "noBranch": "No branch",
+      "walkInOption": "Walk-in (add straight to today's queue)",
+      "date": "Date",
+      "time": "Time",
+      "durationField": "Duration (min)",
+      "reason": "Reason",
+      "notes": "Notes",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "create": "Create appointment",
+      "cancel": "Cancel"
     }
   }
 }

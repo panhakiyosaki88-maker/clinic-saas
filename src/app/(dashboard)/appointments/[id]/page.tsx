@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations, getLocale } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -37,6 +38,8 @@ export default async function AppointmentDetailPage({
   const a = await getAppointment(id);
   if (!a) notFound();
 
+  const t = await getTranslations("appointments.detail");
+  const locale = await getLocale();
   const [canWrite, canNotify] = await Promise.all([
     hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
     hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
@@ -46,7 +49,7 @@ export default async function AppointmentDetailPage({
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <BackLink label="← Appointments" fallback="/appointments" />
+          <BackLink label={t("back")} fallback="/appointments" />
           <h1 className="mt-1 text-2xl font-bold">{a.patient_name}</h1>
           <StatusBadge status={a.status} />
         </div>
@@ -55,7 +58,7 @@ export default async function AppointmentDetailPage({
           {canWrite && (
             <>
               <Button asChild variant="outline" size="sm">
-                <Link href={`/appointments/${a.id}/edit`}>Edit</Link>
+                <Link href={`/appointments/${a.id}/edit`}>{t("edit")}</Link>
               </Button>
               <DeleteAppointmentButton appointmentId={a.id} />
             </>
@@ -65,17 +68,17 @@ export default async function AppointmentDetailPage({
 
       {canWrite && (
         <Card>
-          <CardHeader><CardTitle>Update status</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("updateStatus")}</CardTitle></CardHeader>
           <CardContent><StatusControl appointmentId={a.id} status={a.status} /></CardContent>
         </Card>
       )}
 
       <Card>
-        <CardHeader><CardTitle>Details</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("details")}</CardTitle></CardHeader>
         <CardContent>
-          <Row label="Patient" value={`${a.patient_name} (${a.patient_number})`} />
+          <Row label={t("patient")} value={`${a.patient_name} (${a.patient_number})`} />
           <Row
-            label="Doctor"
+            label={t("doctor")}
             value={
               a.doctor_name ? (
                 <span className="inline-flex items-center gap-2">
@@ -83,22 +86,22 @@ export default async function AppointmentDetailPage({
                   {a.doctor_name}
                 </span>
               ) : (
-                "Unassigned"
+                t("unassigned")
               )
             }
           />
-          <Row label="When" value={a.is_walk_in ? "Walk-in" : new Date(a.scheduled_at).toLocaleString()} />
-          <Row label="Duration" value={`${a.duration_minutes} min`} />
-          <Row label="Reason" value={a.reason} />
-          <Row label="Notes" value={a.notes} />
-          <Row label="Checked in" value={a.checked_in_at ? new Date(a.checked_in_at).toLocaleString() : null} />
-          <Row label="Completed" value={a.completed_at ? new Date(a.completed_at).toLocaleString() : null} />
+          <Row label={t("when")} value={a.is_walk_in ? t("walkIn") : new Date(a.scheduled_at).toLocaleString(locale)} />
+          <Row label={t("duration")} value={t("minutes", { min: a.duration_minutes })} />
+          <Row label={t("reason")} value={a.reason} />
+          <Row label={t("notes")} value={a.notes} />
+          <Row label={t("checkedIn")} value={a.checked_in_at ? new Date(a.checked_in_at).toLocaleString(locale) : null} />
+          <Row label={t("completed")} value={a.completed_at ? new Date(a.completed_at).toLocaleString(locale) : null} />
         </CardContent>
       </Card>
 
       <p className="text-center">
         <Link href={`/patients/${a.patient_id}`} className="text-sm text-[var(--primary)] hover:underline">
-          View patient profile →
+          {t("viewPatient")}
         </Link>
       </p>
     </main>
