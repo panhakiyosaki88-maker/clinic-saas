@@ -29,7 +29,6 @@ import { lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
 import { getRecentActivity } from "@/lib/db/queries/activity";
 
 import { BrandingHeader } from "@/components/dashboard/widgets/branding-header";
-import { QuickActions } from "@/components/dashboard/widgets/quick-actions";
 import { StatCard } from "@/components/dashboard/widgets/stat-card";
 import { TodaySchedule } from "@/components/dashboard/widgets/today-schedule";
 import { MiniCalendar } from "@/components/dashboard/widgets/mini-calendar";
@@ -174,9 +173,6 @@ export default async function DashboardPage() {
   const quickFlags = {
     appointment: has(PERMISSIONS.APPOINTMENTS_WRITE),
     patient: has(PERMISSIONS.PATIENTS_WRITE),
-    prescription: has(PERMISSIONS.PRESCRIPTIONS_WRITE),
-    invoice: has(PERMISSIONS.BILLING_WRITE),
-    lab: has(PERMISSIONS.LAB_WRITE),
   };
 
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
@@ -207,8 +203,6 @@ export default async function DashboardPage() {
           revenueToday: canBilling ? (revToday?.total ?? 0) : null,
         }}
       />
-
-      <QuickActions flags={quickFlags} />
 
       {/* Stat row */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

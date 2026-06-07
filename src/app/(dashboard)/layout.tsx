@@ -5,7 +5,6 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { clinicLogoUrl } from "@/lib/clinic-logo";
 import { getRolePermissionKeys } from "@/lib/auth/guard";
-import { PERMISSIONS } from "@/lib/auth/permissions";
 import { NAV } from "@/components/dashboard/nav-config";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
@@ -53,11 +52,6 @@ export default async function DashboardLayout({
       isSuperAdmin={isSuperAdmin}
       branches={branches.map((b) => ({ id: b.id, name: b.name }))}
       activeBranchId={activeBranchId}
-      quick={{
-        appointment: can(PERMISSIONS.APPOINTMENTS_WRITE),
-        patient: can(PERMISSIONS.PATIENTS_WRITE),
-        prescription: can(PERMISSIONS.PRESCRIPTIONS_WRITE),
-      }}
     >
       {children}
     </DashboardShell>

@@ -10,25 +10,15 @@ import {
   PanelLeft,
   Search,
   Bell,
-  Plus,
   LogOut,
   ChevronDown,
   Shield,
-  CalendarPlus,
-  UserPlus,
-  FileText,
 } from "lucide-react";
 import { signOut } from "@/server/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccentToggle } from "@/components/accent-toggle";
 import { NAV } from "@/components/dashboard/nav-config";
 import { BranchSwitcher, type BranchOption } from "@/components/dashboard/branch-switcher";
-
-export interface QuickActions {
-  appointment: boolean;
-  patient: boolean;
-  prescription: boolean;
-}
 
 export function DashboardShell({
   navKeys,
@@ -38,7 +28,6 @@ export function DashboardShell({
   userName,
   userEmail,
   isSuperAdmin,
-  quick,
   branches,
   activeBranchId,
   children,
@@ -50,7 +39,6 @@ export function DashboardShell({
   userName: string;
   userEmail: string;
   isSuperAdmin: boolean;
-  quick: QuickActions;
   branches: BranchOption[];
   activeBranchId: string | null;
   children: React.ReactNode;
@@ -60,17 +48,14 @@ export function DashboardShell({
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
-  const [quickOpen, setQuickOpen] = React.useState(false);
 
   const items = NAV.filter((n) => navKeys.includes(n.key));
   const initials = (userName || userEmail || "U").slice(0, 2).toUpperCase();
-  const anyQuick = quick.appointment || quick.patient || quick.prescription;
 
   // Close mobile drawer / menus on route change.
   React.useEffect(() => {
     setMobileOpen(false);
     setProfileOpen(false);
-    setQuickOpen(false);
   }, [pathname]);
 
   function onSearch(e: React.FormEvent<HTMLFormElement>) {
@@ -234,41 +219,6 @@ export function DashboardShell({
 
         <div className="min-h-[calc(100vh-4rem)]">{children}</div>
       </div>
-
-      {/* Quick Action FAB */}
-      {anyQuick && (
-        <div className="fixed bottom-6 right-6 z-40">
-          {quickOpen && (
-            <>
-              <div className="fixed inset-0" onClick={() => setQuickOpen(false)} />
-              <div className="absolute bottom-16 right-0 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-                {quick.appointment && (
-                  <Link href="/appointments/new" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
-                    <CalendarPlus className="size-4 text-brand-600" /> New appointment
-                  </Link>
-                )}
-                {quick.patient && (
-                  <Link href="/patients/new" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
-                    <UserPlus className="size-4 text-emerald-600" /> Register patient
-                  </Link>
-                )}
-                {quick.prescription && (
-                  <Link href="/prescriptions/new" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
-                    <FileText className="size-4 text-amber-600" /> New prescription
-                  </Link>
-                )}
-              </div>
-            </>
-          )}
-          <button
-            onClick={() => setQuickOpen((o) => !o)}
-            className="flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3 font-medium text-white shadow-lg shadow-brand-600/30 transition-transform hover:scale-105 hover:bg-brand-700"
-          >
-            <Plus className={`size-5 transition-transform ${quickOpen ? "rotate-45" : ""}`} />
-            <span className="hidden sm:inline">Quick Action</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
