@@ -164,13 +164,13 @@ export default async function DashboardPage() {
   }, 0);
 
   const insights: Insight[] = [];
-  if (longestWait > 20) insights.push({ severity: "critical", text: `A patient has been waiting ${longestWait} minutes — call them in to avoid a longer delay.` });
-  if (queue.length > 0) insights.push({ severity: "operational", text: `${queue.length} patient${queue.length > 1 ? "s are" : " is"} waiting in the queue — consider calling the next.` });
-  if (canAppts && availability.length > 0 && availability.every((d) => d.offToday || d.slots.length === 0)) insights.push({ severity: "operational", text: "No doctors have hours scheduled today." });
-  if (outstanding && outstanding.count > 0) insights.push({ severity: "financial", text: `${outstanding.count} unpaid invoice${outstanding.count > 1 ? "s" : ""} totaling ${outstanding.total.toFixed(2)} outstanding.` });
-  if (lowStock.length > 0) insights.push({ severity: "inventory", text: `${lowStock.length} medicine${lowStock.length > 1 ? "s are" : " is"} at or below reorder level.` });
-  if (expiring.length > 0) insights.push({ severity: "inventory", text: `${expiring.length} stock batch${expiring.length > 1 ? "es are" : " is"} expiring within 60 days.` });
-  if (canAppts && todays.length > 0 && capacityPct === 100) insights.push({ severity: "positive", text: "All of today's appointments are completed — great work!" });
+  if (longestWait > 20) insights.push({ severity: "critical", text: t("insightMsg.longWait", { minutes: longestWait }) });
+  if (queue.length > 0) insights.push({ severity: "operational", text: t("insightMsg.queueWaiting", { count: queue.length }) });
+  if (canAppts && availability.length > 0 && availability.every((d) => d.offToday || d.slots.length === 0)) insights.push({ severity: "operational", text: t("insightMsg.noDoctorHours") });
+  if (outstanding && outstanding.count > 0) insights.push({ severity: "financial", text: t("insightMsg.unpaidInvoices", { count: outstanding.count, total: outstanding.total.toFixed(2) }) });
+  if (lowStock.length > 0) insights.push({ severity: "inventory", text: t("insightMsg.lowStock", { count: lowStock.length }) });
+  if (expiring.length > 0) insights.push({ severity: "inventory", text: t("insightMsg.expiringBatches", { count: expiring.length }) });
+  if (canAppts && todays.length > 0 && capacityPct === 100) insights.push({ severity: "positive", text: t("insightMsg.allCompleted") });
 
   const quickFlags = {
     appointment: has(PERMISSIONS.APPOINTMENTS_WRITE),

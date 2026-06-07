@@ -87,6 +87,15 @@
       "emptyTitle": "Nothing needs attention",
       "emptyHint": "Alerts appear here as activity builds up."
     },
+    "insightMsg": {
+      "longWait": "A patient has been waiting {minutes} minutes — call them in to avoid a longer delay.",
+      "queueWaiting": "{count, plural, one {# patient is waiting in the queue — consider calling the next.} other {# patients are waiting in the queue — consider calling the next.}}",
+      "noDoctorHours": "No doctors have hours scheduled today.",
+      "unpaidInvoices": "{count, plural, one {# unpaid invoice totaling {total} outstanding.} other {# unpaid invoices totaling {total} outstanding.}}",
+      "lowStock": "{count, plural, one {# medicine is at or below reorder level.} other {# medicines are at or below reorder level.}}",
+      "expiringBatches": "{count, plural, one {# stock batch is expiring within 60 days.} other {# stock batches are expiring within 60 days.}}",
+      "allCompleted": "All of today's appointments are completed — great work!"
+    },
     "action": {
       "reports": "Reports",
       "billing": "Billing",
