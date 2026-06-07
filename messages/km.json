@@ -325,6 +325,37 @@
       "cancel": "បោះបង់"
     }
   },
+  "doctors": {
+    "title": "វេជ្ជបណ្ឌិត",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលវេជ្ជបណ្ឌិតទេ។",
+    "summary": "សកម្ម {active} ក្នុងចំណោម {total}",
+    "newDoctor": "វេជ្ជបណ្ឌិតថ្មី",
+    "searchPlaceholder": "ស្វែងរកឈ្មោះ ឬជំនាញ…",
+    "filter": {
+      "allStatuses": "ស្ថានភាពទាំងអស់",
+      "active": "សកម្ម",
+      "inactive": "អសកម្ម",
+      "allEmployment": "ប្រភេទការងារទាំងអស់",
+      "apply": "ច្រោះ",
+      "clear": "សម្អាត"
+    },
+    "employment": {
+      "full_time": "ពេញម៉ោង",
+      "part_time": "ក្រៅម៉ោង",
+      "contract": "កិច្ចសន្យា",
+      "visiting": "មកបំពេញ",
+      "locum": "ជំនួស"
+    },
+    "empty": {
+      "noMatch": "គ្មានវេជ្ជបណ្ឌិតត្រូវនឹងតម្រងរបស់អ្នក។",
+      "none": "មិនទាន់មានវេជ្ជបណ្ឌិត។"
+    },
+    "labels": {
+      "general": "ទូទៅ",
+      "lic": "អាជ្ញាប័ណ្ណ",
+      "inactive": "អសកម្ម"
+    }
+  },
   "errors": {
     "fixFields": "សូមកែតម្រូវវាលដែលបានបន្លិច។",
     "invalidRequest": "សំណើមិនត្រឹមត្រូវ។",

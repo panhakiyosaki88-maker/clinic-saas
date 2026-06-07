@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listDoctors } from "@/lib/db/queries/doctors";
@@ -13,13 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Doctors" };
 
-const EMPLOYMENT_LABELS: Record<string, string> = {
-  full_time: "Full time",
-  part_time: "Part time",
-  contract: "Contract",
-  visiting: "Visiting",
-  locum: "Locum",
-};
+const EMPLOYMENT_TYPES = ["full_time", "part_time", "contract", "visiting", "locum"] as const;
 const selectClass =
   "h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
 
@@ -30,11 +25,12 @@ export default async function DoctorsPage({
 }) {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("doctors");
   if (!(await hasPermission(PERMISSIONS.DOCTORS_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view doctors.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -56,12 +52,12 @@ export default async function DoctorsPage({
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Stethoscope}
-        title="Doctors"
-        subtitle={`${activeCount} active of ${doctors.length}`}
+        title={t("title")}
+        subtitle={t("summary", { active: activeCount, total: doctors.length })}
         actions={
           canWrite && (
             <HeaderAction href="/doctors/new">
-              <Plus /> New doctor
+              <Plus /> {t("newDoctor")}
             </HeaderAction>
           )
         }
@@ -71,24 +67,24 @@ export default async function DoctorsPage({
         <input
           name="q"
           defaultValue={q ?? ""}
-          placeholder="Search name or specialization…"
+          placeholder={t("searchPlaceholder")}
           className={`${selectClass} min-w-[220px] flex-1`}
         />
         <select name="active" defaultValue={active ?? ""} className={selectClass}>
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+          <option value="">{t("filter.allStatuses")}</option>
+          <option value="active">{t("filter.active")}</option>
+          <option value="inactive">{t("filter.inactive")}</option>
         </select>
         <select name="employment" defaultValue={employment ?? ""} className={selectClass}>
-          <option value="">All employment</option>
-          {Object.entries(EMPLOYMENT_LABELS).map(([v, label]) => (
-            <option key={v} value={v}>{label}</option>
+          <option value="">{t("filter.allEmployment")}</option>
+          {EMPLOYMENT_TYPES.map((v) => (
+            <option key={v} value={v}>{t(`employment.${v}`)}</option>
           ))}
         </select>
-        <Button type="submit" variant="outline" size="sm">Filter</Button>
+        <Button type="submit" variant="outline" size="sm">{t("filter.apply")}</Button>
         {hasFilters && (
           <Button asChild variant="ghost" size="sm">
-            <Link href="/doctors">Clear</Link>
+            <Link href="/doctors">{t("filter.clear")}</Link>
           </Button>
         )}
       </form>
@@ -97,7 +93,7 @@ export default async function DoctorsPage({
         <CardContent className="p-0">
           {doctors.length === 0 ? (
             <p className="p-6 text-sm text-[var(--muted-foreground)]">
-              {hasFilters ? "No doctors match your filters." : "No doctors yet."}
+              {hasFilters ? t("empty.noMatch") : t("empty.none")}
             </p>
           ) : (
             <ul className="divide-y divide-[var(--border)]">
@@ -110,20 +106,20 @@ export default async function DoctorsPage({
                         {d.title ? `${d.title} ` : ""}{d.full_name}
                       </Link>
                       <p className="text-xs text-[var(--muted-foreground)]">
-                        {d.specialization ?? "General"}
-                        {d.license_number ? ` · Lic. ${d.license_number}` : ""}
+                        {d.specialization ?? t("labels.general")}
+                        {d.license_number ? ` · ${t("labels.lic")} ${d.license_number}` : ""}
                       </p>
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {d.employment_type && (
                       <span className="rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
-                        {EMPLOYMENT_LABELS[d.employment_type]}
+                        {t(`employment.${d.employment_type}`)}
                       </span>
                     )}
                     {!d.is_active && (
                       <span className="rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
-                        Inactive
+                        {t("labels.inactive")}
                       </span>
                     )}
                   </div>

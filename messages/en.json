@@ -325,6 +325,37 @@
       "cancel": "Cancel"
     }
   },
+  "doctors": {
+    "title": "Doctors",
+    "noPermission": "You don't have permission to view doctors.",
+    "summary": "{active} active of {total}",
+    "newDoctor": "New doctor",
+    "searchPlaceholder": "Search name or specialization…",
+    "filter": {
+      "allStatuses": "All statuses",
+      "active": "Active",
+      "inactive": "Inactive",
+      "allEmployment": "All employment",
+      "apply": "Filter",
+      "clear": "Clear"
+    },
+    "employment": {
+      "full_time": "Full time",
+      "part_time": "Part time",
+      "contract": "Contract",
+      "visiting": "Visiting",
+      "locum": "Locum"
+    },
+    "empty": {
+      "noMatch": "No doctors match your filters.",
+      "none": "No doctors yet."
+    },
+    "labels": {
+      "general": "General",
+      "lic": "Lic.",
+      "inactive": "Inactive"
+    }
+  },
   "errors": {
     "fixFields": "Please fix the highlighted fields.",
     "invalidRequest": "Invalid request.",
