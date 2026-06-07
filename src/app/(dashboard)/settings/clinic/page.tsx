@@ -49,23 +49,17 @@ export default async function ClinicSettingsPage() {
             <ClinicProfileForm
               clinic={{
                 name: clinic.name,
-                slug: clinic.slug,
+                subtitle: clinic.subtitle,
                 contactEmail: clinic.contact_email,
                 contactPhone: clinic.contact_phone,
-                country: clinic.country,
-                timezone: clinic.timezone,
-                currency: clinic.currency,
               }}
             />
           ) : (
             <>
               <Field label="Clinic name" value={clinic.name} />
-              <Field label="URL" value={`/${clinic.slug}`} />
+              <Field label="Subtitle" value={clinic.subtitle ?? ""} />
               <Field label="Contact email" value={clinic.contact_email ?? ""} />
               <Field label="Contact phone" value={clinic.contact_phone ?? ""} />
-              <Field label="Country" value={clinic.country} />
-              <Field label="Currency" value={clinic.currency} />
-              <Field label="Timezone" value={clinic.timezone} />
               <p className="mt-3 text-xs text-[var(--muted-foreground)]">
                 Only the clinic owner can edit these details.
               </p>

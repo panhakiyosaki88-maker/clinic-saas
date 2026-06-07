@@ -135,6 +135,7 @@ export interface Database {
           id: string;
           name: string;
           slug: string;
+          subtitle: string | null;
           owner_user_id: string | null;
           contact_email: string | null;
           contact_phone: string | null;
@@ -152,6 +153,7 @@ export interface Database {
           id?: string;
           name: string;
           slug: string;
+          subtitle?: string | null;
           owner_user_id?: string | null;
           contact_email?: string | null;
           contact_phone?: string | null;

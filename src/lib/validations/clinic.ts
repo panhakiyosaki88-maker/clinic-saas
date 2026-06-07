@@ -31,10 +31,9 @@ export type CreateClinicInput = z.infer<typeof createClinicSchema>;
 /** Editable clinic profile fields (clinic owner). */
 export const updateClinicSchema = z.object({
   name: z.string().min(2).max(120).optional(),
+  subtitle: z.string().max(120).optional().or(z.literal("")),
   contactEmail: z.string().email().optional().or(z.literal("")),
   contactPhone: z.string().max(40).optional().or(z.literal("")),
-  timezone: z.string().min(1).optional(),
-  currency: z.string().length(3).optional(),
 });
 export type UpdateClinicInput = z.infer<typeof updateClinicSchema>;
 

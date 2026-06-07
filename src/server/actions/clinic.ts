@@ -148,15 +148,15 @@ export async function updateClinic(
     .from("clinics")
     .update({
       ...(v.name !== undefined ? { name: v.name } : {}),
+      ...(v.subtitle !== undefined ? { subtitle: v.subtitle || null } : {}),
       ...(v.contactEmail !== undefined ? { contact_email: v.contactEmail || null } : {}),
       ...(v.contactPhone !== undefined ? { contact_phone: v.contactPhone || null } : {}),
-      ...(v.timezone !== undefined ? { timezone: v.timezone } : {}),
-      ...(v.currency !== undefined ? { currency: v.currency } : {}),
     })
     .eq("id", clinicId);
 
   if (error) return fail(error.message);
   revalidatePath("/settings/clinic");
+  revalidatePath("/", "layout"); // sidebar shows the name + subtitle
   return ok(undefined);
 }
 

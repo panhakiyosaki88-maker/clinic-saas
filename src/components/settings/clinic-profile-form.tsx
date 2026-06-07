@@ -9,12 +9,9 @@ import { Label } from "@/components/ui/label";
 
 export interface ClinicProfile {
   name: string;
-  slug: string;
+  subtitle: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
-  country: string;
-  timezone: string;
-  currency: string;
 }
 
 export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
@@ -34,10 +31,9 @@ export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
     startTransition(async () => {
       const result = await updateClinic({
         name: String(form.get("name") ?? ""),
+        subtitle: String(form.get("subtitle") ?? ""),
         contactEmail: String(form.get("contactEmail") ?? ""),
         contactPhone: String(form.get("contactPhone") ?? ""),
-        currency: String(form.get("currency") ?? ""),
-        timezone: String(form.get("timezone") ?? ""),
       });
       if (!result.ok) {
         setError(result.error);
@@ -54,10 +50,23 @@ export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
       <div className="space-y-2">
         <Label htmlFor="name">Clinic name</Label>
         <Input id="name" name="name" defaultValue={clinic.name} aria-invalid={!!fieldErrors.name} required />
-        <p className="text-xs text-[var(--muted-foreground)]">
-          URL: <span className="font-mono">/{clinic.slug}</span>
-        </p>
         {fieldErrors.name?.map((m) => (
+          <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
+        ))}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="subtitle">Subtitle</Label>
+        <Input
+          id="subtitle"
+          name="subtitle"
+          defaultValue={clinic.subtitle ?? ""}
+          maxLength={120}
+          placeholder="e.g. Family & General Practice"
+          aria-invalid={!!fieldErrors.subtitle}
+        />
+        <p className="text-xs text-[var(--muted-foreground)]">Shown under the clinic name in the side menu.</p>
+        {fieldErrors.subtitle?.map((m) => (
           <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
         ))}
       </div>
@@ -73,25 +82,6 @@ export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
         <div className="space-y-2">
           <Label htmlFor="contactPhone">Contact phone</Label>
           <Input id="contactPhone" name="contactPhone" defaultValue={clinic.contactPhone ?? ""} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="country">Country</Label>
-          <Input id="country" name="country" defaultValue={clinic.country} maxLength={2} disabled />
-          <p className="text-xs text-[var(--muted-foreground)]">Set at sign-up</p>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="currency">Currency</Label>
-          <Input id="currency" name="currency" defaultValue={clinic.currency} maxLength={3} />
-          {fieldErrors.currency?.map((m) => (
-            <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
-          ))}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="timezone">Timezone</Label>
-          <Input id="timezone" name="timezone" defaultValue={clinic.timezone} />
         </div>
       </div>
 

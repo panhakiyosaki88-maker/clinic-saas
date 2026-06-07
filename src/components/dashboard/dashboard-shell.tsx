@@ -23,7 +23,7 @@ import { BranchSwitcher, type BranchOption } from "@/components/dashboard/branch
 export function DashboardShell({
   navKeys,
   clinicName,
-  clinicSlug,
+  clinicSubtitle,
   logoUrl,
   userName,
   userEmail,
@@ -34,7 +34,7 @@ export function DashboardShell({
 }: {
   navKeys: string[];
   clinicName: string;
-  clinicSlug: string;
+  clinicSubtitle: string;
   logoUrl: string | null;
   userName: string;
   userEmail: string;
@@ -102,7 +102,7 @@ export function DashboardShell({
           {!collapsed && (
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{clinicName}</p>
-              <p className="truncate text-xs text-slate-400">/{clinicSlug}</p>
+              {clinicSubtitle && <p className="truncate text-xs text-slate-400">{clinicSubtitle}</p>}
             </div>
           )}
           <button className="ml-auto lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close menu">

@@ -45,7 +45,7 @@ export default async function DashboardLayout({
     <DashboardShell
       navKeys={navKeys}
       clinicName={clinic?.name ?? "Clinic"}
-      clinicSlug={clinic?.slug ?? ""}
+      clinicSubtitle={clinic?.subtitle ?? ""}
       logoUrl={clinicLogoUrl(clinic?.logo_path)}
       userName={userName}
       userEmail={user.email ?? ""}
