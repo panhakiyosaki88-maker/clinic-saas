@@ -325,6 +325,75 @@
       "cancel": "Cancel"
     }
   },
+  "billing": {
+    "title": "Billing",
+    "dashboardSubtitle": "Revenue, collections and outstanding balances",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "workspace": "Workspace",
+      "invoices": "Invoices",
+      "payments": "Payments",
+      "debt": "Debt",
+      "reports": "Reports",
+      "audit": "Audit"
+    },
+    "kpi": {
+      "revenueToday": "Revenue today",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "outstanding": "Outstanding",
+      "collectionRate": "Collection rate",
+      "arpp": "Avg revenue / patient",
+      "paidInvoices": "Paid invoices",
+      "unpaidPartial": "Unpaid / partial"
+    },
+    "cards": {
+      "revenueTrend": "Revenue trend (30 days)",
+      "paymentMethods": "Payment methods",
+      "dailyCollections": "Daily collections (14 days)",
+      "monthlyCollections": "Monthly collections",
+      "recentPayments": "Recent payments",
+      "outstandingInvoices": "Outstanding invoices",
+      "revenueByService": "Revenue by service type",
+      "topPatients": "Top paying patients"
+    },
+    "empty": {
+      "noPayments": "No payments yet.",
+      "nothingOutstanding": "Nothing outstanding.",
+      "noInvoicesYet": "No invoices yet."
+    },
+    "list": {
+      "summary": "{count, plural, one {# invoice} other {# invoices}} · {outstanding} outstanding",
+      "newInvoice": "New invoice"
+    },
+    "table": {
+      "invoice": "Invoice",
+      "patient": "Patient",
+      "issued": "Issued",
+      "total": "Total",
+      "balance": "Balance",
+      "status": "Status",
+      "search": "Search invoices…",
+      "allStatuses": "All statuses",
+      "void": "Void {count} selected",
+      "voiding": "Voiding…",
+      "noMatch": "No invoices match.",
+      "countOf": "{shown} of {total}",
+      "pageOf": "Page {page} of {pages}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "unpaid": "Unpaid",
+      "partially_paid": "Partially paid",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    }
+  },
   "doctors": {
     "title": "Doctors",
     "noPermission": "You don't have permission to view doctors.",

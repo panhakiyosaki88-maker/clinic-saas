@@ -325,6 +325,75 @@
       "cancel": "បោះបង់"
     }
   },
+  "billing": {
+    "title": "វិក្កយបត្រ",
+    "dashboardSubtitle": "ចំណូល ការប្រមូល និងសមតុល្យនៅជំពាក់",
+    "tabs": {
+      "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+      "workspace": "កន្លែងធ្វើការ",
+      "invoices": "វិក្កយបត្រ",
+      "payments": "ការទូទាត់",
+      "debt": "បំណុល",
+      "reports": "របាយការណ៍",
+      "audit": "សវនកម្ម"
+    },
+    "kpi": {
+      "revenueToday": "ចំណូលថ្ងៃនេះ",
+      "thisWeek": "សប្តាហ៍នេះ",
+      "thisMonth": "ខែនេះ",
+      "outstanding": "នៅជំពាក់",
+      "collectionRate": "អត្រាប្រមូល",
+      "arpp": "ចំណូលមធ្យម / អ្នកជំងឺ",
+      "paidInvoices": "វិក្កយបត្របានបង់",
+      "unpaidPartial": "មិនបង់ / បង់ខ្លះ"
+    },
+    "cards": {
+      "revenueTrend": "និន្នាការចំណូល (៣០ ថ្ងៃ)",
+      "paymentMethods": "វិធីបង់ប្រាក់",
+      "dailyCollections": "ការប្រមូលប្រចាំថ្ងៃ (១៤ ថ្ងៃ)",
+      "monthlyCollections": "ការប្រមូលប្រចាំខែ",
+      "recentPayments": "ការទូទាត់ថ្មីៗ",
+      "outstandingInvoices": "វិក្កយបត្រនៅជំពាក់",
+      "revenueByService": "ចំណូលតាមប្រភេទសេវា",
+      "topPatients": "អ្នកជំងឺបង់ច្រើនបំផុត"
+    },
+    "empty": {
+      "noPayments": "មិនទាន់មានការទូទាត់។",
+      "nothingOutstanding": "គ្មានអ្វីនៅជំពាក់។",
+      "noInvoicesYet": "មិនទាន់មានវិក្កយបត្រ។"
+    },
+    "list": {
+      "summary": "{count, plural, other {វិក្កយបត្រ #}} · {outstanding} នៅជំពាក់",
+      "newInvoice": "វិក្កយបត្រថ្មី"
+    },
+    "table": {
+      "invoice": "វិក្កយបត្រ",
+      "patient": "អ្នកជំងឺ",
+      "issued": "ចេញ",
+      "total": "សរុប",
+      "balance": "នៅសល់",
+      "status": "ស្ថានភាព",
+      "search": "ស្វែងរកវិក្កយបត្រ…",
+      "allStatuses": "ស្ថានភាពទាំងអស់",
+      "void": "លុបចោល {count} ដែលបានជ្រើស",
+      "voiding": "កំពុងលុបចោល…",
+      "noMatch": "គ្មានវិក្កយបត្រត្រូវនឹង។",
+      "countOf": "{shown} ក្នុង {total}",
+      "pageOf": "ទំព័រ {page} នៃ {pages}",
+      "previous": "មុន",
+      "next": "បន្ទាប់"
+    },
+    "status": {
+      "draft": "ព្រាង",
+      "pending": "កំពុងរង់ចាំ",
+      "unpaid": "មិនទាន់បង់",
+      "partially_paid": "បង់ខ្លះ",
+      "paid": "បានបង់",
+      "overdue": "ហួសកំណត់",
+      "cancelled": "បានបោះបង់",
+      "refunded": "បានសងវិញ"
+    }
+  },
   "doctors": {
     "title": "វេជ្ជបណ្ឌិត",
     "noPermission": "អ្នកគ្មានសិទ្ធិមើលវេជ្ជបណ្ឌិតទេ។",

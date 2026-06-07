@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   useReactTable,
@@ -17,7 +18,7 @@ import {
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { voidInvoices } from "@/server/actions/billing";
 import { formatIn, type CurrencyCode } from "@/lib/billing/currency";
-import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, type InvoiceStatusValue } from "@/lib/validations/invoice";
+import { INVOICE_STATUSES } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -56,6 +57,8 @@ export function InvoiceTable({
   currency?: CurrencyCode;
   rate?: number;
 }) {
+  const t = useTranslations("billing");
+  const locale = useLocale();
   const router = useRouter();
   const money = React.useCallback((n: number) => formatIn(n, currency, rate), [currency, rate]);
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "issued_at", desc: true }]);
@@ -85,31 +88,31 @@ export function InvoiceTable({
           ]
         : []),
       col.accessor("invoice_number", {
-        header: "Invoice",
+        header: t("table.invoice"),
         cell: (c) => (
           <Link href={`/billing/${c.row.original.id}`} className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400">
             {c.getValue()}
           </Link>
         ),
       }),
-      col.accessor("patient", { header: "Patient", cell: (c) => c.getValue() || "—" }),
+      col.accessor("patient", { header: t("table.patient"), cell: (c) => c.getValue() || "—" }),
       col.accessor("issued_at", {
-        header: "Issued",
-        cell: (c) => new Date(c.getValue()).toLocaleDateString(),
+        header: t("table.issued"),
+        cell: (c) => new Date(c.getValue()).toLocaleDateString(locale),
       }),
-      col.accessor("total", { header: "Total", cell: (c) => <span className="tabular-nums">{money(c.getValue())}</span> }),
-      col.accessor("balance", { header: "Balance", cell: (c) => <span className="tabular-nums">{money(c.getValue())}</span> }),
+      col.accessor("total", { header: t("table.total"), cell: (c) => <span className="tabular-nums">{money(c.getValue())}</span> }),
+      col.accessor("balance", { header: t("table.balance"), cell: (c) => <span className="tabular-nums">{money(c.getValue())}</span> }),
       col.accessor("status", {
-        header: "Status",
+        header: t("table.status"),
         cell: (c) => (
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_TONE[c.getValue()] ?? ""}`}>
-            {INVOICE_STATUS_LABELS[c.getValue() as InvoiceStatusValue] ?? c.getValue()}
+            {t.has(`status.${c.getValue()}`) ? t(`status.${c.getValue()}`) : c.getValue()}
           </span>
         ),
         filterFn: "equals",
       }),
     ],
-    [canWrite, money]
+    [canWrite, money, t, locale]
   );
 
   const table = useReactTable({
@@ -148,7 +151,7 @@ export function InvoiceTable({
           type="search"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Search invoices…"
+          placeholder={t("table.search")}
           className="h-9 max-w-xs"
         />
         <select
@@ -156,18 +159,18 @@ export function InvoiceTable({
           value={statusFilter}
           onChange={(e) => table.getColumn("status")?.setFilterValue(e.target.value || undefined)}
         >
-          <option value="">All statuses</option>
+          <option value="">{t("table.allStatuses")}</option>
           {INVOICE_STATUSES.map((s) => (
-            <option key={s} value={s}>{INVOICE_STATUS_LABELS[s]}</option>
+            <option key={s} value={s}>{t(`status.${s}`)}</option>
           ))}
         </select>
         {canWrite && selectedIds.length > 0 && (
           <Button variant="destructive" size="sm" disabled={pending} onClick={onBulkVoid}>
-            {pending ? "Voiding…" : `Void ${selectedIds.length} selected`}
+            {pending ? t("table.voiding") : t("table.void", { count: selectedIds.length })}
           </Button>
         )}
         <span className="ml-auto text-xs text-[var(--muted-foreground)]">
-          {table.getFilteredRowModel().rows.length} of {rows.length}
+          {t("table.countOf", { shown: table.getFilteredRowModel().rows.length, total: rows.length })}
         </span>
       </div>
 
@@ -198,7 +201,7 @@ export function InvoiceTable({
           </thead>
           <tbody>
             {table.getRowModel().rows.length === 0 ? (
-              <tr><td colSpan={columns.length} className="p-6 text-center text-sm text-slate-400">No invoices match.</td></tr>
+              <tr><td colSpan={columns.length} className="p-6 text-center text-sm text-slate-400">{t("table.noMatch")}</td></tr>
             ) : (
               table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className="border-t border-slate-100 hover:bg-slate-100/60 dark:border-slate-800 dark:hover:bg-slate-800/40">
@@ -214,11 +217,11 @@ export function InvoiceTable({
 
       <div className="flex items-center justify-between text-sm">
         <span className="text-[var(--muted-foreground)]">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
+          {t("table.pageOf", { page: table.getState().pagination.pageIndex + 1, pages: table.getPageCount() || 1 })}
         </span>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>Previous</Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>Next</Button>
+          <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>{t("table.previous")}</Button>
+          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>{t("table.next")}</Button>
         </div>
       </div>
     </div>

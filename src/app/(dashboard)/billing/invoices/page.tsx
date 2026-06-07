@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listInvoices } from "@/lib/db/queries/billing";
@@ -27,17 +28,18 @@ export default async function InvoicesPage() {
   ]);
   const ctx = currencyContext(settings);
   const outstanding = invoices.filter((i) => i.status !== "paid" && i.status !== "cancelled").length;
+  const t = await getTranslations("billing");
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Receipt}
-        title="Billing"
-        subtitle={`${invoices.length} ${invoices.length === 1 ? "invoice" : "invoices"} · ${outstanding} outstanding`}
+        title={t("title")}
+        subtitle={t("list.summary", { count: invoices.length, outstanding })}
         actions={
           canWrite && (
             <HeaderAction href="/billing/new">
-              <Plus /> New invoice
+              <Plus /> {t("list.newInvoice")}
             </HeaderAction>
           )
         }
