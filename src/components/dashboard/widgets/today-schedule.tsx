@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { CalendarClock } from "lucide-react";
 import type { AppointmentWithNames } from "@/lib/db/queries/appointments";
 import { timeLabel } from "@/lib/date";
@@ -6,23 +7,24 @@ import { WidgetCard } from "./widget-card";
 import { EmptyState } from "./empty-state";
 import { StatusBadge } from "@/components/appointments/status-badge";
 
-export function TodaySchedule({
+export async function TodaySchedule({
   items,
-  title = "Today's Schedule",
+  title,
   canBook,
 }: {
   items: AppointmentWithNames[];
   title?: string;
   canBook: boolean;
 }) {
+  const t = await getTranslations("dashboard");
   return (
-    <WidgetCard title={title} action={{ href: "/appointments", label: "View all" }} bodyClassName="">
+    <WidgetCard title={title ?? t("schedule.today")} action={{ href: "/appointments", label: t("action.viewAll") }} bodyClassName="">
       {items.length === 0 ? (
         <EmptyState
           icon={CalendarClock}
-          title="No appointments today"
-          hint="When patients are booked, they'll show up here in order."
-          action={canBook ? { href: "/appointments/new", label: "Book appointment" } : undefined}
+          title={t("empty.noAppointmentsToday.title")}
+          hint={t("empty.noAppointmentsToday.hint")}
+          action={canBook ? { href: "/appointments/new", label: t("action.bookAppointment") } : undefined}
         />
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -35,7 +37,7 @@ export function TodaySchedule({
                 <Link href={`/appointments/${a.id}`} className="block truncate text-sm font-medium text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400">
                   {a.patient_name}
                 </Link>
-                <p className="truncate text-xs text-slate-400">{a.doctor_name ?? "Unassigned"}</p>
+                <p className="truncate text-xs text-slate-400">{a.doctor_name ?? t("labels.unassigned")}</p>
               </div>
               <StatusBadge status={a.status} />
             </li>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Users } from "lucide-react";
 import type { AppointmentWithNames } from "@/lib/db/queries/appointments";
 import { WidgetCard } from "./widget-card";
@@ -31,7 +32,7 @@ interface Column {
 }
 
 /** Live queue board: Waiting → In Consultation → Completed, color-coded by wait. */
-export function QueueBoard({
+export async function QueueBoard({
   items,
   nowMs,
   canBook,
@@ -40,6 +41,7 @@ export function QueueBoard({
   nowMs: number;
   canBook: boolean;
 }) {
+  const t = await getTranslations("dashboard");
   const waiting = items
     .filter((a) => a.status === "waiting")
     .sort((a, b) => (a.checked_in_at ?? "").localeCompare(b.checked_in_at ?? ""));
@@ -47,22 +49,22 @@ export function QueueBoard({
   const completed = items.filter((a) => a.status === "completed");
 
   const columns: Column[] = [
-    { key: "waiting", title: "Waiting", accent: "text-amber-600 dark:text-amber-400", rows: waiting },
-    { key: "in_consultation", title: "In Consultation", accent: "text-brand-600 dark:text-brand-400", rows: inConsult },
-    { key: "completed", title: "Completed", accent: "text-emerald-600 dark:text-emerald-400", rows: completed },
+    { key: "waiting", title: t("labels.waiting"), accent: "text-amber-600 dark:text-amber-400", rows: waiting },
+    { key: "in_consultation", title: t("labels.inConsultation"), accent: "text-brand-600 dark:text-brand-400", rows: inConsult },
+    { key: "completed", title: t("labels.completed"), accent: "text-emerald-600 dark:text-emerald-400", rows: completed },
   ];
 
   const totalActive = waiting.length + inConsult.length + completed.length;
 
   return (
-    <WidgetCard title="Live Queue Board" action={{ href: "/appointments", label: "View all" }} bodyClassName="p-5">
+    <WidgetCard title={t("widget.liveQueue")} action={{ href: "/appointments", label: t("action.viewAll") }} bodyClassName="p-5">
       {totalActive === 0 ? (
         <EmptyState
           icon={Users}
-          title="Queue is clear"
-          hint="Checked-in, in-consultation and completed patients show up here through the day."
+          title={t("empty.queueClear.title")}
+          hint={t("empty.queueClear.hint")}
           tone="positive"
-          action={canBook ? { href: "/appointments/new?walkin=1", label: "Register walk-in" } : undefined}
+          action={canBook ? { href: "/appointments/new?walkin=1", label: t("action.registerWalkIn") } : undefined}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-3">
@@ -76,7 +78,7 @@ export function QueueBoard({
               </div>
               {col.rows.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-400 dark:border-slate-700">
-                  None
+                  {t("labels.none")}
                 </p>
               ) : (
                 <ul className="space-y-2">
@@ -116,7 +118,7 @@ export function QueueBoard({
                             </span>
                           )}
                         </div>
-                        <p className="truncate text-xs text-slate-400">{a.doctor_name ?? "Unassigned"}</p>
+                        <p className="truncate text-xs text-slate-400">{a.doctor_name ?? t("labels.unassigned")}</p>
                       </li>
                     );
                   })}

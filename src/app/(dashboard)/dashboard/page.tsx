@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Calendar, Clock, CheckCircle2, DollarSign, Users, TrendingUp, TrendingDown } from "lucide-react";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getCurrentClinic, getCurrentSubscription } from "@/lib/db/queries/clinic";
@@ -70,6 +71,7 @@ export default async function DashboardPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
 
+  const t = await getTranslations("dashboard");
   const isSuperAdmin = role === "super_admin";
   const allowed = isSuperAdmin ? new Set<string>() : await getRolePermissionKeys(role ?? "");
   const has = (p: string) => isSuperAdmin || allowed.has(p);
@@ -148,7 +150,7 @@ export default async function DashboardPage() {
   // Doctor view: their own appointments ("My Day").
   const myDoctorId = myDoctors.find((d) => d.user_id === user.id)?.id ?? null;
   const scheduleItems = myDoctorId ? todays.filter((a) => a.doctor_id === myDoctorId) : todays;
-  const scheduleTitle = myDoctorId ? "My Day" : "Today's Schedule";
+  const scheduleTitle = myDoctorId ? t("schedule.myDay") : t("schedule.today");
 
   const completed = todays.filter((a) => a.status === "completed").length;
   const capacityPct = todays.length > 0 ? Math.round((completed / todays.length) * 100) : 0;
@@ -206,49 +208,49 @@ export default async function DashboardPage() {
 
       {/* Stat row */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Today's Appointments" value={canAppts ? todays.length : "—"} icon={Calendar} tint="blue">
+        <StatCard title={t("stat.todayAppointments")} value={canAppts ? todays.length : "—"} icon={Calendar} tint="blue">
           {trend !== null ? (
             <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${trend >= 0 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400" : "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400"}`}>
               {trend >= 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-              {trend >= 0 ? "+" : ""}{trend}% vs yesterday
+              {trend >= 0 ? "+" : ""}{trend}% {t("stat.vsYesterday")}
             </span>
           ) : (
-            <span className="text-xs text-slate-400">No data for yesterday</span>
+            <span className="text-xs text-slate-400">{t("stat.noDataYesterday")}</span>
           )}
         </StatCard>
 
-        <StatCard title="Waiting Room" value={canAppts ? queue.length : "—"} icon={Clock} tint="amber">
+        <StatCard title={t("stat.waitingRoom")} value={canAppts ? queue.length : "—"} icon={Clock} tint="amber">
           {queue.length > 0 ? (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
               <span className="relative flex size-2">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-rose-500" />
               </span>
-              Action required
+              {t("stat.actionRequired")}
             </span>
           ) : (
-            <span className="text-xs text-slate-400">Queue is empty</span>
+            <span className="text-xs text-slate-400">{t("stat.queueEmpty")}</span>
           )}
         </StatCard>
 
-        <StatCard title="Completed Today" value={canAppts ? completed : "—"} icon={CheckCircle2} tint="emerald">
+        <StatCard title={t("stat.completedToday")} value={canAppts ? completed : "—"} icon={CheckCircle2} tint="emerald">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div className="h-full rounded-full bg-emerald-500" style={{ width: `${capacityPct}%` }} />
           </div>
-          <p className="mt-1 text-xs text-slate-400">{capacityPct}% of today&apos;s capacity</p>
+          <p className="mt-1 text-xs text-slate-400">{capacityPct}% {t("stat.ofCapacity")}</p>
         </StatCard>
 
         {canBilling ? (
-          <StatCard title="Daily Revenue" value={revToday ? revToday.total.toFixed(2) : "0.00"} icon={DollarSign} tint="emerald" />
+          <StatCard title={t("stat.dailyRevenue")} value={revToday ? revToday.total.toFixed(2) : "0.00"} icon={DollarSign} tint="emerald" />
         ) : (
-          <StatCard title="Total Patients" value={patientStats ? patientStats.total : "—"} icon={Users} tint="violet" />
+          <StatCard title={t("stat.totalPatients")} value={patientStats ? patientStats.total : "—"} icon={Users} tint="violet" />
         )}
       </div>
 
       {/* ============ Clinic Operations ============ */}
       {canAppts && (
         <section className="space-y-4">
-          <SectionLabel>Clinic Operations</SectionLabel>
+          <SectionLabel>{t("section.operations")}</SectionLabel>
           <QueueBoard items={todays} nowMs={nowMs} canBook={quickFlags.appointment} />
         </section>
       )}
@@ -274,7 +276,7 @@ export default async function DashboardPage() {
       {/* ============ Analytics Center ============ */}
       {(canAppts || canBilling || canPatients || canDoctors) && (
         <section className="space-y-4">
-          <SectionLabel>Analytics Center</SectionLabel>
+          <SectionLabel>{t("section.analytics")}</SectionLabel>
           <div className="grid gap-6 md:grid-cols-2">
             {canAppts && <AppointmentTrends data={weekly} />}
             {canBilling && <RevenueTrend data={monthlyRev} />}
@@ -286,7 +288,7 @@ export default async function DashboardPage() {
 
       {/* ============ Financial · Patients · Inventory ============ */}
       <section className="space-y-4">
-        <SectionLabel>Financial &amp; Care Insights</SectionLabel>
+        <SectionLabel>{t("section.financialCare")}</SectionLabel>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {canBilling && revMonth && billing && (
             <RevenueAnalytics todayTotal={revToday?.total ?? 0} weekTotal={revWeek?.total ?? 0} month={revMonth} billing={billing} />

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Sparkles } from "lucide-react";
 import { EmptyState } from "./empty-state";
 
@@ -53,7 +54,8 @@ const SEVERITY_META: Record<
  * AI Clinic Assistant — rule-based, severity-tiered highlights from live clinic
  * data. The container is structured so an LLM-generated summary can drop in later.
  */
-export function AiInsights({ insights }: { insights: Insight[] }) {
+export async function AiInsights({ insights }: { insights: Insight[] }) {
+  const t = await getTranslations("dashboard");
   const sorted = [...insights].sort((a, b) => SEVERITY_META[a.severity].order - SEVERITY_META[b.severity].order);
 
   return (
@@ -63,12 +65,12 @@ export function AiInsights({ insights }: { insights: Insight[] }) {
           <Sparkles className="size-4" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">AI Clinic Assistant</h2>
-          <p className="text-xs text-slate-400">Prioritized highlights from today&apos;s data</p>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t("insights.title")}</h2>
+          <p className="text-xs text-slate-400">{t("insights.subtitle")}</p>
         </div>
       </div>
       {sorted.length === 0 ? (
-        <EmptyState icon={Sparkles} title="Nothing needs attention" hint="Alerts appear here as activity builds up." tone="positive" />
+        <EmptyState icon={Sparkles} title={t("insights.emptyTitle")} hint={t("insights.emptyHint")} tone="positive" />
       ) : (
         <ul className="space-y-2">
           {sorted.map((it, i) => {
@@ -78,7 +80,7 @@ export function AiInsights({ insights }: { insights: Insight[] }) {
                 <span className="mt-0.5 text-xs leading-5" aria-hidden>{meta.emoji}</span>
                 <span className="flex-1 text-slate-700 dark:text-slate-200">{it.text}</span>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${meta.chip}`}>
-                  {meta.label}
+                  {t(`insights.${it.severity}`)}
                 </span>
               </li>
             );

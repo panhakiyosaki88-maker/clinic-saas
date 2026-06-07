@@ -1,21 +1,12 @@
+import { getTranslations } from "next-intl/server";
 import { HeartPulse, CalendarDays, Clock, DollarSign, type LucideIcon } from "lucide-react";
 import { LiveClock } from "./live-clock";
 
-const ROLE_LABEL: Record<string, string> = {
-  clinic_owner: "Clinic Owner",
-  doctor: "Doctor",
-  nurse: "Nurse",
-  receptionist: "Receptionist",
-  cashier: "Cashier",
-  accountant: "Accountant",
-  super_admin: "Super Admin",
-};
-
-function greeting(): string {
+function greetingKey(): "morning" | "afternoon" | "evening" {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "morning";
+  if (h < 18) return "afternoon";
+  return "evening";
 }
 
 export interface HeroKpis {
@@ -54,7 +45,7 @@ function HeroStat({
 
 /** Branded "mission control" band — identity, role-aware greeting, live clock,
  *  and the three headline KPIs (appointments / waiting / revenue today). */
-export function BrandingHeader({
+export async function BrandingHeader({
   clinicName,
   plan,
   userName,
@@ -67,14 +58,16 @@ export function BrandingHeader({
   role: string | null;
   kpis: HeroKpis;
 }) {
+  const t = await getTranslations("dashboard");
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
     day: "numeric",
     year: "numeric",
   });
-  const name = userName?.trim() || "there";
+  const name = userName?.trim() || t("hero.there");
   const waiting = kpis.patientsWaiting ?? 0;
+  const roleLabel = role ? (t.has(`role.${role}`) ? t(`role.${role}`) : role) : null;
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-r from-brand-600 to-indigo-600 p-6 text-white dark:border-slate-800">
@@ -88,7 +81,7 @@ export function BrandingHeader({
           </div>
           <div>
             <p className="text-sm font-medium text-brand-100">{clinicName}</p>
-            <h1 className="text-xl font-bold leading-tight">{greeting()}, {name}</h1>
+            <h1 className="text-xl font-bold leading-tight">{t(`hero.${greetingKey()}`)}, {name}</h1>
           </div>
         </div>
         <div className="text-right text-sm">
@@ -96,13 +89,13 @@ export function BrandingHeader({
             {today} · <LiveClock className="font-mono tabular-nums" />
           </p>
           <div className="mt-1 flex items-center justify-end gap-2">
-            {role && (
+            {roleLabel && (
               <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs font-medium">
-                {ROLE_LABEL[role] ?? role}
+                {roleLabel}
               </span>
             )}
             {plan && (
-              <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs font-medium capitalize">{plan} plan</span>
+              <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs font-medium capitalize">{plan} {t("hero.planSuffix")}</span>
             )}
           </div>
         </div>
@@ -110,18 +103,18 @@ export function BrandingHeader({
 
       <div className="relative mt-5 grid gap-3 sm:grid-cols-3">
         {kpis.appointmentsToday !== null && (
-          <HeroStat icon={CalendarDays} label="Appointments today" value={String(kpis.appointmentsToday)} tone="ok" />
+          <HeroStat icon={CalendarDays} label={t("hero.appointmentsToday")} value={String(kpis.appointmentsToday)} tone="ok" />
         )}
         {kpis.patientsWaiting !== null && (
           <HeroStat
             icon={Clock}
-            label={waiting > 0 ? "Patients waiting" : "Queue is clear"}
+            label={waiting > 0 ? t("hero.patientsWaiting") : t("hero.queueClear")}
             value={String(waiting)}
             tone={waiting > 0 ? "alert" : "ok"}
           />
         )}
         {kpis.revenueToday !== null && (
-          <HeroStat icon={DollarSign} label="Revenue today" value={`$${kpis.revenueToday.toFixed(2)}`} tone="ok" />
+          <HeroStat icon={DollarSign} label={t("hero.revenueToday")} value={`$${kpis.revenueToday.toFixed(2)}`} tone="ok" />
         )}
       </div>
     </div>

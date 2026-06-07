@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Stethoscope } from "lucide-react";
 import type { DoctorAvailabilityToday } from "@/lib/db/queries/doctors";
 import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
@@ -12,35 +13,40 @@ function statusOf(d: DoctorAvailabilityToday): Status {
   return "available";
 }
 
-const STATUS_META: Record<Status, { dot: string; label: string; text: string }> = {
-  available: { dot: "bg-emerald-500", label: "Available", text: "text-emerald-600 dark:text-emerald-400" },
-  busy: { dot: "bg-brand-500", label: "Busy", text: "text-brand-600 dark:text-brand-400" },
-  off: { dot: "bg-slate-300 dark:bg-slate-600", label: "Off", text: "text-slate-400" },
+const STATUS_META: Record<Status, { dot: string; text: string }> = {
+  available: { dot: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" },
+  busy: { dot: "bg-brand-500", text: "text-brand-600 dark:text-brand-400" },
+  off: { dot: "bg-slate-300 dark:bg-slate-600", text: "text-slate-400" },
 };
 
 /** Doctor workload: live status (available / busy / on-leave) + patients seen today. */
-export function DoctorAvailability({
+export async function DoctorAvailability({
   doctors,
   canManage,
 }: {
   doctors: DoctorAvailabilityToday[];
   canManage: boolean;
 }) {
+  const t = await getTranslations("dashboard");
   return (
-    <WidgetCard title="Doctor Workload" action={{ href: "/doctors", label: "Manage" }} bodyClassName="">
+    <WidgetCard title={t("widget.doctorWorkload")} action={{ href: "/doctors", label: t("action.manage") }} bodyClassName="">
       {doctors.length === 0 ? (
         <EmptyState
           icon={Stethoscope}
-          title="No doctors yet"
-          hint="Add doctors and set their weekly hours to see who's in today."
-          action={canManage ? { href: "/doctors/new", label: "Add doctor" } : undefined}
+          title={t("empty.noDoctors.title")}
+          hint={t("empty.noDoctors.hint")}
+          action={canManage ? { href: "/doctors/new", label: t("action.addDoctor") } : undefined}
         />
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {doctors.map((d) => {
             const status = statusOf(d);
             const meta = STATUS_META[status];
-            const label = d.offToday ? "On leave" : status === "off" ? "No hours today" : meta.label;
+            const label = d.offToday
+              ? t("labels.onLeave")
+              : status === "off"
+                ? t("labels.noHoursToday")
+                : t(`labels.${status}`);
             return (
               <li key={d.id} className="flex items-center justify-between gap-3 px-5 py-3">
                 <div className="flex items-center gap-3">
@@ -50,13 +56,13 @@ export function DoctorAvailability({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">{d.name}</p>
-                    <p className="text-xs text-slate-400">{d.specialization ?? "General"}</p>
+                    <p className="text-xs text-slate-400">{d.specialization ?? t("labels.general")}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className={`text-xs font-medium ${meta.text}`}>{label}</p>
                   <p className="text-xs text-slate-400">
-                    {d.seenToday} seen{d.slots.length > 0 && !d.offToday ? ` · ${d.slots.map((s) => `${s.start}–${s.end}`).join(", ")}` : ""}
+                    {d.seenToday} {t("labels.seen")}{d.slots.length > 0 && !d.offToday ? ` · ${d.slots.map((s) => `${s.start}–${s.end}`).join(", ")}` : ""}
                   </p>
                 </div>
               </li>

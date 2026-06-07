@@ -1,17 +1,19 @@
+import { getTranslations } from "next-intl/server";
 import { Wallet } from "lucide-react";
 import type { OutstandingReport } from "@/lib/db/queries/reports";
 import { WidgetCard } from "./widget-card";
 import { EmptyState } from "./empty-state";
 
-export function OutstandingPayments({ report }: { report: OutstandingReport }) {
+export async function OutstandingPayments({ report }: { report: OutstandingReport }) {
+  const t = await getTranslations("dashboard");
   return (
-    <WidgetCard title="Outstanding Payments" action={{ href: "/billing", label: "Billing" }} bodyClassName="">
+    <WidgetCard title={t("widget.outstanding")} action={{ href: "/billing", label: t("action.billing") }} bodyClassName="">
       {report.count === 0 ? (
-        <EmptyState icon={Wallet} title="All settled" hint="No unpaid invoices. Nice." tone="positive" />
+        <EmptyState icon={Wallet} title={t("empty.allSettled.title")} hint={t("empty.allSettled.hint")} tone="positive" />
       ) : (
         <div>
           <div className="flex items-baseline justify-between px-5 py-3">
-            <span className="text-sm text-slate-500 dark:text-slate-400">{report.count} unpaid</span>
+            <span className="text-sm text-slate-500 dark:text-slate-400">{report.count} {t("labels.unpaid")}</span>
             <span className="text-xl font-bold text-slate-900 dark:text-white">{report.total.toFixed(2)}</span>
           </div>
           <ul className="divide-y divide-slate-100 dark:divide-slate-800">

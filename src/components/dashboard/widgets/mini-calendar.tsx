@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, startOfWeek, startOfMonth, ymd, isSameDay, WEEKDAYS } from "@/lib/date";
 import { getAppointmentCalendar, type CalendarDay } from "@/server/actions/appointments";
@@ -26,6 +27,7 @@ export function MiniCalendar({
   initialMonth: number; // 0-based
   initialDays: Days;
 }) {
+  const t = useTranslations("dashboard");
   const [monthStart, setMonthStart] = useState(
     () => new Date(initialYear, initialMonth, 1),
   );
@@ -84,8 +86,8 @@ export function MiniCalendar({
 
   return (
     <WidgetCard
-      title="Appointments Calendar"
-      action={{ href: "/appointments?view=month", label: "Open calendar" }}
+      title={t("widget.appointmentsCalendar")}
+      action={{ href: "/appointments?view=month", label: t("action.openCalendar") }}
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -93,7 +95,7 @@ export function MiniCalendar({
             variant="outline"
             size="icon"
             onClick={() => go(-1)}
-            aria-label="Previous month"
+            aria-label={t("labels.prevMonth")}
           >
             <ChevronLeft />
           </Button>
@@ -102,13 +104,13 @@ export function MiniCalendar({
             size="sm"
             onClick={goToday}
           >
-            Today
+            {t("labels.today")}
           </Button>
           <Button
             variant="outline"
             size="icon"
             onClick={() => go(1)}
-            aria-label="Next month"
+            aria-label={t("labels.nextMonth")}
           >
             <ChevronRight />
           </Button>
@@ -117,7 +119,7 @@ export function MiniCalendar({
           </span>
         </div>
         <span className="text-xs text-slate-400">
-          {monthTotal} appt{monthTotal === 1 ? "" : "s"}
+          {monthTotal} {t("labels.appts")}
         </span>
       </div>
 

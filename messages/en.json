@@ -33,5 +33,136 @@
       "english": "English",
       "khmer": "ខ្មែរ (Khmer)"
     }
+  },
+  "dashboard": {
+    "stat": {
+      "todayAppointments": "Today's Appointments",
+      "waitingRoom": "Waiting Room",
+      "completedToday": "Completed Today",
+      "dailyRevenue": "Daily Revenue",
+      "totalPatients": "Total Patients",
+      "vsYesterday": "vs yesterday",
+      "noDataYesterday": "No data for yesterday",
+      "actionRequired": "Action required",
+      "queueEmpty": "Queue is empty",
+      "ofCapacity": "of today's capacity"
+    },
+    "section": {
+      "operations": "Clinic Operations",
+      "analytics": "Analytics Center",
+      "financialCare": "Financial & Care Insights"
+    },
+    "schedule": {
+      "myDay": "My Day",
+      "today": "Today's Schedule"
+    },
+    "hero": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "there": "there",
+      "appointmentsToday": "Appointments today",
+      "patientsWaiting": "Patients waiting",
+      "queueClear": "Queue is clear",
+      "revenueToday": "Revenue today",
+      "planSuffix": "plan"
+    },
+    "role": {
+      "clinic_owner": "Clinic Owner",
+      "doctor": "Doctor",
+      "nurse": "Nurse",
+      "receptionist": "Receptionist",
+      "cashier": "Cashier",
+      "accountant": "Accountant",
+      "super_admin": "Super Admin"
+    },
+    "insights": {
+      "title": "AI Clinic Assistant",
+      "subtitle": "Prioritized highlights from today's data",
+      "critical": "Critical",
+      "operational": "Operational",
+      "financial": "Financial",
+      "inventory": "Inventory",
+      "positive": "All clear",
+      "emptyTitle": "Nothing needs attention",
+      "emptyHint": "Alerts appear here as activity builds up."
+    },
+    "action": {
+      "reports": "Reports",
+      "billing": "Billing",
+      "patients": "Patients",
+      "pharmacy": "Pharmacy",
+      "manage": "Manage",
+      "viewAll": "View all",
+      "allPatients": "All patients",
+      "openCalendar": "Open calendar",
+      "addDoctor": "Add doctor",
+      "bookAppointment": "Book appointment",
+      "registerPatient": "Register patient",
+      "registerWalkIn": "Register walk-in"
+    },
+    "widget": {
+      "doctorWorkload": "Doctor Workload",
+      "liveQueue": "Live Queue Board",
+      "patientInsights": "Patient Insights",
+      "patientStatistics": "Patient Statistics",
+      "financialCenter": "Financial Center",
+      "outstanding": "Outstanding Payments",
+      "inventoryAlerts": "Inventory Alerts",
+      "recentActivity": "Recent Activity",
+      "appointmentTrends": "Appointment Trends",
+      "revenueTrend": "Revenue Trend",
+      "patientGrowth": "Patient Growth",
+      "doctorPerformance": "Doctor Performance",
+      "appointmentsCalendar": "Appointments Calendar"
+    },
+    "empty": {
+      "noAppointmentsToday": { "title": "No appointments today", "hint": "When patients are booked, they'll show up here in order." },
+      "noDoctors": { "title": "No doctors yet", "hint": "Add doctors and set their weekly hours to see who's in today." },
+      "queueClear": { "title": "Queue is clear", "hint": "Checked-in, in-consultation and completed patients show up here through the day." },
+      "noPatients": { "title": "No patients yet", "hint": "Register your first patient to start tracking your practice." },
+      "noRevenue": { "title": "No revenue this period", "hint": "Recorded payments will be summarized here." },
+      "allSettled": { "title": "All settled", "hint": "No unpaid invoices. Nice." },
+      "inventoryHealthy": { "title": "Inventory healthy", "hint": "No low-stock or expiring items right now." },
+      "noActivity": { "title": "No recent activity", "hint": "Actions across the clinic will appear here." },
+      "noAppointments": { "title": "No appointments yet", "hint": "Your booking trend will chart here." },
+      "noRevenueYet": { "title": "No revenue yet", "hint": "Monthly collected revenue will chart here." },
+      "noNewPatients": { "title": "No new patients yet", "hint": "New registrations over the last 30 days chart here." },
+      "noVisits": { "title": "No visits this month", "hint": "Visits recorded per doctor will chart here." }
+    },
+    "labels": {
+      "unassigned": "Unassigned",
+      "general": "General",
+      "seen": "seen",
+      "onLeave": "On leave",
+      "noHoursToday": "No hours today",
+      "available": "Available",
+      "busy": "Busy",
+      "off": "Off",
+      "waiting": "Waiting",
+      "inConsultation": "In Consultation",
+      "completed": "Completed",
+      "none": "None",
+      "newToday": "New today",
+      "newThisMonth": "New this month",
+      "highRisk": "High-risk patients",
+      "noHighRisk": "No high-risk patients flagged.",
+      "followUps": "Upcoming follow-ups",
+      "noFollowUps": "No follow-ups scheduled this week.",
+      "today": "Today",
+      "total": "Total",
+      "newThisWeek": "New this week",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "collectionRate": "Collection rate",
+      "avgPerPatient": "Avg / patient",
+      "byMethod": "By method (this month)",
+      "unpaid": "unpaid",
+      "left": "left",
+      "exp": "exp",
+      "appts": "appts",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month"
+    }
   }
 }

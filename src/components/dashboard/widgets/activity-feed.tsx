@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Activity } from "lucide-react";
 import { describeActivity, type ActivityItem } from "@/lib/db/queries/activity";
 import { WidgetCard } from "./widget-card";
@@ -13,11 +14,12 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-export function ActivityFeed({ items }: { items: ActivityItem[] }) {
+export async function ActivityFeed({ items }: { items: ActivityItem[] }) {
+  const t = await getTranslations("dashboard");
   return (
-    <WidgetCard title="Recent Activity" bodyClassName="">
+    <WidgetCard title={t("widget.recentActivity")} bodyClassName="">
       {items.length === 0 ? (
-        <EmptyState icon={Activity} title="No recent activity" hint="Actions across the clinic will appear here." />
+        <EmptyState icon={Activity} title={t("empty.noActivity.title")} hint={t("empty.noActivity.hint")} />
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {items.map((a) => (
