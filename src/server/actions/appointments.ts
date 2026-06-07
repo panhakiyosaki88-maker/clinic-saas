@@ -13,6 +13,7 @@ import {
   type ChangeStatusInput,
 } from "@/lib/validations/appointment";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 import { ymd } from "@/lib/date";
 import type { Database } from "@/types/database";
 
@@ -69,9 +70,10 @@ export async function createAppointment(
   input: CreateAppointmentInput
 ): Promise<ActionResult<{ appointmentId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.APPOINTMENTS_WRITE);
+  const te = await getErrorT();
   const parsed = createAppointmentSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
   const now = new Date().toISOString();
@@ -97,7 +99,7 @@ export async function createAppointment(
     })
     .select("id")
     .single();
-  if (error || !data) return fail(error?.message ?? "Could not create appointment.");
+  if (error || !data) return fail(error?.message ?? te("appointment.createFailed"));
 
   await supabase.from("patient_timeline").insert({
     clinic_id: clinicId,
@@ -117,9 +119,10 @@ export async function updateAppointment(
   input: UpdateAppointmentInput
 ): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.APPOINTMENTS_WRITE);
+  const te = await getErrorT();
   const parsed = updateAppointmentSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
   const patch: AppointmentWrite = {};
@@ -149,7 +152,7 @@ export async function updateAppointment(
 export async function changeAppointmentStatus(input: ChangeStatusInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.APPOINTMENTS_WRITE);
   const parsed = changeStatusSchema.safeParse(input);
-  if (!parsed.success) return fail("Invalid request.");
+  if (!parsed.success) return fail((await getErrorT())("invalidRequest"));
   const { appointmentId, status } = parsed.data;
 
   const now = new Date().toISOString();

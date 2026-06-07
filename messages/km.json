@@ -324,5 +324,16 @@
       "create": "បង្កើតការណាត់ជួប",
       "cancel": "បោះបង់"
     }
+  },
+  "errors": {
+    "fixFields": "សូមកែតម្រូវវាលដែលបានបន្លិច។",
+    "invalidRequest": "សំណើមិនត្រឹមត្រូវ។",
+    "appointment": {
+      "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
+      "dateFormat": "ប្រើទម្រង់ YYYY-MM-DD",
+      "timeFormat": "ប្រើទម្រង់ HH:MM",
+      "scheduleRequired": "សូមជ្រើសរើសកាលបរិច្ឆេទ និងម៉ោង (ឬសម្គាល់ថាមកផ្ទាល់)",
+      "createFailed": "មិនអាចបង្កើតការណាត់ជួបបានទេ។"
+    }
   }
 }

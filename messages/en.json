@@ -324,5 +324,16 @@
       "create": "Create appointment",
       "cancel": "Cancel"
     }
+  },
+  "errors": {
+    "fixFields": "Please fix the highlighted fields.",
+    "invalidRequest": "Invalid request.",
+    "appointment": {
+      "patientRequired": "Choose a patient",
+      "dateFormat": "Use YYYY-MM-DD",
+      "timeFormat": "Use HH:MM",
+      "scheduleRequired": "Pick a date and time (or mark as walk-in)",
+      "createFailed": "Could not create appointment."
+    }
   }
 }
