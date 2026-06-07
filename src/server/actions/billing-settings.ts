@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { listBranches } from "@/lib/db/queries/clinic";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ok, fail, type ActionResult } from "./types";
 
 const schema = z.object({
+  branchId: z.string().uuid(),
   khqrMerchantName: z.string().trim().max(60).optional().or(z.literal("")),
   khqrMerchantAccount: z.string().trim().max(120).optional().or(z.literal("")),
   khqrMerchantCity: z.string().trim().max(60).optional().or(z.literal("")),
@@ -24,10 +26,15 @@ export async function saveBillingSettings(input: BillingSettingsInput): Promise<
   if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
   const v = parsed.data;
 
+  // Only accept a branch that belongs to the caller's clinic.
+  const branches = await listBranches();
+  if (!branches.some((b) => b.id === v.branchId)) return fail("Unknown branch.");
+
   const supabase = await createClient();
   const { error } = await supabase.from("billing_settings").upsert(
     {
       clinic_id: clinicId,
+      branch_id: v.branchId,
       khqr_merchant_name: v.khqrMerchantName || null,
       khqr_merchant_account: v.khqrMerchantAccount || null,
       khqr_merchant_city: v.khqrMerchantCity || null,
@@ -36,7 +43,7 @@ export async function saveBillingSettings(input: BillingSettingsInput): Promise<
       tax_rate: v.taxRate,
       invoice_due_days: v.invoiceDueDays,
     },
-    { onConflict: "clinic_id" }
+    { onConflict: "clinic_id,branch_id" }
   );
   if (error) return fail(error.message);
   revalidatePath("/billing/settings");

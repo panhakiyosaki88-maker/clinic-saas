@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
-import { getBillingSettings } from "@/lib/db/queries/billing-settings";
+import { listBillingSettings } from "@/lib/db/queries/billing-settings";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Settings } from "lucide-react";
@@ -17,44 +17,39 @@ export default async function BillingSettingsPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_WRITE))) redirect("/billing");
 
-  const [settings, branches] = await Promise.all([getBillingSettings(), listBranches()]);
+  const [branches, settings] = await Promise.all([listBranches(), listBillingSettings()]);
+  const byBranch = new Map(settings.map((s) => [s.branch_id, s]));
   const multiBranch = branches.length > 1;
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <PageHeader icon={Settings} title="Billing settings" subtitle="KHQR merchant details, currency and defaults" />
+      <PageHeader
+        icon={Settings}
+        title="Billing settings"
+        subtitle="Per-branch KHQR, payment QR, currency and defaults"
+      />
       <BillingTabs />
-      <Card>
-        <CardHeader><CardTitle>KHQR & defaults</CardTitle></CardHeader>
-        <CardContent>
-          <BillingSettingsForm settings={settings} />
-          <p className="mt-3 text-xs text-[var(--muted-foreground)]">
-            With a Bakong account set, invoices show a scannable KHQR. Payment confirmation is manual
-            (mark as paid) — automatic confirmation needs the Bakong API.
-          </p>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment QR</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="text-xs text-[var(--muted-foreground)]">
-            Upload a static QR (ABA / Wing / bank / printed KHQR) shown on this branch&apos;s invoices.
-            An uploaded QR is used instead of the generated KHQR.
-          </p>
-          {branches.length === 0 ? (
-            <p className="text-sm text-[var(--muted-foreground)]">No branches yet.</p>
-          ) : (
-            branches.map((b) => (
-              <div key={b.id} className={multiBranch ? "space-y-2" : undefined}>
-                {multiBranch && (
-                  <p className="text-sm font-medium">
-                    {b.name}
-                    {b.is_primary && <span className="ml-2 text-xs text-[var(--muted-foreground)]">Primary</span>}
-                  </p>
+      {branches.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-sm text-[var(--muted-foreground)]">No branches yet.</CardContent>
+        </Card>
+      ) : (
+        branches.map((b) => (
+          <Card key={b.id}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {multiBranch ? b.name : "KHQR & defaults"}
+                {multiBranch && b.is_primary && (
+                  <span className="text-xs font-normal text-[var(--muted-foreground)]">Primary</span>
                 )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <BillingSettingsForm branchId={b.id} settings={byBranch.get(b.id) ?? null} />
+
+              <div className="border-t border-[var(--border)] pt-6">
+                <p className="mb-3 text-sm font-medium">Payment QR</p>
                 <PaymentQrUploader
                   clinicId={clinic.id}
                   branchId={b.id}
@@ -62,10 +57,15 @@ export default async function BillingSettingsPage() {
                   caption={b.payment_qr_caption}
                 />
               </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+
+              <p className="text-xs text-[var(--muted-foreground)]">
+                With a Bakong account set, this branch&apos;s invoices show a scannable KHQR. An uploaded
+                QR is used instead. Payment confirmation is manual (mark as paid).
+              </p>
+            </CardContent>
+          </Card>
+        ))
+      )}
     </main>
   );
 }

@@ -11,7 +11,13 @@ import { Label } from "@/components/ui/label";
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20";
 
-export function BillingSettingsForm({ settings }: { settings: BillingSettings | null }) {
+export function BillingSettingsForm({
+  branchId,
+  settings,
+}: {
+  branchId: string;
+  settings: BillingSettings | null;
+}) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -24,6 +30,7 @@ export function BillingSettingsForm({ settings }: { settings: BillingSettings | 
     const f = new FormData(e.currentTarget);
     startTransition(async () => {
       const res = await saveBillingSettings({
+        branchId,
         khqrMerchantName: String(f.get("khqrMerchantName") ?? ""),
         khqrMerchantAccount: String(f.get("khqrMerchantAccount") ?? ""),
         khqrMerchantCity: String(f.get("khqrMerchantCity") ?? ""),

@@ -31,7 +31,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
     listDoctors(),
     listBranches(),
     getPatientConsultingDoctorMap(),
-    getBillingSettings(),
+    getBillingSettings(inv.branch_id),
     listMedicineOptions(),
   ]);
   const ctx = currencyContext(settings);

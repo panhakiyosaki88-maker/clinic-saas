@@ -22,8 +22,9 @@ export default async function ReceiptPage({
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
   const { id } = await params;
-  const [inv, settings] = await Promise.all([getInvoice(id), getBillingSettings()]);
+  const inv = await getInvoice(id);
   if (!inv) notFound();
+  const settings = await getBillingSettings(inv.branch_id);
 
   const ctx = currencyContext(settings);
   const one = (n: number) => formatIn(n, ctx.primary, ctx.rate);

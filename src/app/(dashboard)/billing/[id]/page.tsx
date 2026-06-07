@@ -47,7 +47,7 @@ export default async function InvoiceDetailPage({
   const [canWrite, canNotify, settings] = await Promise.all([
     hasPermission(PERMISSIONS.BILLING_WRITE),
     hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
-    getBillingSettings(),
+    getBillingSettings(inv.branch_id),
   ]);
   const ctx = currencyContext(settings);
   const one = (n: number) => formatIn(n, ctx.primary, ctx.rate);

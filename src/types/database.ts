@@ -1326,7 +1326,9 @@ export interface Database {
       };
       billing_settings: {
         Row: {
+          id: string;
           clinic_id: string;
+          branch_id: string | null;
           khqr_merchant_name: string | null;
           khqr_merchant_account: string | null;
           khqr_merchant_city: string | null;
@@ -1338,7 +1340,9 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
+          id?: string;
           clinic_id: string;
+          branch_id?: string | null;
           khqr_merchant_name?: string | null;
           khqr_merchant_account?: string | null;
           khqr_merchant_city?: string | null;
