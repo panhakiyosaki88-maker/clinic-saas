@@ -5,6 +5,7 @@ import { getAccountStatus } from "@/lib/auth/account";
 import { getPendingInvitationByEmail } from "@/lib/db/invitations";
 import { OnboardingForm } from "@/components/clinic/onboarding-form";
 import { AcceptInvite } from "@/components/members/accept-invite";
+import { LanguageToggle } from "@/components/settings/language-toggle";
 import {
   Card,
   CardContent,
@@ -33,7 +34,10 @@ export default async function OnboardingPage() {
   const t = await getTranslations("auth.onboarding");
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
+    <main className="relative flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
+      <div className="absolute right-4 top-4">
+        <LanguageToggle />
+      </div>
       <Card className="w-full max-w-lg">
         {invitation ? (
           <>

@@ -4,6 +4,7 @@ import { Clock, ShieldX } from "lucide-react";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getAccountStatus } from "@/lib/auth/account";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { LanguageToggle } from "@/components/settings/language-toggle";
 import {
   Card,
   CardContent,
@@ -28,7 +29,10 @@ export default async function AccountPendingPage() {
   const t = await getTranslations("auth.pending");
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
+    <main className="relative flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
+      <div className="absolute right-4 top-4">
+        <LanguageToggle />
+      </div>
       <Card className="w-full max-w-lg text-center">
         <CardHeader>
           <div
