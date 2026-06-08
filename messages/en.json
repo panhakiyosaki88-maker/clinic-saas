@@ -826,7 +826,14 @@
       "recordPayment": "Record payment",
       "payments": "Payments",
       "noPayments": "No payments recorded.",
-      "refund": "refund"
+      "refund": "refund",
+      "finalize": "Finalize",
+      "duplicate": "Duplicate",
+      "void": "Void",
+      "voidConfirm": "Void this invoice?",
+      "voiding": "Voiding…",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     },
     "receipt": {
       "backToInvoice": "← Invoice",

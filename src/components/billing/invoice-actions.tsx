@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { duplicateInvoice, finalizeInvoice } from "@/server/actions/billing";
 import { Button } from "@/components/ui/button";
 
 /** Duplicate-as-draft and (for drafts) finalize/issue actions for an invoice. */
 export function InvoiceActions({ invoiceId, isDraft }: { invoiceId: string; isDraft: boolean }) {
   const router = useRouter();
+  const t = useTranslations("billing.invoiceDetail");
   const [pending, startTransition] = React.useTransition();
 
   return (
@@ -23,7 +25,7 @@ export function InvoiceActions({ invoiceId, isDraft }: { invoiceId: string; isDr
             })
           }
         >
-          {pending ? "…" : "Finalize"}
+          {pending ? "…" : t("finalize")}
         </Button>
       )}
       <Button
@@ -37,7 +39,7 @@ export function InvoiceActions({ invoiceId, isDraft }: { invoiceId: string; isDr
           })
         }
       >
-        Duplicate
+        {t("duplicate")}
       </Button>
     </>
   );

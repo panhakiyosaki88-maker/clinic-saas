@@ -826,7 +826,14 @@
       "recordPayment": "កត់ត្រាការទូទាត់",
       "payments": "ការទូទាត់",
       "noPayments": "មិនមានការទូទាត់ត្រូវបានកត់ត្រាទេ។",
-      "refund": "សងវិញ"
+      "refund": "សងវិញ",
+      "finalize": "បញ្ចប់",
+      "duplicate": "ចម្លង",
+      "void": "លុបចោល",
+      "voidConfirm": "លុបចោលវិក្កយបត្រនេះ?",
+      "voiding": "កំពុងលុបចោល…",
+      "confirm": "បញ្ជាក់",
+      "cancel": "បោះបង់"
     },
     "receipt": {
       "backToInvoice": "← វិក្កយបត្រ",
