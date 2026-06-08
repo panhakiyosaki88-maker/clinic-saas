@@ -3,19 +3,21 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { setServicePriceArchived, deleteServicePrice } from "@/server/actions/service-prices";
 import { Button } from "@/components/ui/button";
 
 /** Edit link + archive/restore toggle + permanent delete for a catalog row. */
 export function CatalogRowActions({ id, archived }: { id: string; archived: boolean }) {
   const router = useRouter();
+  const t = useTranslations("billing.catalogRow");
   const [pending, startTransition] = React.useTransition();
 
   return (
     <div className="flex items-center justify-end gap-1">
       {!archived && (
         <Button asChild variant="ghost" size="sm">
-          <Link href={`/settings/billing/catalog?edit=${id}`}>Edit</Link>
+          <Link href={`/settings/billing/catalog?edit=${id}`}>{t("edit")}</Link>
         </Button>
       )}
       <Button
@@ -29,7 +31,7 @@ export function CatalogRowActions({ id, archived }: { id: string; archived: bool
           })
         }
       >
-        {archived ? "Restore" : "Archive"}
+        {archived ? t("restore") : t("archive")}
       </Button>
       <Button
         variant="ghost"
@@ -37,14 +39,14 @@ export function CatalogRowActions({ id, archived }: { id: string; archived: bool
         className="text-[var(--destructive)] hover:text-[var(--destructive)]"
         disabled={pending}
         onClick={() => {
-          if (!window.confirm("Delete this price permanently? Past invoices keep their amounts. Use Archive to hide it instead.")) return;
+          if (!window.confirm(t("deleteConfirm"))) return;
           startTransition(async () => {
             const res = await deleteServicePrice(id);
             if (res.ok) router.refresh();
           });
         }}
       >
-        Delete
+        {t("delete")}
       </Button>
     </div>
   );
