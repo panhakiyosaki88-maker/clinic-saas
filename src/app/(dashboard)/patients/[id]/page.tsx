@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -149,61 +150,64 @@ export default async function PatientProfilePage({
 
   const age = patientAge(patient.date_of_birth);
   const activeMeds = medications.filter((m) => m.status === "active").length;
+  const t = await getTranslations("patients.profile");
+  const tInvStatus = await getTranslations("billing.status");
+  const tVisitStatus = await getTranslations("visits.detail.status");
 
   // -- Panels -----------------------------------------------------------------
   const overviewPanel = (
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Demographics</CardTitle>
+          <CardTitle>{t("demographics")}</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-4">
-            <Detail label="Gender" value={patient.gender} />
-            <Detail label="Date of birth" value={patient.date_of_birth} />
-            <Detail label="Blood type" value={patient.blood_type} />
-            <Detail label="Marital status" value={patient.marital_status} />
-            <Detail label="Phone" value={patient.phone} />
-            <Detail label="Email" value={patient.email} />
-            <Detail label="Occupation" value={patient.occupation} />
+            <Detail label={t("fields.gender")} value={patient.gender} />
+            <Detail label={t("fields.dateOfBirth")} value={patient.date_of_birth} />
+            <Detail label={t("fields.bloodType")} value={patient.blood_type} />
+            <Detail label={t("fields.maritalStatus")} value={patient.marital_status} />
+            <Detail label={t("fields.phone")} value={patient.phone} />
+            <Detail label={t("fields.email")} value={patient.email} />
+            <Detail label={t("fields.occupation")} value={patient.occupation} />
             <Detail
-              label="ID document"
+              label={t("fields.idDocument")}
               value={
                 patient.national_id_number
                   ? `${patient.national_id_type ?? ""} ${patient.national_id_number}`.trim()
                   : null
               }
             />
-            <Detail label="Address" value={patient.address} />
+            <Detail label={t("fields.address")} value={patient.address} />
           </dl>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Contact</CardTitle>
+          <CardTitle>{t("contact")}</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-4">
-            <Detail label="Preferred language" value={patient.preferred_language} />
-            <Detail label="Preferred contact" value={patient.preferred_contact_method} />
-            <Detail label="Emergency contact" value={patient.emergency_contact_name} />
-            <Detail label="Emergency phone" value={patient.emergency_contact_phone} />
-            <Detail label="Relationship" value={patient.next_of_kin_relationship} />
+            <Detail label={t("fields.preferredLanguage")} value={patient.preferred_language} />
+            <Detail label={t("fields.preferredContact")} value={patient.preferred_contact_method} />
+            <Detail label={t("fields.emergencyContact")} value={patient.emergency_contact_name} />
+            <Detail label={t("fields.emergencyPhone")} value={patient.emergency_contact_phone} />
+            <Detail label={t("fields.relationship")} value={patient.next_of_kin_relationship} />
           </dl>
         </CardContent>
       </Card>
 
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Medical profile</CardTitle>
+          <CardTitle>{t("medicalProfile")}</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-4 sm:grid-cols-2">
-            <Detail label="Allergies" value={patient.allergies} />
-            <Detail label="Chronic diseases" value={patient.chronic_diseases} />
-            <Detail label="Medical history" value={patient.medical_history} />
-            <Detail label="Notes" value={patient.notes} />
+            <Detail label={t("fields.allergies")} value={patient.allergies} />
+            <Detail label={t("fields.chronicDiseases")} value={patient.chronic_diseases} />
+            <Detail label={t("fields.medicalHistory")} value={patient.medical_history} />
+            <Detail label={t("fields.notes")} value={patient.notes} />
           </dl>
         </CardContent>
       </Card>
@@ -224,16 +228,16 @@ export default async function PatientProfilePage({
       {canEmrRead && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Visit history ({visits.length})</CardTitle>
+            <CardTitle>{t("visitHistory", { count: visits.length })}</CardTitle>
             {canEmrWrite && (
               <Button asChild size="sm">
-                <Link href={`/patients/${patient.id}/records/new`}>New visit</Link>
+                <Link href={`/patients/${patient.id}/records/new`}>{t("newVisit")}</Link>
               </Button>
             )}
           </CardHeader>
           <CardContent>
             {visits.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">No visits recorded.</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("noVisits")}</p>
             ) : (
               <ul className="divide-y divide-[var(--border)]">
                 {visits.map((v) => (
@@ -258,16 +262,16 @@ export default async function PatientProfilePage({
       {canRxRead && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Prescriptions ({prescriptions.length})</CardTitle>
+            <CardTitle>{t("prescriptions", { count: prescriptions.length })}</CardTitle>
             {canRxWrite && (
               <Button asChild size="sm">
-                <Link href={`/prescriptions/new?patientId=${patient.id}`}>New prescription</Link>
+                <Link href={`/prescriptions/new?patientId=${patient.id}`}>{t("newPrescription")}</Link>
               </Button>
             )}
           </CardHeader>
           <CardContent>
             {prescriptions.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">No prescriptions yet.</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("noPrescriptions")}</p>
             ) : (
               <ul className="divide-y divide-[var(--border)]">
                 {prescriptions.map((p) => (
@@ -276,7 +280,7 @@ export default async function PatientProfilePage({
                       {new Date(p.prescribed_at).toLocaleDateString()}
                     </Link>
                     <span className="text-sm text-[var(--muted-foreground)]">
-                      {p.item_count} item{p.item_count === 1 ? "" : "s"}
+                      {t("items", { count: p.item_count })}
                     </span>
                   </li>
                 ))}
@@ -289,10 +293,10 @@ export default async function PatientProfilePage({
       {canLabRead && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Lab requests ({labRequests.length})</CardTitle>
+            <CardTitle>{t("labRequests", { count: labRequests.length })}</CardTitle>
             {canLabWrite && (
               <Button asChild size="sm">
-                <Link href={`/lab/new?patientId=${patient.id}`}>New request</Link>
+                <Link href={`/lab/new?patientId=${patient.id}`}>{t("newRequest")}</Link>
               </Button>
             )}
           </CardHeader>
@@ -318,21 +322,21 @@ export default async function PatientProfilePage({
     <div className="space-y-6">
       {(canWrite || memberships.length > 0) && (
         <Card>
-          <CardHeader><CardTitle>Membership</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("membership")}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             {memberships.length > 0 ? (
               <ul className="space-y-1 text-sm">
                 {memberships.map((m) => (
                   <li key={m.id} className="flex items-center justify-between gap-2">
-                    <span>{m.plan_name ?? "Plan"}</span>
+                    <span>{m.plan_name ?? t("planFallback")}</span>
                     <span className="text-xs text-[var(--muted-foreground)]">
-                      {m.status}{m.expires_at ? ` · until ${m.expires_at}` : ""}
+                      {m.status}{m.expires_at ? ` · ${t("until", { date: m.expires_at })}` : ""}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-[var(--muted-foreground)]">Not enrolled in a membership.</p>
+              <p className="text-xs text-[var(--muted-foreground)]">{t("notEnrolled")}</p>
             )}
             {canWrite && !activeMembership && <EnrolMembershipForm patientId={patient.id} plans={membershipPlans} />}
           </CardContent>
@@ -341,12 +345,12 @@ export default async function PatientProfilePage({
       {(canBookAppt || patientVisits.length > 0) && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Visits ({patientVisits.length})</CardTitle>
+            <CardTitle>{t("visits", { count: patientVisits.length })}</CardTitle>
             {canBookAppt && <StartVisitButton patientId={patient.id} />}
           </CardHeader>
           <CardContent className="space-y-1">
             {patientVisits.length === 0 && (
-              <p className="text-xs text-[var(--muted-foreground)]">No visits yet. Start one for a walk-in.</p>
+              <p className="text-xs text-[var(--muted-foreground)]">{t("noVisitsWalkIn")}</p>
             )}
             {patientVisits.slice(0, 8).map((vt) => (
               <div
@@ -357,7 +361,7 @@ export default async function PatientProfilePage({
                   <span className="font-medium">{vt.visit_number}</span>
                   <span className="text-xs text-[var(--muted-foreground)]">
                     {new Date(vt.visit_date).toLocaleDateString()}
-                    {vt.doctor_name ? ` · ${vt.doctor_name}` : ""} · {vt.status}
+                    {vt.doctor_name ? ` · ${vt.doctor_name}` : ""} · {tVisitStatus.has(vt.status) ? tVisitStatus(vt.status) : vt.status}
                   </span>
                 </Link>
                 {canBookAppt && <VisitStatusButton visitId={vt.id} status={vt.status} isLatest={vt.id === patientVisits[0]?.id} />}
@@ -368,7 +372,7 @@ export default async function PatientProfilePage({
       )}
       {canBillWrite && hasActivity && (
         <Card>
-          <CardHeader><CardTitle>Suggested charges</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("suggestedCharges")}</CardTitle></CardHeader>
           <CardContent>
             <SuggestedCharges
               patientId={patient.id}
@@ -383,21 +387,21 @@ export default async function PatientProfilePage({
       {canBillRead && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Invoices ({invoices.length})</CardTitle>
+            <CardTitle>{t("invoices", { count: invoices.length })}</CardTitle>
             {canBillWrite && (
               <div className="flex gap-2">
                 <Button asChild size="sm" variant="outline">
-                  <Link href={`/billing/workspace?patientId=${patient.id}`}>Billing workspace</Link>
+                  <Link href={`/billing/workspace?patientId=${patient.id}`}>{t("billingWorkspace")}</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link href={`/billing/new?patientId=${patient.id}`}>Create invoice</Link>
+                  <Link href={`/billing/new?patientId=${patient.id}`}>{t("createInvoice")}</Link>
                 </Button>
               </div>
             )}
           </CardHeader>
           <CardContent>
             {invoices.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">No invoices yet.</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("noInvoices")}</p>
             ) : (
               <ul className="divide-y divide-[var(--border)]">
                 {invoices.map((inv) => (
@@ -406,9 +410,9 @@ export default async function PatientProfilePage({
                       {inv.invoice_number}
                     </Link>
                     <span className="text-sm">
-                      <span className="capitalize text-[var(--muted-foreground)]">{inv.status.replace("_", " ")}</span>
+                      <span className="text-[var(--muted-foreground)]">{tInvStatus.has(inv.status) ? tInvStatus(inv.status) : inv.status.replace("_", " ")}</span>
                       {" · "}
-                      <span className="tabular-nums">{formatIn(Number(inv.balance), currencyCtx.primary, currencyCtx.rate)} due</span>
+                      <span className="tabular-nums">{t("due", { amount: formatIn(Number(inv.balance), currencyCtx.primary, currencyCtx.rate) })}</span>
                     </span>
                   </li>
                 ))}
@@ -420,7 +424,7 @@ export default async function PatientProfilePage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Insurance ({insurance.length})</CardTitle>
+          <CardTitle>{t("insurance", { count: insurance.length })}</CardTitle>
         </CardHeader>
         <CardContent>
           <InsuranceSection patientId={patient.id} policies={insurance} canWrite={canWrite} />
@@ -432,7 +436,7 @@ export default async function PatientProfilePage({
   const documentsPanel = (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle>Documents ({documents.length})</CardTitle>
+        <CardTitle>{t("documents", { count: documents.length })}</CardTitle>
         {canWrite && <DocumentUploader clinicId={clinic.id} patientId={patient.id} />}
       </CardHeader>
       <CardContent>
@@ -445,7 +449,7 @@ export default async function PatientProfilePage({
     <div className="space-y-6">
       {canNotify && patient.email && (
         <Card>
-          <CardHeader><CardTitle>Send follow-up</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("sendFollowUp")}</CardTitle></CardHeader>
           <CardContent><FollowUpForm patientId={patient.id} /></CardContent>
         </Card>
       )}
@@ -462,19 +466,19 @@ export default async function PatientProfilePage({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Timeline</CardTitle>
+          <CardTitle>{t("timeline")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {canWrite && <AddNoteForm patientId={patient.id} />}
           <ol className="space-y-3">
-            {timeline.map((t) => (
-              <li key={t.id} className="border-l-2 border-[var(--border)] pl-3">
-                <p className="text-sm font-medium">{t.title}</p>
-                {t.description && (
-                  <p className="text-sm text-[var(--muted-foreground)]">{t.description}</p>
+            {timeline.map((ev) => (
+              <li key={ev.id} className="border-l-2 border-[var(--border)] pl-3">
+                <p className="text-sm font-medium">{ev.title}</p>
+                {ev.description && (
+                  <p className="text-sm text-[var(--muted-foreground)]">{ev.description}</p>
                 )}
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  {new Date(t.created_at).toLocaleString()}
+                  {new Date(ev.created_at).toLocaleString()}
                 </p>
               </li>
             ))}
@@ -485,32 +489,32 @@ export default async function PatientProfilePage({
   );
 
   const tabs: ProfileTab[] = [
-    { id: "overview", label: "Overview", content: overviewPanel },
-    { id: "clinical", label: "Clinical", count: conditions.length + medications.length + allergies.length + immunizations.length + visits.length + prescriptions.length + labRequests.length, content: clinicalPanel },
-    { id: "financial", label: "Financial", count: invoices.length + insurance.length, content: financialPanel },
-    { id: "communication", label: "Communication", count: consents.length + communications.length, content: communicationPanel },
-    { id: "documents", label: "Documents", count: documents.length, content: documentsPanel },
-    { id: "timeline", label: "Timeline", count: timeline.length, content: timelinePanel },
+    { id: "overview", label: t("tabs.overview"), content: overviewPanel },
+    { id: "clinical", label: t("tabs.clinical"), count: conditions.length + medications.length + allergies.length + immunizations.length + visits.length + prescriptions.length + labRequests.length, content: clinicalPanel },
+    { id: "financial", label: t("tabs.financial"), count: invoices.length + insurance.length, content: financialPanel },
+    { id: "communication", label: t("tabs.communication"), count: consents.length + communications.length, content: communicationPanel },
+    { id: "documents", label: t("tabs.documents"), count: documents.length, content: documentsPanel },
+    { id: "timeline", label: t("tabs.timeline"), count: timeline.length, content: timelinePanel },
   ];
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <BackLink label="← Patients" fallback="/patients" />
+          <BackLink label={t("backToList")} fallback="/patients" />
           <h1 className="mt-1 text-2xl font-bold">{patient.full_name}</h1>
           <p className="font-mono text-xs text-[var(--muted-foreground)]">{patient.patient_number}</p>
         </div>
         <div className="flex items-center gap-2">
           {canBookAppt && (
             <Button asChild size="sm">
-              <Link href={`/appointments/new?patientId=${patient.id}`}>Book appointment</Link>
+              <Link href={`/appointments/new?patientId=${patient.id}`}>{t("bookAppointment")}</Link>
             </Button>
           )}
           {canWrite && (
             <>
               <Button asChild variant="outline" size="sm">
-                <Link href={`/patients/${patient.id}/edit`}>Edit</Link>
+                <Link href={`/patients/${patient.id}/edit`}>{t("edit")}</Link>
               </Button>
               <DeletePatientButton patientId={patient.id} />
             </>
@@ -520,17 +524,17 @@ export default async function PatientProfilePage({
 
       {/* Summary strip — at-a-glance clinical flags */}
       <div className="flex flex-wrap items-center gap-2">
-        {age !== null && <Pill>{age} yrs</Pill>}
+        {age !== null && <Pill>{t("ageYrs", { age })}</Pill>}
         {patient.gender && <Pill tone="muted">{patient.gender}</Pill>}
         {patient.blood_type && patient.blood_type !== "unknown" && (
-          <Pill>Blood {patient.blood_type}</Pill>
+          <Pill>{t("bloodPrefix", { type: patient.blood_type })}</Pill>
         )}
         {(allergies.length > 0 || (patient.allergies && patient.allergies.trim().length > 0)) && (
-          <Pill tone="alert">⚠ Allergies{allergies.length > 0 ? ` (${allergies.length})` : ""}</Pill>
+          <Pill tone="alert">{t("allergiesFlag")}{allergies.length > 0 ? ` (${allergies.length})` : ""}</Pill>
         )}
-        {activeMeds > 0 && <Pill>{activeMeds} active med{activeMeds === 1 ? "" : "s"}</Pill>}
-        {patient.do_not_contact && <Pill tone="alert">Do not contact</Pill>}
-        {insurance.length > 0 && <Pill tone="muted">Insured</Pill>}
+        {activeMeds > 0 && <Pill>{t("activeMeds", { count: activeMeds })}</Pill>}
+        {patient.do_not_contact && <Pill tone="alert">{t("doNotContact")}</Pill>}
+        {insurance.length > 0 && <Pill tone="muted">{t("insured")}</Pill>}
       </div>
 
       <PatientTags
