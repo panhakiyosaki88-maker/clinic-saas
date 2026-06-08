@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { addVitalSigns } from "@/server/actions/medical-records";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ export function VitalsForm({
   medicalRecordId?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("records.vitalsForm");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -67,7 +69,7 @@ export function VitalsForm({
       </div>
       {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
       <Button type="submit" size="sm" disabled={pending}>
-        {pending ? "Saving…" : "Add vitals"}
+        {pending ? t("saving") : t("addVitals")}
       </Button>
     </form>
   );

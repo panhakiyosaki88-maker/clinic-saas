@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createMedicalRecord, updateMedicalRecord } from "@/server/actions/medical-records";
 import type { MedicalRecord } from "@/lib/db/queries/medical-records";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export function RecordForm({
   defaultBranchId?: string | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("records.recordForm");
   const isEdit = !!record;
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -100,7 +102,7 @@ export function RecordForm({
     <form onSubmit={onSubmit} className="space-y-8">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="visitDate">Visit date</Label>
+          <Label htmlFor="visitDate">{t("visitDate")}</Label>
           <Input
             id="visitDate"
             name="visitDate"
@@ -110,9 +112,9 @@ export function RecordForm({
         </div>
         {branches.length > 0 && (
           <div className="space-y-2">
-            <Label htmlFor="branchId">Branch (optional)</Label>
+            <Label htmlFor="branchId">{t("branch")}</Label>
             <select id="branchId" name="branchId" className={selectClass} defaultValue={record?.branch_id ?? defaultBranchId ?? ""}>
-              <option value="">No branch</option>
+              <option value="">{t("noBranch")}</option>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
@@ -156,7 +158,7 @@ export function RecordForm({
             <Num label="Weight (kg)" name="weightKg" step="0.1" />
             <Num label="SpO₂ (%)" name="oxygenSaturation" />
           </div>
-          <p className="text-xs text-[var(--muted-foreground)]">BMI is calculated automatically.</p>
+          <p className="text-xs text-[var(--muted-foreground)]">{t("bmiAuto")}</p>
         </section>
       )}
 
@@ -168,10 +170,10 @@ export function RecordForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : isEdit ? "Save changes" : "Save visit"}
+          {pending ? t("saving") : isEdit ? t("save") : t("saveVisit")}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>
-          Cancel
+          {t("cancel")}
         </Button>
       </div>
     </form>

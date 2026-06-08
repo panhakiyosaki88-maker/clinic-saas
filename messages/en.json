@@ -1023,6 +1023,22 @@
       "record": "Record movement"
     }
   },
+  "records": {
+    "recordForm": {
+      "visitDate": "Visit date",
+      "branch": "Branch (optional)",
+      "noBranch": "No branch",
+      "bmiAuto": "BMI is calculated automatically.",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "saveVisit": "Save visit",
+      "cancel": "Cancel"
+    },
+    "vitalsForm": {
+      "saving": "Saving…",
+      "addVitals": "Add vitals"
+    }
+  },
   "errors": {
     "fixFields": "Please fix the highlighted fields.",
     "invalidRequest": "Invalid request.",
@@ -1050,6 +1066,10 @@
       "chooseMedicine": "Choose a medicine",
       "quantityMin": "Quantity must be at least 1",
       "procedureNameRequired": "Procedure name is required"
+    },
+    "record": {
+      "createFailed": "Could not create the visit.",
+      "enterMeasurement": "Enter at least one measurement."
     },
     "doctor": {
       "nameRequired": "Doctor name is required",

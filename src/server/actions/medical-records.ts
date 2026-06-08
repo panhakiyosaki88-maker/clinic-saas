@@ -16,6 +16,7 @@ import {
   type VitalsInput,
 } from "@/lib/validations/medical-record";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 import type { Database } from "@/types/database";
 
 type RecordWrite = Database["public"]["Tables"]["medical_records"]["Update"];
@@ -54,9 +55,10 @@ export async function createMedicalRecord(
   input: CreateMedicalRecordInput
 ): Promise<ActionResult<{ recordId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.EMR_WRITE);
+  const te = await getErrorT();
   const parsed = createMedicalRecordSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const { patientId, vitals, ...fields } = parsed.data;
 
@@ -74,7 +76,7 @@ export async function createMedicalRecord(
     })
     .select("id")
     .single();
-  if (error || !record) return fail(error?.message ?? "Could not create the visit.");
+  if (error || !record) return fail(error?.message ?? te("record.createFailed"));
 
   if (hasAnyVital(vitals)) {
     await supabase.from("vital_signs").insert({
@@ -105,9 +107,10 @@ export async function updateMedicalRecord(
   input: UpdateMedicalRecordInput
 ): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.EMR_WRITE);
+  const te = await getErrorT();
   const parsed = updateMedicalRecordSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
 
   const supabase = await createClient();
@@ -124,11 +127,12 @@ export async function updateMedicalRecord(
 
 export async function addVitalSigns(input: AddVitalsInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.EMR_WRITE);
+  const te = await getErrorT();
   const parsed = addVitalsSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const { patientId, medicalRecordId, ...vitals } = parsed.data;
 
-  if (!hasAnyVital(vitals)) return fail("Enter at least one measurement.");
+  if (!hasAnyVital(vitals)) return fail(te("record.enterMeasurement"));
 
   const supabase = await createClient();
   const { error } = await supabase.from("vital_signs").insert({
