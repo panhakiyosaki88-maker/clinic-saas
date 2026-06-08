@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createInvoiceFromVisit } from "@/server/actions/billing";
 import {
   SERVICE_CATEGORIES,
-  SERVICE_CATEGORY_LABELS,
   BILL_SOURCES,
   type ServiceCategoryValue,
 } from "@/lib/validations/invoice";
@@ -67,6 +67,8 @@ export function BillingWorkspace({
   medicines?: MedicinePickOption[];
 }) {
   const router = useRouter();
+  const t = useTranslations("billing.workspace");
+  const tCat = useTranslations("billing.serviceCategory");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -223,7 +225,7 @@ export function BillingWorkspace({
     }
 
     if (payload.length === 0) {
-      setError("Select at least one charge.");
+      setError(t("selectAtLeastOne"));
       return;
     }
     startTransition(async () => {
@@ -254,7 +256,7 @@ export function BillingWorkspace({
       <div className="space-y-5">
         {rows.length === 0 && (
           <p className="rounded-lg border border-[var(--border)] p-4 text-sm text-[var(--muted-foreground)]">
-            No unbilled charges detected for this patient. Add a manual item below.
+            {t("noCharges")}
           </p>
         )}
 
@@ -267,7 +269,7 @@ export function BillingWorkspace({
             <section key={cat} className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                  {SERVICE_CATEGORY_LABELS[cat]}
+                  {tCat(cat)}
                 </h3>
                 {isLab && (
                   <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)] text-xs">
@@ -278,7 +280,7 @@ export function BillingWorkspace({
                         onClick={() => setLabMode(m)}
                         className={`px-2.5 py-1 ${labMode === m ? "bg-brand-600 text-white" : "text-[var(--muted-foreground)]"}`}
                       >
-                        {m === "individual" ? "Price each" : "Price overall"}
+                        {m === "individual" ? t("priceEach") : t("priceOverall")}
                       </button>
                     ))}
                   </div>
@@ -286,10 +288,10 @@ export function BillingWorkspace({
               </div>
               <div className="hidden grid-cols-[1.5rem_1fr_4.5rem_6rem_5rem_2rem] gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] sm:grid">
                 <span aria-hidden />
-                <span>Description</span>
-                <span>Quantity</span>
-                <span>Unit price</span>
-                <span className="text-right">Amount</span>
+                <span>{t("thDescription")}</span>
+                <span>{t("thQuantity")}</span>
+                <span>{t("thUnitPrice")}</span>
+                <span className="text-right">{t("thAmount")}</span>
                 <span aria-hidden />
               </div>
               {labOverallMode ? (
@@ -301,19 +303,19 @@ export function BillingWorkspace({
                       placeholder="Laboratory Test"
                       onChange={(e) => setLabDescription(e.target.value)}
                     />
-                    <Input type="number" value="1" disabled title="Quantity" />
+                    <Input type="number" value="1" disabled title={t("thQuantity")} />
                     <Input
                       type="number"
                       step="0.01"
                       value={labOverall}
                       onChange={(e) => setLabOverall(e.target.value)}
-                      title="Overall laboratory price"
+                      title={t("overallLabPrice")}
                     />
                     <span className="text-right text-sm tabular-nums">{num(labOverall).toFixed(2)}</span>
                     <span aria-hidden />
                   </div>
                   <p className="text-xs text-[var(--muted-foreground)]">
-                    Billed as one line covering {group.length} test{group.length === 1 ? "" : "s"}.
+                    {t("bundledNote", { count: group.length })}
                   </p>
                 </div>
               ) : (
@@ -335,15 +337,15 @@ export function BillingWorkspace({
                           onPick={(m) => patch(r.key, { description: m.name, unitPrice: String(m.selling_price) })}
                         />
                       ) : (
-                        <Input value={r.description} placeholder="Description" onChange={(e) => patch(r.key, { description: e.target.value })} />
+                        <Input value={r.description} placeholder={t("descriptionPlaceholder")} onChange={(e) => patch(r.key, { description: e.target.value })} />
                       )}
-                      <Input type="number" step="0.01" value={r.quantity} onChange={(e) => patch(r.key, { quantity: e.target.value })} title="Quantity" />
+                      <Input type="number" step="0.01" value={r.quantity} onChange={(e) => patch(r.key, { quantity: e.target.value })} title={t("thQuantity")} />
                       <Input
                         type="number"
                         step="0.01"
                         value={r.unitPrice}
                         onChange={(e) => patch(r.key, { unitPrice: e.target.value })}
-                        title="Unit price (override)"
+                        title={t("unitPriceOverride")}
                         className={r.needsPrice && num(r.unitPrice) === 0 ? "border-amber-400" : undefined}
                       />
                       <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>
@@ -357,10 +359,10 @@ export function BillingWorkspace({
         })}
 
         <div className="flex flex-wrap gap-2 pt-1">
-          <span className="self-center text-xs text-[var(--muted-foreground)]">Add manual item:</span>
+          <span className="self-center text-xs text-[var(--muted-foreground)]">{t("addManualItem")}</span>
           {(["consultation", "lab", "pharmacy", "procedure", "other"] as ServiceCategoryValue[]).map((c) => (
             <Button key={c} type="button" variant="outline" size="sm" onClick={() => addManual(c)}>
-              + {SERVICE_CATEGORY_LABELS[c]}
+              + {tCat(c)}
             </Button>
           ))}
         </div>
@@ -370,44 +372,44 @@ export function BillingWorkspace({
       <aside className="space-y-4 lg:sticky lg:top-4 self-start">
         {hasAlert && (
           <div className="space-y-1 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs dark:border-amber-700 dark:bg-amber-950/40">
-            {alerts.unbilledLabs > 0 && <p>⚠ {alerts.unbilledLabs} unbilled lab test{alerts.unbilledLabs === 1 ? "" : "s"}</p>}
-            {alerts.unbilledMedicines > 0 && <p>⚠ {alerts.unbilledMedicines} unbilled medicine{alerts.unbilledMedicines === 1 ? "" : "s"}</p>}
-            {alerts.membershipAvailable && membership && <p>★ {membership.planName} benefit available</p>}
+            {alerts.unbilledLabs > 0 && <p>{t("alertLabs", { count: alerts.unbilledLabs })}</p>}
+            {alerts.unbilledMedicines > 0 && <p>{t("alertMeds", { count: alerts.unbilledMedicines })}</p>}
+            {alerts.membershipAvailable && membership && <p>{t("benefitAvailable", { plan: membership.planName })}</p>}
           </div>
         )}
 
         <div className="space-y-2 rounded-lg border border-[var(--border)] p-4 text-sm">
-          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{subtotal.toFixed(2)}</span></div>
+          <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">{t("subtotal")}</span><span className="tabular-nums">{subtotal.toFixed(2)}</span></div>
 
           {membership && (
             <label className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
                 <input type="checkbox" checked={applyMembership} onChange={(e) => setApplyMembership(e.target.checked)} />
-                Membership ({membership.benefitType === "percent" ? `${membership.benefitValue}%` : membership.benefitValue})
+                {t("membership", { benefit: membership.benefitType === "percent" ? `${membership.benefitValue}%` : membership.benefitValue })}
               </span>
               <span className="tabular-nums text-[var(--destructive)]">−{membershipDiscount.toFixed(2)}</span>
             </label>
           )}
 
           <div className="flex items-center justify-between gap-2">
-            <Label htmlFor="discount" className="text-[var(--muted-foreground)]">Discount</Label>
+            <Label htmlFor="discount" className="text-[var(--muted-foreground)]">{t("discount")}</Label>
             <Input id="discount" className="w-24" type="number" step="0.01" value={manualDiscount} onChange={(e) => setManualDiscount(e.target.value)} />
           </div>
           <div className="flex items-center justify-between gap-2">
-            <Label htmlFor="tax" className="text-[var(--muted-foreground)]">Tax</Label>
+            <Label htmlFor="tax" className="text-[var(--muted-foreground)]">{t("tax")}</Label>
             <Input id="tax" className="w-24" type="number" step="0.01" value={tax} onChange={(e) => setTax(e.target.value)} />
           </div>
 
           <div className="flex justify-between border-t border-[var(--border)] pt-2 font-semibold">
-            <span>Total (USD)</span><span className="tabular-nums">${total.toFixed(2)}</span>
+            <span>{t("totalUsd")}</span><span className="tabular-nums">${total.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-xs text-[var(--muted-foreground)]">
-            <span>≈ KHR</span><span className="tabular-nums">{formatKHR(usdToKhr(total, rate))}</span>
+            <span>{t("approxKhr")}</span><span className="tabular-nums">{formatKHR(usdToKhr(total, rate))}</span>
           </div>
         </div>
 
         <textarea
-          placeholder="Notes (optional)"
+          placeholder={t("notesPlaceholder")}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="min-h-16 w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
@@ -416,9 +418,9 @@ export function BillingWorkspace({
         {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
 
         <div className="flex flex-col gap-2">
-          <Button onClick={() => submit(false)} disabled={pending}>{pending ? "Saving…" : "Issue invoice"}</Button>
+          <Button onClick={() => submit(false)} disabled={pending}>{pending ? t("saving") : t("issueInvoice")}</Button>
           <Button variant="outline" onClick={() => submit(true)} disabled={pending}>
-            {draftInvoiceId ? "Update draft" : "Save as draft"}
+            {draftInvoiceId ? t("updateDraft") : t("saveDraft")}
           </Button>
         </div>
       </aside>

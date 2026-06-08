@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createInvoiceFromVisit, unbillCharge } from "@/server/actions/billing";
 import { recordDispense } from "@/server/actions/visits";
 import type { VisitCharge, PrescribedMedicine, ChargeSource } from "@/lib/db/queries/visit-charges";
-import { SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/invoice";
+import { type ServiceCategoryValue } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -41,6 +42,8 @@ export function SuggestedCharges({
   hasDraft?: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("billing.suggestedCharges");
+  const tCat = useTranslations("billing.serviceCategory");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -100,7 +103,7 @@ export function SuggestedCharges({
   }, [charges]);
 
   if (charges.length === 0 && prescribedMedicines.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No charges on this visit yet.</p>;
+    return <p className="text-sm text-[var(--muted-foreground)]">{t("noCharges")}</p>;
   }
 
   const toggle = (id: string) => {
@@ -198,7 +201,7 @@ export function SuggestedCharges({
     }
 
     if (lines.length === 0) {
-      setError("Select at least one charge to bill.");
+      setError(t("selectAtLeastOne"));
       return;
     }
 
@@ -219,7 +222,7 @@ export function SuggestedCharges({
 
   const billedTag = (
     <span className="rounded bg-[var(--muted)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
-      Billed
+      {t("billed")}
     </span>
   );
   const unbillBtn = (source: ChargeSource, sourceId: string, description: string) => (
@@ -230,9 +233,9 @@ export function SuggestedCharges({
       className="h-7 shrink-0 px-2 text-xs"
       onClick={() => onUnbill(source, sourceId, description)}
       disabled={pending}
-      title="Remove from the draft invoice and edit"
+      title={t("unbillTitle")}
     >
-      Un-bill
+      {t("unbill")}
     </Button>
   );
 
@@ -242,10 +245,10 @@ export function SuggestedCharges({
   const columnHeader = (
     <div className={`hidden px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] sm:grid sm:grid-cols-[1.25rem_1fr_3.5rem_5rem_4.5rem_auto]`}>
       <span aria-hidden />
-      <span>Description</span>
-      <span>Qty</span>
-      <span>Unit price</span>
-      <span className="text-right">Amount</span>
+      <span>{t("thDescription")}</span>
+      <span>{t("thQty")}</span>
+      <span>{t("thUnitPrice")}</span>
+      <span className="text-right">{t("thAmount")}</span>
       <span aria-hidden />
     </div>
   );
@@ -280,14 +283,14 @@ export function SuggestedCharges({
           step="0.01"
           value={quantities[c.sourceId] ?? String(c.quantity)}
           onChange={(e) => setQuantity(c.sourceId, e.target.value)}
-          title="Quantity"
+          title={t("quantity")}
         />
         <Input
           type="number"
           step="0.01"
           value={prices[c.sourceId] ?? String(c.unitPrice)}
           onChange={(e) => setPrice(c.sourceId, e.target.value)}
-          title="Unit price"
+          title={t("unitPriceTitle")}
         />
         <span className="text-right text-sm tabular-nums">{(qty * price).toFixed(2)}</span>
         <span aria-hidden />
@@ -305,7 +308,7 @@ export function SuggestedCharges({
           <div key={cat} className="space-y-1">
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                {SERVICE_CATEGORY_LABELS[cat]}
+                {tCat(cat)}
               </p>
               {isLab && unbilledLabs.length > 0 && (
                 <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)] text-xs">
@@ -316,7 +319,7 @@ export function SuggestedCharges({
                       onClick={() => setLabMode(m)}
                       className={`px-2.5 py-1 ${labMode === m ? "bg-brand-600 text-white" : "text-[var(--muted-foreground)]"}`}
                     >
-                      {m === "individual" ? "Price each" : "Price overall"}
+                      {m === "individual" ? t("priceEach") : t("priceOverall")}
                     </button>
                   ))}
                 </div>
@@ -338,21 +341,21 @@ export function SuggestedCharges({
                     value={labDescription}
                     placeholder="Laboratory Test"
                     onChange={(e) => setLabDescription(e.target.value)}
-                    title="Bundled description"
+                    title={t("bundledDescription")}
                   />
-                  <Input type="number" value="1" disabled title="Quantity" />
+                  <Input type="number" value="1" disabled title={t("quantity")} />
                   <Input
                     type="number"
                     step="0.01"
                     value={labOverall}
                     onChange={(e) => setLabOverall(e.target.value)}
-                    title="Overall laboratory price"
+                    title={t("overallLabPrice")}
                   />
                   <span className="text-right text-sm tabular-nums">{num(labOverall).toFixed(2)}</span>
                   <span aria-hidden />
                 </div>
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  Billed as one line covering {unbilledLabs.length} test{unbilledLabs.length === 1 ? "" : "s"}.
+                  {t("bundledNote", { count: unbilledLabs.length })}
                 </p>
               </div>
             )}
@@ -363,13 +366,13 @@ export function SuggestedCharges({
       {prescribedMedicines.length > 0 && (
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-            Prescriptions — dispense to bill
+            {t("prescriptionsHeader")}
           </p>
           {prescribedMedicines.map((m) => (
             <DispenseRow key={m.name} med={m} pending={pending} onDispense={onDispense} />
           ))}
           <p className="text-xs text-[var(--muted-foreground)]">
-            Dispensing reduces stock and adds the medicine as a billable Pharmacy charge above.
+            {t("dispenseNote")}
           </p>
         </div>
       )}
@@ -378,7 +381,7 @@ export function SuggestedCharges({
       <div className="flex flex-wrap gap-2">
         {!hasDraft && (
           <Button size="sm" onClick={onCreate} disabled={pending || count === 0}>
-            {pending ? "Creating…" : `Create draft invoice (${count})`}
+            {pending ? t("creating") : t("createDraft", { count })}
           </Button>
         )}
         <Button
@@ -387,15 +390,13 @@ export function SuggestedCharges({
           variant={hasDraft ? "default" : "outline"}
           onClick={() => router.push(workspaceHref)}
           disabled={pending}
-          title="Open the full billing workspace: it continues this visit's draft with every charge shown here — edit descriptions, quantities, manual items, discounts & tax, then issue"
+          title={t("workspaceTitle")}
         >
-          {hasDraft ? "Edit draft in workspace →" : "Open billing workspace →"}
+          {hasDraft ? t("editDraftWorkspace") : t("openWorkspace")}
         </Button>
       </div>
       <p className="text-xs text-[var(--muted-foreground)]">
-        {hasDraft
-          ? "This visit already has a draft invoice. Open the workspace to add these charges, apply discounts & tax, and issue it."
-          : "Prices are prefilled from the catalog where available — adjust before creating the draft. Un-bill a charge to pull it back off the draft and re-price it. The billing workspace continues this same draft with every charge here (plus membership discount & tax)."}
+        {hasDraft ? t("helperHasDraft") : t("helperDefault")}
       </p>
     </div>
   );
@@ -412,6 +413,7 @@ function DispenseRow({
   pending: boolean;
   onDispense: (med: PrescribedMedicine, quantity: number, unitPrice: number) => void;
 }) {
+  const t = useTranslations("billing.suggestedCharges");
   const [qty, setQty] = React.useState(String(med.remainingQty || med.prescribedQty || 1));
   const [price, setPrice] = React.useState(String(med.sellingPrice));
 
@@ -419,7 +421,7 @@ function DispenseRow({
     return (
       <div className="flex items-center justify-between gap-3 text-sm opacity-60">
         <span className="truncate">{med.name}</span>
-        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">not in catalog</span>
+        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{t("notInCatalog")}</span>
       </div>
     );
   }
@@ -427,7 +429,7 @@ function DispenseRow({
     return (
       <div className="flex items-center justify-between gap-3 text-sm opacity-60">
         <span className="truncate">{med.name}</span>
-        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">Dispensed ✓</span>
+        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{t("dispensed")}</span>
       </div>
     );
   }
@@ -449,11 +451,11 @@ function DispenseRow({
                 : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             }`}
           >
-            {outOfStock ? "Out of stock" : `${med.stockQuantity} in stock`}
+            {outOfStock ? t("outOfStock") : t("inStock", { count: med.stockQuantity })}
           </span>
         </span>
-        <Input type="number" step="1" className="w-full" value={qty} onChange={(e) => setQty(e.target.value)} title="Quantity" />
-        <Input type="number" step="0.01" className="w-full" value={price} onChange={(e) => setPrice(e.target.value)} title="Unit price" />
+        <Input type="number" step="1" className="w-full" value={qty} onChange={(e) => setQty(e.target.value)} title={t("quantity")} />
+        <Input type="number" step="0.01" className="w-full" value={price} onChange={(e) => setPrice(e.target.value)} title={t("unitPriceTitle")} />
         <span className="text-right text-sm tabular-nums">{amount.toFixed(2)}</span>
         <Button
           type="button"
@@ -463,10 +465,10 @@ function DispenseRow({
           disabled={pending || q < 1 || overStock}
           onClick={() => onDispense(med, q, Number(price) || 0)}
         >
-          Dispense
+          {t("dispense")}
         </Button>
       </div>
-      {overStock && !outOfStock && <p className="text-xs text-amber-600">Only {med.stockQuantity} in stock.</p>}
+      {overStock && !outOfStock && <p className="text-xs text-amber-600">{t("onlyInStock", { count: med.stockQuantity })}</p>}
     </div>
   );
 }
