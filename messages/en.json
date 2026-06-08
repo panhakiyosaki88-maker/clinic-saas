@@ -401,7 +401,12 @@
       "insurance": "Insurance ({count})",
       "documents": "Documents ({count})",
       "sendFollowUp": "Send follow-up",
-      "timeline": "Timeline"
+      "timeline": "Timeline",
+      "delete": "Delete",
+      "sure": "Sure?",
+      "deleting": "Deleting…",
+      "confirmDelete": "Confirm delete",
+      "cancel": "Cancel"
     },
     "title": "Patients",
     "registered": "{count, plural, one {# patient registered} other {# patients registered}}",
@@ -1375,7 +1380,11 @@
       "addToVisit": "Add to this visit",
       "procedure": "Procedure",
       "dispenseMedicine": "Dispense medicine",
-      "prescribedHint": "Showing prescribed medicines in stock — quantity and price are pre-filled."
+      "prescribedHint": "Showing prescribed medicines in stock — quantity and price are pre-filled.",
+      "starting": "Starting…",
+      "startVisit": "Start visit",
+      "close": "Close",
+      "reopen": "Reopen"
     }
   },
   "errors": {

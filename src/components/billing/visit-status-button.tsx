@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { closeVisit, reopenVisit } from "@/server/actions/visits";
 import type { VisitStatus } from "@/types/database";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function VisitStatusButton({
   isLatest: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("visits.detail");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -42,7 +44,7 @@ export function VisitStatusButton({
     <span className="inline-flex shrink-0 items-center gap-2">
       {error && <span className="text-xs text-[var(--destructive)]">{error}</span>}
       <Button type="button" size="sm" variant="outline" onClick={onClick} disabled={pending}>
-        {pending ? "…" : isOpen ? "Close" : "Reopen"}
+        {pending ? "…" : isOpen ? t("close") : t("reopen")}
       </Button>
     </span>
   );

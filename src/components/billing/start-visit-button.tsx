@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createVisit } from "@/server/actions/visits";
 import { Button } from "@/components/ui/button";
 
 /** Opens a walk-in visit for a patient who has no appointment, then jumps to it. */
 export function StartVisitButton({ patientId }: { patientId: string }) {
   const router = useRouter();
+  const t = useTranslations("visits.detail");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -24,7 +26,7 @@ export function StartVisitButton({ patientId }: { patientId: string }) {
     <span className="inline-flex items-center gap-2">
       {error && <span className="text-xs text-[var(--destructive)]">{error}</span>}
       <Button type="button" size="sm" variant="outline" onClick={onClick} disabled={pending}>
-        {pending ? "Starting…" : "Start visit"}
+        {pending ? t("starting") : t("startVisit")}
       </Button>
     </span>
   );
