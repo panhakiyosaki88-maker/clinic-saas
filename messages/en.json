@@ -1123,6 +1123,42 @@
       "ariaEndDate": "End date",
       "reasonPlaceholder": "Reason (optional)"
     },
+    "credentials": {
+      "add": "Add",
+      "remove": "Remove",
+      "save": "Save",
+      "cancel": "Cancel",
+      "qualifications": "Qualifications ({count})",
+      "noQualifications": "No qualifications recorded.",
+      "degreePlaceholder": "Degree (e.g. MD)",
+      "fieldPlaceholder": "Field (e.g. Cardiology)",
+      "institutionPlaceholder": "Institution",
+      "yearPlaceholder": "Year",
+      "notesPlaceholder": "Notes (optional)",
+      "licenses": "Licenses ({count})",
+      "noLicenses": "No licenses recorded.",
+      "verified": "Verified",
+      "expired": "Expired",
+      "expires": "expires {date}",
+      "licenseNumberPlaceholder": "License number",
+      "authorityPlaceholder": "Issuing authority",
+      "jurisdictionPlaceholder": "Jurisdiction"
+    },
+    "documents": {
+      "noDocuments": "No documents yet.",
+      "remove": "Remove",
+      "ariaCategory": "Document category",
+      "categoryNone": "Category…",
+      "category": {
+        "license": "License",
+        "certificate": "Certificate",
+        "cv": "CV",
+        "id": "ID",
+        "other": "Other"
+      },
+      "uploading": "Uploading…",
+      "upload": "Upload document"
+    },
     "title": "Doctors",
     "noPermission": "You don't have permission to view doctors.",
     "summary": "{active} active of {total}",

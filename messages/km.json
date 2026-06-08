@@ -1123,6 +1123,42 @@
       "ariaEndDate": "កាលបរិច្ឆេទបញ្ចប់",
       "reasonPlaceholder": "មូលហេតុ (ស្រេចចិត្ត)"
     },
+    "credentials": {
+      "add": "បន្ថែម",
+      "remove": "លុបចេញ",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់",
+      "qualifications": "សញ្ញាប័ត្រ ({count})",
+      "noQualifications": "មិនមានសញ្ញាប័ត្រត្រូវបានកត់ត្រាទេ។",
+      "degreePlaceholder": "សញ្ញាប័ត្រ (ឧ. MD)",
+      "fieldPlaceholder": "ផ្នែក (ឧ. Cardiology)",
+      "institutionPlaceholder": "ស្ថាប័ន",
+      "yearPlaceholder": "ឆ្នាំ",
+      "notesPlaceholder": "កំណត់សម្គាល់ (ស្រេចចិត្ត)",
+      "licenses": "អាជ្ញាប័ណ្ណ ({count})",
+      "noLicenses": "មិនមានអាជ្ញាប័ណ្ណត្រូវបានកត់ត្រាទេ។",
+      "verified": "បានផ្ទៀងផ្ទាត់",
+      "expired": "ផុតកំណត់",
+      "expires": "ផុតកំណត់ {date}",
+      "licenseNumberPlaceholder": "លេខអាជ្ញាប័ណ្ណ",
+      "authorityPlaceholder": "អាជ្ញាធរចេញ",
+      "jurisdictionPlaceholder": "យុត្តាធិការ"
+    },
+    "documents": {
+      "noDocuments": "មិនទាន់មានឯកសារទេ។",
+      "remove": "លុបចេញ",
+      "ariaCategory": "ប្រភេទឯកសារ",
+      "categoryNone": "ប្រភេទ…",
+      "category": {
+        "license": "អាជ្ញាប័ណ្ណ",
+        "certificate": "វិញ្ញាបនបត្រ",
+        "cv": "ប្រវត្តិរូប",
+        "id": "អត្តសញ្ញាណប័ណ្ណ",
+        "other": "ផ្សេងៗ"
+      },
+      "uploading": "កំពុងផ្ទុកឡើង…",
+      "upload": "ផ្ទុកឯកសារឡើង"
+    },
     "title": "វេជ្ជបណ្ឌិត",
     "noPermission": "អ្នកគ្មានសិទ្ធិមើលវេជ្ជបណ្ឌិតទេ។",
     "summary": "សកម្ម {active} ក្នុងចំណោម {total}",

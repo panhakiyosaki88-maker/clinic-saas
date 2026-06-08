@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { GraduationCap, BadgeCheck } from "lucide-react";
 import {
   addQualification,
@@ -26,6 +27,7 @@ function QualificationList({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("doctors.credentials");
   const [open, setOpen] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const [pendingId, setPendingId] = React.useState<string | null>(null);
@@ -59,14 +61,14 @@ function QualificationList({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle>Qualifications ({items.length})</CardTitle>
+        <CardTitle>{t("qualifications", { count: items.length })}</CardTitle>
         {canWrite && !open && (
-          <Button variant="outline" size="sm" onClick={() => setOpen(true)}>Add</Button>
+          <Button variant="outline" size="sm" onClick={() => setOpen(true)}>{t("add")}</Button>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
         {items.length === 0 && !open && (
-          <p className="text-sm text-[var(--muted-foreground)]">No qualifications recorded.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("noQualifications")}</p>
         )}
         <ul className="divide-y divide-[var(--border)]">
           {items.map((q) => (
@@ -95,7 +97,7 @@ function QualificationList({
                     });
                   }}
                 >
-                  Remove
+                  {t("remove")}
                 </Button>
               )}
             </li>
@@ -103,17 +105,17 @@ function QualificationList({
         </ul>
         {open && (
           <form onSubmit={onSubmit} className="space-y-2 rounded-md border border-[var(--border)] p-3">
-            <Input name="degree" placeholder="Degree (e.g. MD)" required />
+            <Input name="degree" placeholder={t("degreePlaceholder")} required />
             <div className="grid gap-2 sm:grid-cols-2">
-              <Input name="field" placeholder="Field (e.g. Cardiology)" />
-              <Input name="institution" placeholder="Institution" />
-              <Input name="year" type="number" placeholder="Year" />
-              <Input name="notes" placeholder="Notes (optional)" />
+              <Input name="field" placeholder={t("fieldPlaceholder")} />
+              <Input name="institution" placeholder={t("institutionPlaceholder")} />
+              <Input name="year" type="number" placeholder={t("yearPlaceholder")} />
+              <Input name="notes" placeholder={t("notesPlaceholder")} />
             </div>
             {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={pending}>Save</Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={pending}>{t("save")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{t("cancel")}</Button>
             </div>
           </form>
         )}
@@ -132,6 +134,7 @@ function LicenseList({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("doctors.credentials");
   const [open, setOpen] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const [pendingId, setPendingId] = React.useState<string | null>(null);
@@ -165,14 +168,14 @@ function LicenseList({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle>Licenses ({items.length})</CardTitle>
+        <CardTitle>{t("licenses", { count: items.length })}</CardTitle>
         {canWrite && !open && (
-          <Button variant="outline" size="sm" onClick={() => setOpen(true)}>Add</Button>
+          <Button variant="outline" size="sm" onClick={() => setOpen(true)}>{t("add")}</Button>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
         {items.length === 0 && !open && (
-          <p className="text-sm text-[var(--muted-foreground)]">No licenses recorded.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("noLicenses")}</p>
         )}
         <ul className="divide-y divide-[var(--border)]">
           {items.map((l) => {
@@ -186,12 +189,12 @@ function LicenseList({
                       {l.license_number}
                       {l.verified && (
                         <span className="ml-2 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-normal text-emerald-600 dark:text-emerald-400">
-                          Verified
+                          {t("verified")}
                         </span>
                       )}
                       {expired && (
                         <span className="ml-2 rounded-full bg-[var(--destructive)]/10 px-2 py-0.5 text-xs font-normal text-[var(--destructive)]">
-                          Expired
+                          {t("expired")}
                         </span>
                       )}
                     </p>
@@ -199,7 +202,7 @@ function LicenseList({
                       {[
                         l.authority,
                         l.jurisdiction,
-                        fmtDate(l.expiry_on) && `expires ${fmtDate(l.expiry_on)}`,
+                        fmtDate(l.expiry_on) && t("expires", { date: fmtDate(l.expiry_on)! }),
                       ].filter(Boolean).join(" · ") || "—"}
                     </p>
                   </div>
@@ -214,7 +217,7 @@ function LicenseList({
                       });
                     }}
                   >
-                    Remove
+                    {t("remove")}
                   </Button>
                 )}
               </li>
@@ -223,21 +226,21 @@ function LicenseList({
         </ul>
         {open && (
           <form onSubmit={onSubmit} className="space-y-2 rounded-md border border-[var(--border)] p-3">
-            <Input name="licenseNumber" placeholder="License number" required />
+            <Input name="licenseNumber" placeholder={t("licenseNumberPlaceholder")} required />
             <div className="grid gap-2 sm:grid-cols-2">
-              <Input name="authority" placeholder="Issuing authority" />
-              <Input name="jurisdiction" placeholder="Jurisdiction" />
+              <Input name="authority" placeholder={t("authorityPlaceholder")} />
+              <Input name="jurisdiction" placeholder={t("jurisdictionPlaceholder")} />
               <Input name="issuedOn" type="date" />
               <Input name="expiryOn" type="date" />
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input name="verified" type="checkbox" className="h-4 w-4 rounded border-slate-300" />
-              Verified
+              {t("verified")}
             </label>
             {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={pending}>Save</Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={pending}>{t("save")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{t("cancel")}</Button>
             </div>
           </form>
         )}

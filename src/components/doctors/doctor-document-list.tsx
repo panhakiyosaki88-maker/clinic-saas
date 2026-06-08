@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { FileText } from "lucide-react";
 import { deleteDoctorDocument } from "@/server/actions/doctors";
 import type { DoctorDocumentWithUrl } from "@/lib/db/queries/doctors";
@@ -23,10 +24,11 @@ export function DoctorDocumentList({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("doctors.documents");
   const [pendingId, setPendingId] = React.useState<string | null>(null);
 
   if (documents.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No documents yet.</p>;
+    return <p className="text-sm text-[var(--muted-foreground)]">{t("noDocuments")}</p>;
   }
 
   function onDelete(id: string) {
@@ -68,7 +70,7 @@ export function DoctorDocumentList({
           </div>
           {canWrite && (
             <Button variant="ghost" size="sm" disabled={pendingId === d.id} onClick={() => onDelete(d.id)}>
-              Remove
+              {t("remove")}
             </Button>
           )}
         </li>
