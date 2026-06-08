@@ -502,6 +502,20 @@
       "add": "Add",
       "addTag": "+ Tag"
     },
+    "documentUploader": {
+      "ariaCategory": "Document category",
+      "categoryNone": "Category…",
+      "category": {
+        "scan": "Scan",
+        "report": "Report",
+        "x_ray": "X-ray",
+        "consent": "Consent",
+        "insurance": "Insurance",
+        "other": "Other"
+      },
+      "uploading": "Uploading…",
+      "upload": "Upload document"
+    },
     "title": "Patients",
     "registered": "{count, plural, one {# patient registered} other {# patients registered}}",
     "newPatient": "New patient",
