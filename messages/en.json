@@ -987,6 +987,18 @@
       "removeFromSuggestions": "Remove from suggestions",
       "newTitle": "New prescription",
       "backToList": "← Prescriptions"
+    },
+    "detail": {
+      "backToList": "← Prescriptions",
+      "heading": "Prescription",
+      "patient": "Patient",
+      "date": "Date",
+      "medicine": "Medicine",
+      "duration": "Duration",
+      "quantity": "Quantity",
+      "notes": "Notes",
+      "signature": "Signature",
+      "viewPatient": "View patient profile →"
     }
   },
   "lab": {

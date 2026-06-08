@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -42,11 +43,12 @@ export default async function PrescriptionDetailPage({
   if (!rx) notFound();
 
   const canWrite = await hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE);
+  const t = await getTranslations("prescriptions");
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
       <div className="flex items-center justify-between print:hidden">
-        <BackLink label="← Prescriptions" fallback="/prescriptions" />
+        <BackLink label={t("detail.backToList")} fallback="/prescriptions" />
         <div className="flex items-center gap-2">
           <PrintButton />
           {canWrite && <DeletePrescriptionButton prescriptionId={rx.id} patientId={rx.patient_id} />}
@@ -57,17 +59,17 @@ export default async function PrescriptionDetailPage({
       <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 print:border-0">
         <header className="mb-6 border-b border-[var(--border)] pb-4">
           <h1 className="text-xl font-bold">{rx.clinic_name}</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">Prescription</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("detail.heading")}</p>
         </header>
 
         <div className="mb-6 grid grid-cols-2 gap-3 text-sm">
           <div>
-            <p className="text-xs text-[var(--muted-foreground)]">Patient</p>
+            <p className="text-xs text-[var(--muted-foreground)]">{t("detail.patient")}</p>
             <p className="font-medium">{rx.patient_name}</p>
             <p className="font-mono text-xs">{rx.patient_number}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-[var(--muted-foreground)]">Date</p>
+            <p className="text-xs text-[var(--muted-foreground)]">{t("detail.date")}</p>
             <p className="font-medium">{new Date(rx.prescribed_at).toLocaleDateString()}</p>
             {rx.doctor_name && (
               <p className="text-xs">{withDoctorTitle(rx.doctor_name)}</p>
@@ -80,12 +82,12 @@ export default async function PrescriptionDetailPage({
         <table className="w-full text-sm">
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
             <tr>
-              <th className="pb-2">Medicine</th>
-              {DOSE_TIMES.map((t) => (
-                <th key={t} className="pb-2 text-center">{t}</th>
+              <th className="pb-2">{t("detail.medicine")}</th>
+              {DOSE_TIMES.map((time) => (
+                <th key={time} className="pb-2 text-center">{t(`form.times.${time.toLowerCase()}`)}</th>
               ))}
-              <th className="pb-2">Duration</th>
-              <th className="pb-2 text-right">Quantity</th>
+              <th className="pb-2">{t("detail.duration")}</th>
+              <th className="pb-2 text-right">{t("detail.quantity")}</th>
             </tr>
           </thead>
           <tbody>
@@ -118,7 +120,7 @@ export default async function PrescriptionDetailPage({
 
         {rx.notes && (
           <div className="mt-6 text-sm">
-            <p className="text-xs text-[var(--muted-foreground)]">Notes</p>
+            <p className="text-xs text-[var(--muted-foreground)]">{t("detail.notes")}</p>
             <p className="whitespace-pre-wrap">{rx.notes}</p>
           </div>
         )}
@@ -127,7 +129,7 @@ export default async function PrescriptionDetailPage({
           <div className="text-center text-sm">
             <div className="mb-1 h-px w-48 bg-[var(--border)]" />
             <p className="text-xs text-[var(--muted-foreground)]">
-              {rx.doctor_name ? withDoctorTitle(rx.doctor_name) : "Signature"}
+              {rx.doctor_name ? withDoctorTitle(rx.doctor_name) : t("detail.signature")}
             </p>
           </div>
         </footer>
@@ -135,7 +137,7 @@ export default async function PrescriptionDetailPage({
 
       <p className="text-center print:hidden">
         <Link href={`/patients/${rx.patient_id}`} className="text-sm text-[var(--primary)] hover:underline">
-          View patient profile →
+          {t("detail.viewPatient")}
         </Link>
       </p>
     </main>

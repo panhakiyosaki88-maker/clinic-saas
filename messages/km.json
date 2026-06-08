@@ -987,6 +987,18 @@
       "removeFromSuggestions": "លុបចេញពីការណែនាំ",
       "newTitle": "វេជ្ជបញ្ជាថ្មី",
       "backToList": "← វេជ្ជបញ្ជា"
+    },
+    "detail": {
+      "backToList": "← វេជ្ជបញ្ជា",
+      "heading": "វេជ្ជបញ្ជា",
+      "patient": "អ្នកជំងឺ",
+      "date": "កាលបរិច្ឆេទ",
+      "medicine": "ឱសថ",
+      "duration": "រយៈពេល",
+      "quantity": "បរិមាណ",
+      "notes": "កំណត់សម្គាល់",
+      "signature": "ហត្ថលេខា",
+      "viewPatient": "មើលប្រវត្តិរូបអ្នកជំងឺ →"
     }
   },
   "lab": {
