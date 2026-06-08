@@ -366,6 +366,53 @@
       "cancel": "បោះបង់"
     }
   },
+  "billingSettings": {
+    "tabs": {
+      "catalog": "បញ្ជីតម្លៃ",
+      "procedures": "នីតិវិធី",
+      "memberships": "សមាជិកភាព",
+      "payment": "ការកំណត់ការទូទាត់"
+    },
+    "catalog": {
+      "title": "បញ្ជីតម្លៃ",
+      "summaryArchived": "{count} ធាតុ (រួមទាំងប័ណ្ណសារ)",
+      "summaryActive": "{count} តម្លៃសកម្ម",
+      "showArchived": "បង្ហាញប័ណ្ណសារ",
+      "hideArchived": "លាក់ប័ណ្ណសារ",
+      "editPrice": "កែសម្រួលតម្លៃ",
+      "addPrice": "បន្ថែមតម្លៃ",
+      "name": "ឈ្មោះ",
+      "code": "កូដ",
+      "branch": "សាខា",
+      "price": "តម្លៃ",
+      "actions": "សកម្មភាព",
+      "archived": "ប័ណ្ណសារ",
+      "all": "ទាំងអស់",
+      "empty": "មិនទាន់មានតម្លៃ។"
+    },
+    "category": {
+      "consultation": "ថ្លៃពិគ្រោះ",
+      "lab": "ការធ្វើតេស្ត",
+      "pharmacy": "ឱសថស្ថាន",
+      "procedure": "នីតិវិធី",
+      "other": "សេវាផ្សេងទៀត"
+    },
+    "procedures": {
+      "title": "នីតិវិធី",
+      "subtitle": "បញ្ជីនីតិវិធីដែលអាចគិតថ្លៃ"
+    },
+    "memberships": {
+      "title": "សមាជិកភាព",
+      "subtitle": "គម្រោងសមាជិកភាព និងអត្ថប្រយោជន៍"
+    },
+    "payment": {
+      "title": "ការកំណត់ការទូទាត់",
+      "subtitle": "KHQR ការទូទាត់ QR រូបិយប័ណ្ណ និងលំនាំដើម តាមសាខា",
+      "noBranches": "មិនទាន់មានសាខា។",
+      "khqrDefaults": "KHQR និងលំនាំដើម",
+      "primary": "មេ"
+    }
+  },
   "billing": {
     "title": "វិក្កយបត្រ",
     "dashboardSubtitle": "ចំណូល ការប្រមូល និងសមតុល្យនៅជំពាក់",

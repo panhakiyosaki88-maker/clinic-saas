@@ -366,6 +366,53 @@
       "cancel": "Cancel"
     }
   },
+  "billingSettings": {
+    "tabs": {
+      "catalog": "Price catalog",
+      "procedures": "Procedures",
+      "memberships": "Memberships",
+      "payment": "Payment settings"
+    },
+    "catalog": {
+      "title": "Price catalog",
+      "summaryArchived": "{count} items (incl. archived)",
+      "summaryActive": "{count} active prices",
+      "showArchived": "Show archived",
+      "hideArchived": "Hide archived",
+      "editPrice": "Edit price",
+      "addPrice": "Add price",
+      "name": "Name",
+      "code": "Code",
+      "branch": "Branch",
+      "price": "Price",
+      "actions": "Actions",
+      "archived": "archived",
+      "all": "All",
+      "empty": "No prices yet."
+    },
+    "category": {
+      "consultation": "Consultation fees",
+      "lab": "Lab tests",
+      "pharmacy": "Pharmacy",
+      "procedure": "Procedures",
+      "other": "Other services"
+    },
+    "procedures": {
+      "title": "Procedures",
+      "subtitle": "Billable procedure catalog"
+    },
+    "memberships": {
+      "title": "Memberships",
+      "subtitle": "Membership plans & benefits"
+    },
+    "payment": {
+      "title": "Payment settings",
+      "subtitle": "Per-branch KHQR, payment QR, currency and defaults",
+      "noBranches": "No branches yet.",
+      "khqrDefaults": "KHQR & defaults",
+      "primary": "Primary"
+    }
+  },
   "billing": {
     "title": "Billing",
     "dashboardSubtitle": "Revenue, collections and outstanding balances",

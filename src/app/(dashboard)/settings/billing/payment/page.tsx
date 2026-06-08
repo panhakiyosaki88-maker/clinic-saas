@@ -3,6 +3,7 @@ import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { listBillingSettings } from "@/lib/db/queries/billing-settings";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { getTranslations } from "next-intl/server";
 import { Settings } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { BillingSettingsForm } from "@/components/billing/billing-settings-form";
@@ -19,27 +20,28 @@ export default async function PaymentSettingsPage() {
   const [branches, settings] = await Promise.all([listBranches(), listBillingSettings()]);
   const byBranch = new Map(settings.map((s) => [s.branch_id, s]));
   const multiBranch = branches.length > 1;
+  const t = await getTranslations("billingSettings.payment");
 
   return (
     <>
       <PageHeader
         icon={Settings}
-        title="Payment settings"
-        subtitle="Per-branch KHQR, payment QR, currency and defaults"
+        title={t("title")}
+        subtitle={t("subtitle")}
       />
 
       {branches.length === 0 ? (
         <Card>
-          <CardContent className="p-6 text-sm text-[var(--muted-foreground)]">No branches yet.</CardContent>
+          <CardContent className="p-6 text-sm text-[var(--muted-foreground)]">{t("noBranches")}</CardContent>
         </Card>
       ) : (
         branches.map((b) => (
           <Card key={b.id}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                {multiBranch ? b.name : "KHQR & defaults"}
+                {multiBranch ? b.name : t("khqrDefaults")}
                 {multiBranch && b.is_primary && (
-                  <span className="text-xs font-normal text-[var(--muted-foreground)]">Primary</span>
+                  <span className="text-xs font-normal text-[var(--muted-foreground)]">{t("primary")}</span>
                 )}
               </CardTitle>
             </CardHeader>

@@ -3,6 +3,7 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { listMembershipPlans } from "@/lib/db/queries/memberships";
+import { getTranslations } from "next-intl/server";
 import { Receipt } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { MembershipCatalog } from "@/components/billing/membership-catalog";
@@ -15,10 +16,11 @@ export default async function MembershipsPage() {
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
   const plans = await listMembershipPlans();
+  const t = await getTranslations("billingSettings.memberships");
 
   return (
     <>
-      <PageHeader icon={Receipt} title="Memberships" subtitle="Membership plans & benefits" />
+      <PageHeader icon={Receipt} title={t("title")} subtitle={t("subtitle")} />
       <MembershipCatalog plans={plans} />
     </>
   );
