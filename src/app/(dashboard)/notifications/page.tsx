@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listNotifications } from "@/lib/db/queries/notifications";
 import { hasPermission } from "@/lib/auth/guard";
@@ -19,11 +20,13 @@ const TONE: Record<string, string> = {
 export default async function NotificationsPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("notifications");
+  const locale = await getLocale();
   if (!(await hasPermission(PERMISSIONS.NOTIFICATIONS_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view notifications.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -35,35 +38,35 @@ export default async function NotificationsPage() {
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Bell}
-        title="Notifications"
-        subtitle={`${items.length} sent reminder${items.length === 1 ? "" : "s"} & messages`}
+        title={t("title")}
+        subtitle={t("summary", { count: items.length })}
       />
 
       <Card>
         <CardContent className="p-0">
           {items.length === 0 ? (
             <p className="p-6 text-sm text-[var(--muted-foreground)]">
-              No notifications yet. Send a reminder from an appointment or invoice.
+              {t("empty")}
             </p>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                 <tr>
-                  <th className="p-3 font-medium">When</th>
-                  <th className="p-3 font-medium">Type</th>
-                  <th className="p-3 font-medium">Recipient</th>
-                  <th className="p-3 font-medium">Status</th>
+                  <th className="p-3 font-medium">{t("table.when")}</th>
+                  <th className="p-3 font-medium">{t("table.type")}</th>
+                  <th className="p-3 font-medium">{t("table.recipient")}</th>
+                  <th className="p-3 font-medium">{t("table.status")}</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((n) => (
                   <tr key={n.id} className="border-b border-[var(--border)] last:border-0">
-                    <td className="p-3 text-xs text-[var(--muted-foreground)]">{new Date(n.created_at).toLocaleString()}</td>
-                    <td className="p-3 capitalize">{n.type.replace("_", " ")}</td>
+                    <td className="p-3 text-xs text-[var(--muted-foreground)]">{new Date(n.created_at).toLocaleString(locale)}</td>
+                    <td className="p-3">{t.has(`type.${n.type}`) ? t(`type.${n.type}`) : n.type.replace("_", " ")}</td>
                     <td className="p-3 text-[var(--muted-foreground)]">{n.recipient}</td>
                     <td className="p-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE[n.status]}`}>{n.status}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE[n.status]}`}>{t.has(`status.${n.status}`) ? t(`status.${n.status}`) : n.status}</span>
                       {n.error && n.status === "failed" && (
                         <span className="block text-xs text-[var(--destructive)]">{n.error}</span>
                       )}

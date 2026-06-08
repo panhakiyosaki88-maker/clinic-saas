@@ -425,6 +425,33 @@
       "inactive": "Inactive"
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "noPermission": "You don't have permission to view notifications.",
+    "summary": "{count, plural, one {# reminder & message sent} other {# reminders & messages sent}}",
+    "empty": "No notifications yet. Send a reminder from an appointment or invoice.",
+    "table": {
+      "when": "When",
+      "type": "Type",
+      "recipient": "Recipient",
+      "status": "Status"
+    },
+    "type": {
+      "appointment_reminder": "Appointment reminder",
+      "payment_reminder": "Payment reminder",
+      "follow_up": "Follow-up"
+    },
+    "status": {
+      "sent": "Sent",
+      "pending": "Pending",
+      "skipped": "Skipped",
+      "failed": "Failed"
+    },
+    "button": {
+      "send": "Send reminder",
+      "sending": "Sending…"
+    }
+  },
   "reports": {
     "title": "Reports",
     "noPermission": "You don't have permission to view reports.",
