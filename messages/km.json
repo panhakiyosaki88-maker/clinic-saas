@@ -425,6 +425,39 @@
       "inactive": "អសកម្ម"
     }
   },
+  "reports": {
+    "title": "របាយការណ៍",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលរបាយការណ៍ទេ។",
+    "pdf": "PDF",
+    "range": {
+      "from": "ពី",
+      "to": "ដល់",
+      "apply": "អនុវត្ត"
+    },
+    "summary": {
+      "revenue": "ចំណូល",
+      "newPatients": "អ្នកជំងឺថ្មី",
+      "outstanding": "នៅជំពាក់",
+      "stockValue": "តម្លៃស្តុក"
+    },
+    "revenueByDay": "ចំណូលតាមថ្ងៃ",
+    "noPaymentsInRange": "គ្មានការទូទាត់ក្នុងចន្លោះពេល។",
+    "appointmentsByStatus": "ការណាត់ជួបតាមស្ថានភាព",
+    "noAppointmentsInRange": "គ្មានការណាត់ជួបក្នុងចន្លោះពេល។",
+    "doctorActivity": "សកម្មភាពវេជ្ជបណ្ឌិត (ការមកពិនិត្យ)",
+    "noDoctors": "គ្មានវេជ្ជបណ្ឌិត។",
+    "inventoryTitle": "ស្តុក ({count} · {low} ខ្វះ)",
+    "noMedicines": "គ្មានឱសថ។",
+    "outstandingTitle": "វិក្កយបត្រនៅជំពាក់ ({count})",
+    "nothingOutstanding": "គ្មានអ្វីនៅជំពាក់។",
+    "table": {
+      "sku": "SKU",
+      "name": "ឈ្មោះ",
+      "stock": "ស្តុក",
+      "stockValue": "តម្លៃស្តុក",
+      "low": "ខ្វះ"
+    }
+  },
   "prescriptions": {
     "title": "វេជ្ជបញ្ជា",
     "noPermission": "អ្នកគ្មានសិទ្ធិមើលវេជ្ជបញ្ជាទេ។",

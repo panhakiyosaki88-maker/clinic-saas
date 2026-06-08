@@ -425,6 +425,39 @@
       "inactive": "Inactive"
     }
   },
+  "reports": {
+    "title": "Reports",
+    "noPermission": "You don't have permission to view reports.",
+    "pdf": "PDF",
+    "range": {
+      "from": "From",
+      "to": "To",
+      "apply": "Apply"
+    },
+    "summary": {
+      "revenue": "Revenue",
+      "newPatients": "New patients",
+      "outstanding": "Outstanding",
+      "stockValue": "Stock value"
+    },
+    "revenueByDay": "Revenue by day",
+    "noPaymentsInRange": "No payments in range.",
+    "appointmentsByStatus": "Appointments by status",
+    "noAppointmentsInRange": "No appointments in range.",
+    "doctorActivity": "Doctor activity (visits)",
+    "noDoctors": "No doctors.",
+    "inventoryTitle": "Inventory ({count} · {low} low)",
+    "noMedicines": "No medicines.",
+    "outstandingTitle": "Outstanding invoices ({count})",
+    "nothingOutstanding": "Nothing outstanding.",
+    "table": {
+      "sku": "SKU",
+      "name": "Name",
+      "stock": "Stock",
+      "stockValue": "Stock value",
+      "low": "low"
+    }
+  },
   "prescriptions": {
     "title": "Prescriptions",
     "noPermission": "You don't have permission to view prescriptions.",

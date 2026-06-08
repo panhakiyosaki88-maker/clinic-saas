@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import {
   getRevenueReport,
@@ -27,11 +28,12 @@ export default async function ReportsPage({
 }) {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("reports");
   if (!(await hasPermission(PERMISSIONS.REPORTS_VIEW))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view reports.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -65,36 +67,36 @@ export default async function ReportsPage({
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 print:max-w-none print:p-0">
       <PageHeader
         icon={BarChart3}
-        title="Reports"
+        title={t("title")}
         subtitle={`${sp.from ?? ymd(startOfMonth(new Date()))} → ${sp.to ?? ymd(new Date())}`}
       />
 
       <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
         <DateRange from={sp.from ?? ymd(startOfMonth(new Date()))} to={sp.to ?? ymd(new Date())} />
-        <PrintButton label="PDF" />
+        <PrintButton label={t("pdf")} />
       </div>
 
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-4">
         {revenue && (
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Revenue</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("summary.revenue")}</CardTitle></CardHeader>
             <CardContent><p className="text-2xl font-semibold tabular-nums">{money(revenue.total)}</p></CardContent>
           </Card>
         )}
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">New patients</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("summary.newPatients")}</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-semibold">{newPatients}</p></CardContent>
         </Card>
         {outstanding && (
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Outstanding</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("summary.outstanding")}</CardTitle></CardHeader>
             <CardContent><p className="text-2xl font-semibold tabular-nums">{money(outstanding.total)}</p></CardContent>
           </Card>
         )}
         {inventory && (
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Stock value</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("summary.stockValue")}</CardTitle></CardHeader>
             <CardContent><p className="text-2xl font-semibold tabular-nums">{money(inventory.stockValue)}</p></CardContent>
           </Card>
         )}
@@ -103,7 +105,7 @@ export default async function ReportsPage({
       {revenue && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Revenue by day</CardTitle>
+            <CardTitle>{t("revenueByDay")}</CardTitle>
             <ReportExport
               name="revenue-by-day"
               columns={[{ key: "date", label: "Date" }, { key: "amount", label: "Amount" }]}
@@ -112,7 +114,7 @@ export default async function ReportsPage({
           </CardHeader>
           <CardContent>
             {revenue.byDay.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">No payments in range.</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("noPaymentsInRange")}</p>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
@@ -137,11 +139,11 @@ export default async function ReportsPage({
       {byStatus && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Appointments by status</CardTitle>
+            <CardTitle>{t("appointmentsByStatus")}</CardTitle>
             <ReportExport name="appointments-by-status" columns={[{ key: "status", label: "Status" }, { key: "count", label: "Count" }]} rows={byStatus} />
           </CardHeader>
           <CardContent>
-            {byStatus.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">No appointments in range.</p> : (
+            {byStatus.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">{t("noAppointmentsInRange")}</p> : (
               <table className="w-full text-sm">
                 <tbody>
                   {byStatus.map((r) => (
@@ -160,11 +162,11 @@ export default async function ReportsPage({
       {doctorActivity && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Doctor activity (visits)</CardTitle>
+            <CardTitle>{t("doctorActivity")}</CardTitle>
             <ReportExport name="doctor-activity" columns={[{ key: "doctor", label: "Doctor" }, { key: "visits", label: "Visits" }]} rows={doctorActivity} />
           </CardHeader>
           <CardContent>
-            {doctorActivity.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">No doctors.</p> : (
+            {doctorActivity.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">{t("noDoctors")}</p> : (
               <table className="w-full text-sm">
                 <tbody>
                   {doctorActivity.map((r) => (
@@ -183,7 +185,7 @@ export default async function ReportsPage({
       {inventory && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Inventory ({inventory.medicineCount} · {inventory.lowStockCount} low)</CardTitle>
+            <CardTitle>{t("inventoryTitle", { count: inventory.medicineCount, low: inventory.lowStockCount })}</CardTitle>
             <ReportExport
               name="inventory"
               columns={[
@@ -203,16 +205,16 @@ export default async function ReportsPage({
           </CardHeader>
           <CardContent>
             {inventory.items.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">No medicines.</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("noMedicines")}</p>
             ) : (
               <div className="w-full overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
                     <tr>
-                      <th className="py-2">SKU</th>
-                      <th>Name</th>
-                      <th className="text-right">Stock</th>
-                      <th className="text-right">Stock value</th>
+                      <th className="py-2">{t("table.sku")}</th>
+                      <th>{t("table.name")}</th>
+                      <th className="text-right">{t("table.stock")}</th>
+                      <th className="text-right">{t("table.stockValue")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -221,7 +223,7 @@ export default async function ReportsPage({
                         <td className="py-1 font-mono text-xs">{m.sku}</td>
                         <td className="py-1">
                           {m.name}{m.strength ? ` ${m.strength}` : ""}
-                          {m.low && <span className="ml-2 text-xs text-[var(--destructive)]">low</span>}
+                          {m.low && <span className="ml-2 text-xs text-[var(--destructive)]">{t("table.low")}</span>}
                         </td>
                         <td className="py-1 text-right tabular-nums">{m.stock}</td>
                         <td className="py-1 text-right tabular-nums">{money(m.stock_value)}</td>
@@ -238,7 +240,7 @@ export default async function ReportsPage({
       {outstanding && (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Outstanding invoices ({outstanding.count})</CardTitle>
+            <CardTitle>{t("outstandingTitle", { count: outstanding.count })}</CardTitle>
             <ReportExport
               name="outstanding-invoices"
               columns={[{ key: "invoice_number", label: "Invoice" }, { key: "patient", label: "Patient" }, { key: "balance", label: "Balance" }]}
@@ -246,7 +248,7 @@ export default async function ReportsPage({
             />
           </CardHeader>
           <CardContent>
-            {outstanding.rows.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">Nothing outstanding.</p> : (
+            {outstanding.rows.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">{t("nothingOutstanding")}</p> : (
               <table className="w-full text-sm">
                 <tbody>
                   {outstanding.rows.map((r) => (
