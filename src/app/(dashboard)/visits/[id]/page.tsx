@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -60,6 +61,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
     getBillingSettings(),
   ]);
   const ctx = currencyContext(settings);
+  const t = await getTranslations("visits.detail");
   const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   // When this visit has a prescription, restrict the dispense picker to the
   // prescribed medicines that are stocked (with qty/price pre-filled); otherwise
@@ -73,12 +75,12 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <BackLink label={`← ${visit.patient_name}`} fallback={`/patients/${visit.patient_id}`} />
-          <h1 className="mt-1 text-2xl font-bold">Visit {visit.visit_number}</h1>
+          <h1 className="mt-1 text-2xl font-bold">{t("title", { number: visit.visit_number })}</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {new Date(visit.visit_date).toLocaleString()}
             {visit.doctor_name ? ` · ${visit.doctor_name}` : ""}
             {" · "}
-            <span className="capitalize">{visit.status}</span>
+            <span>{t.has(`status.${visit.status}`) ? t(`status.${visit.status}`) : visit.status}</span>
           </p>
         </div>
         {canBill && (
@@ -86,15 +88,15 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
             href={`/billing/workspace?patientId=${visit.patient_id}&visitId=${visit.id}`}
             className="h-9 rounded-md bg-brand-600 px-4 text-sm font-medium leading-9 text-white"
           >
-            Bill this visit →
+            {t("billVisit")}
           </Link>
         )}
       </header>
 
       <section className="rounded-xl border border-[var(--border)] p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Timeline</h2>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("timeline")}</h2>
         {events.length === 0 ? (
-          <p className="text-sm text-[var(--muted-foreground)]">Nothing recorded against this visit yet.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("nothingRecorded")}</p>
         ) : (
           <ol className="space-y-4">
             {events.map((e, i) => {
@@ -123,19 +125,19 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
 
       {isOpen && (canProc || canDispense) && (
         <section className="space-y-4 rounded-xl border border-[var(--border)] p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Add to this visit</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("addToVisit")}</h2>
           {canProc && (
             <div className="space-y-2">
-              <p className="text-xs font-medium">Procedure</p>
+              <p className="text-xs font-medium">{t("procedure")}</p>
               <RecordProcedureForm patientId={visit.patient_id} visitId={visit.id} procedures={procedures} />
             </div>
           )}
           {canDispense && (
             <div className="space-y-2">
-              <p className="text-xs font-medium">Dispense medicine</p>
+              <p className="text-xs font-medium">{t("dispenseMedicine")}</p>
               {fromPrescription && (
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  Showing prescribed medicines in stock — quantity and price are pre-filled.
+                  {t("prescribedHint")}
                 </p>
               )}
               <DispenseForm patientId={visit.patient_id} visitId={visit.id} medicines={medicines} />

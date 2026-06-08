@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -41,6 +42,7 @@ export default async function RecordDetailPage({
   ]);
   if (!patient || !detail) notFound();
   const { record, vitals, attachments } = detail;
+  const t = await getTranslations("records.recordDetail");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -48,14 +50,14 @@ export default async function RecordDetailPage({
         <div>
           <BackLink label={`← ${patient.full_name}`} fallback={`/patients/${id}`} />
           <h1 className="mt-1 text-2xl font-bold">
-            Visit · {new Date(record.visit_date).toLocaleDateString()}
+            {t("title", { date: new Date(record.visit_date).toLocaleDateString() })}
           </h1>
-          <p className="text-xs capitalize text-[var(--muted-foreground)]">{record.status}</p>
+          <p className="text-xs text-[var(--muted-foreground)]">{t.has(`status.${record.status}`) ? t(`status.${record.status}`) : record.status}</p>
         </div>
         {canWrite && (
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm">
-              <Link href={`/patients/${id}/records/${recordId}/edit`}>Edit</Link>
+              <Link href={`/patients/${id}/records/${recordId}/edit`}>{t("edit")}</Link>
             </Button>
             <DeleteRecordButton recordId={recordId} patientId={id} />
           </div>
@@ -63,7 +65,7 @@ export default async function RecordDetailPage({
       </header>
 
       <Card>
-        <CardHeader><CardTitle>Clinical notes</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("clinicalNotes")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <Section title="Chief complaint" value={record.chief_complaint} />
           <Section title="Subjective" value={record.subjective} />
@@ -77,15 +79,15 @@ export default async function RecordDetailPage({
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Vital signs</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("vitalSigns")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {vitals.length === 0 ? (
-            <p className="text-sm text-[var(--muted-foreground)]">No vitals recorded.</p>
+            <p className="text-sm text-[var(--muted-foreground)]">{t("noVitals")}</p>
           ) : (
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-[var(--muted-foreground)]">
                 <tr>
-                  <th className="py-1">When</th><th>BP</th><th>Pulse</th><th>Temp</th>
+                  <th className="py-1">{t("when")}</th><th>BP</th><th>Pulse</th><th>Temp</th>
                   <th>Ht</th><th>Wt</th><th>BMI</th><th>SpO₂</th>
                 </tr>
               </thead>
@@ -111,12 +113,12 @@ export default async function RecordDetailPage({
 
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle>Attachments</CardTitle>
+          <CardTitle>{t("attachments")}</CardTitle>
           {canWrite && <DocumentUploader clinicId={clinic.id} patientId={id} medicalRecordId={recordId} />}
         </CardHeader>
         <CardContent>
           {attachments.length === 0 ? (
-            <p className="text-sm text-[var(--muted-foreground)]">No attachments.</p>
+            <p className="text-sm text-[var(--muted-foreground)]">{t("noAttachments")}</p>
           ) : (
             <ul className="space-y-1">
               {attachments.map((a) => (

@@ -1194,6 +1194,36 @@
     "vitalsForm": {
       "saving": "កំពុងរក្សាទុក…",
       "addVitals": "បន្ថែមសញ្ញាណជីព"
+    },
+    "recordDetail": {
+      "title": "ការមកជួប · {date}",
+      "status": {
+        "draft": "សេចក្តីព្រាង",
+        "finalized": "បានបញ្ចប់"
+      },
+      "edit": "កែសម្រួល",
+      "clinicalNotes": "កំណត់ត្រាគ្លីនិក",
+      "vitalSigns": "សញ្ញាណជីព",
+      "noVitals": "មិនមានសញ្ញាណជីពត្រូវបានកត់ត្រាទេ។",
+      "when": "ពេលណា",
+      "attachments": "ឯកសារភ្ជាប់",
+      "noAttachments": "មិនមានឯកសារភ្ជាប់ទេ។"
+    }
+  },
+  "visits": {
+    "detail": {
+      "title": "ការមកជួប {number}",
+      "status": {
+        "open": "បើក",
+        "closed": "បានបិទ"
+      },
+      "billVisit": "គិតប្រាក់ការមកជួបនេះ →",
+      "timeline": "កាលប្បវត្តិ",
+      "nothingRecorded": "មិនទាន់មានអ្វីកត់ត្រាសម្រាប់ការមកជួបនេះទេ។",
+      "addToVisit": "បន្ថែមទៅការមកជួបនេះ",
+      "procedure": "នីតិវិធី",
+      "dispenseMedicine": "ចេញឱសថ",
+      "prescribedHint": "កំពុងបង្ហាញឱសថដែលបានចេញវេជ្ជបញ្ជាក្នុងស្តុក — បរិមាណ និងតម្លៃត្រូវបានបំពេញជាមុន។"
     }
   },
   "errors": {

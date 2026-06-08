@@ -1194,6 +1194,36 @@
     "vitalsForm": {
       "saving": "Saving…",
       "addVitals": "Add vitals"
+    },
+    "recordDetail": {
+      "title": "Visit · {date}",
+      "status": {
+        "draft": "Draft",
+        "finalized": "Finalized"
+      },
+      "edit": "Edit",
+      "clinicalNotes": "Clinical notes",
+      "vitalSigns": "Vital signs",
+      "noVitals": "No vitals recorded.",
+      "when": "When",
+      "attachments": "Attachments",
+      "noAttachments": "No attachments."
+    }
+  },
+  "visits": {
+    "detail": {
+      "title": "Visit {number}",
+      "status": {
+        "open": "Open",
+        "closed": "Closed"
+      },
+      "billVisit": "Bill this visit →",
+      "timeline": "Timeline",
+      "nothingRecorded": "Nothing recorded against this visit yet.",
+      "addToVisit": "Add to this visit",
+      "procedure": "Procedure",
+      "dispenseMedicine": "Dispense medicine",
+      "prescribedHint": "Showing prescribed medicines in stock — quantity and price are pre-filled."
     }
   },
   "errors": {
