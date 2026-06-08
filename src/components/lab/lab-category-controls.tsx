@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Trash2, Download, Plus } from "lucide-react";
 import { createLabCategory, deleteLabCategory, seedLabPanelCategories } from "@/server/actions/lab";
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,13 @@ export function DeleteCategoryButton({
   isGroup?: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("lab.category");
   const [pending, startTransition] = React.useTransition();
 
   function onClick() {
     const msg = isGroup
-      ? `Delete the group “${name}” and all of its subgroups?`
-      : `Delete “${name}”?`;
+      ? t("deleteGroupConfirm", { name })
+      : t("deleteConfirm", { name });
     if (!window.confirm(msg)) return;
     startTransition(async () => {
       await deleteLabCategory(id);
@@ -39,7 +41,7 @@ export function DeleteCategoryButton({
       className="h-7 w-7 text-[var(--muted-foreground)] hover:text-[var(--destructive)]"
       disabled={pending}
       onClick={onClick}
-      aria-label={`Delete ${name}`}
+      aria-label={t("deleteAria", { name })}
     >
       <Trash2 className="h-4 w-4" />
     </Button>
@@ -49,6 +51,7 @@ export function DeleteCategoryButton({
 /** Inline input to add a subgroup directly under a group. */
 export function AddSubgroupForm({ groupId }: { groupId: string }) {
   const router = useRouter();
+  const t = useTranslations("lab.category");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -67,9 +70,9 @@ export function AddSubgroupForm({ groupId }: { groupId: string }) {
 
   return (
     <form onSubmit={onSubmit} className="flex items-center gap-2 px-4 py-2">
-      <Input name="name" placeholder="Add subgroup…" className="h-8 max-w-xs" required />
+      <Input name="name" placeholder={t("addSubgroup")} className="h-8 max-w-xs" required />
       <Button type="submit" size="sm" variant="outline" disabled={pending}>
-        <Plus className="h-4 w-4" /> {pending ? "Adding…" : "Add"}
+        <Plus className="h-4 w-4" /> {pending ? t("adding") : t("addSub")}
       </Button>
       {error && <span className="text-xs text-[var(--destructive)]">{error}</span>}
     </form>
@@ -79,6 +82,7 @@ export function AddSubgroupForm({ groupId }: { groupId: string }) {
 /** Imports the standard requisition-sheet panel as groups + subgroups. */
 export function ImportPanelButton() {
   const router = useRouter();
+  const t = useTranslations("lab.category");
   const [pending, startTransition] = React.useTransition();
   const [msg, setMsg] = React.useState<string | null>(null);
 
@@ -90,7 +94,7 @@ export function ImportPanelButton() {
         setMsg(res.error);
         return;
       }
-      setMsg(res.data.created > 0 ? `Imported ${res.data.created} categories.` : "Already up to date.");
+      setMsg(res.data.created > 0 ? t("imported", { count: res.data.created }) : t("upToDate"));
       router.refresh();
     });
   }
@@ -98,7 +102,7 @@ export function ImportPanelButton() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button type="button" variant="outline" size="sm" disabled={pending} onClick={onClick}>
-        <Download className="h-4 w-4" /> {pending ? "Importing…" : "Import standard panel"}
+        <Download className="h-4 w-4" /> {pending ? t("importing") : t("import")}
       </Button>
       {msg && <span className="text-xs text-[var(--muted-foreground)]">{msg}</span>}
     </div>

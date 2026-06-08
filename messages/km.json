@@ -1030,7 +1030,22 @@
       "namePlaceholder": "ឈ្មោះក្រុម *",
       "descPlaceholder": "ការពិពណ៌នា",
       "adding": "កំពុងបន្ថែម…",
-      "add": "បន្ថែមក្រុម"
+      "add": "បន្ថែមក្រុម",
+      "backToList": "← មន្ទីរពិសោធន៍",
+      "pageTitle": "ប្រភេទមន្ទីរពិសោធន៍",
+      "newGroup": "ក្រុមថ្មី",
+      "empty": "មិនទាន់មានប្រភេទទេ។",
+      "emptyImportHint": "ប្រើ “នាំចូលផ្ទាំងស្តង់ដារ” ដើម្បីផ្ទុកក្រុមនៃសន្លឹកស្នើសុំ។",
+      "noSubgroups": "គ្មានក្រុមរង។",
+      "addSubgroup": "បន្ថែមក្រុមរង…",
+      "addSub": "បន្ថែម",
+      "import": "នាំចូលផ្ទាំងស្តង់ដារ",
+      "importing": "កំពុងនាំចូល…",
+      "imported": "បាននាំចូលប្រភេទ {count}។",
+      "upToDate": "ទាន់សម័យរួចហើយ។",
+      "deleteGroupConfirm": "លុបក្រុម “{name}” និងក្រុមរងទាំងអស់របស់វា?",
+      "deleteConfirm": "លុប “{name}”?",
+      "deleteAria": "លុប {name}"
     }
   },
   "pharmacy": {

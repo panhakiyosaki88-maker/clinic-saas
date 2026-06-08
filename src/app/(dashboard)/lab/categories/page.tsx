@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listLabCategoryTree } from "@/lib/db/queries/lab";
@@ -16,21 +17,24 @@ export default async function LabCategoriesPage() {
   if (!(await hasPermission(PERMISSIONS.LAB_READ))) redirect("/dashboard");
 
   const canWrite = await hasPermission(PERMISSIONS.LAB_WRITE);
-  const groups = await listLabCategoryTree();
+  const [groups, t] = await Promise.all([
+    listLabCategoryTree(),
+    getTranslations("lab.category"),
+  ]);
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <BackLink label="← Laboratory" fallback="/lab" />
-          <h1 className="mt-1 text-2xl font-bold">Lab categories</h1>
+          <BackLink label={t("backToList")} fallback="/lab" />
+          <h1 className="mt-1 text-2xl font-bold">{t("pageTitle")}</h1>
         </div>
         {canWrite && <ImportPanelButton />}
       </header>
 
       {canWrite && (
         <Card>
-          <CardHeader><CardTitle>New group</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("newGroup")}</CardTitle></CardHeader>
           <CardContent>
             <CategoryForm />
           </CardContent>
@@ -41,7 +45,7 @@ export default async function LabCategoriesPage() {
         <Card>
           <CardContent>
             <p className="py-6 text-sm text-[var(--muted-foreground)]">
-              No categories yet.{canWrite ? " Use “Import standard panel” to load the requisition-sheet groups." : ""}
+              {t("empty")}{canWrite ? ` ${t("emptyImportHint")}` : ""}
             </p>
           </CardContent>
         </Card>
@@ -55,7 +59,7 @@ export default async function LabCategoriesPage() {
               </CardHeader>
               <CardContent className="p-0">
                 {g.children.length === 0 ? (
-                  <p className="px-4 text-sm text-[var(--muted-foreground)]">No subgroups.</p>
+                  <p className="px-4 text-sm text-[var(--muted-foreground)]">{t("noSubgroups")}</p>
                 ) : (
                   <ul className="divide-y divide-[var(--border)] border-b border-[var(--border)]">
                     {g.children.map((c) => (

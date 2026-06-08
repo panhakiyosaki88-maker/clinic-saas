@@ -1030,7 +1030,22 @@
       "namePlaceholder": "Group name *",
       "descPlaceholder": "Description",
       "adding": "Adding…",
-      "add": "Add group"
+      "add": "Add group",
+      "backToList": "← Laboratory",
+      "pageTitle": "Lab categories",
+      "newGroup": "New group",
+      "empty": "No categories yet.",
+      "emptyImportHint": "Use “Import standard panel” to load the requisition-sheet groups.",
+      "noSubgroups": "No subgroups.",
+      "addSubgroup": "Add subgroup…",
+      "addSub": "Add",
+      "import": "Import standard panel",
+      "importing": "Importing…",
+      "imported": "Imported {count} categories.",
+      "upToDate": "Already up to date.",
+      "deleteGroupConfirm": "Delete the group “{name}” and all of its subgroups?",
+      "deleteConfirm": "Delete “{name}”?",
+      "deleteAria": "Delete {name}"
     }
   },
   "pharmacy": {
