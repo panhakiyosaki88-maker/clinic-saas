@@ -590,6 +590,44 @@
       "overdue": "ហួសកំណត់",
       "cancelled": "បានបោះបង់",
       "refunded": "បានសងវិញ"
+    },
+    "serviceCategory": {
+      "consultation": "ការពិគ្រោះ",
+      "lab": "មន្ទីរពិសោធន៍",
+      "pharmacy": "ឱសថស្ថាន",
+      "procedure": "នីតិវិធី",
+      "membership": "សមាជិកភាព",
+      "other": "សេវាផ្សេងទៀត"
+    },
+    "invoiceForm": {
+      "patient": "អ្នកជំងឺ (ស្រេចចិត្ត)",
+      "walkIn": "មកផ្ទាល់ / គ្មានអ្នកជំងឺ",
+      "doctor": "វេជ្ជបណ្ឌិត (ស្រេចចិត្ត)",
+      "unassigned": "មិនបានកំណត់",
+      "branch": "សាខា (ស្រេចចិត្ត)",
+      "noBranch": "គ្មានសាខា",
+      "serviceType": "ប្រភេទសេវា (ស្រេចចិត្ត)",
+      "dueDate": "ថ្ងៃកំណត់ (ស្រេចចិត្ត)",
+      "description": "ការពិពណ៌នា",
+      "quantity": "បរិមាណ",
+      "unitPrice": "តម្លៃឯកតា",
+      "amount": "ចំនួនទឹកប្រាក់",
+      "descriptionPlaceholder": "ការពិពណ៌នា *",
+      "addManualItem": "បន្ថែមធាតុដោយដៃ៖",
+      "subtotal": "សរុបរង",
+      "discount": "បញ្ចុះតម្លៃ",
+      "tax": "ពន្ធ",
+      "totalUsd": "សរុប (USD)",
+      "notes": "កំណត់ចំណាំ",
+      "saving": "កំពុងរក្សាទុក…",
+      "save": "រក្សាទុក",
+      "create": "បង្កើតវិក្កយបត្រ",
+      "saveDraft": "រក្សាទុកជាព្រាង",
+      "cancel": "បោះបង់",
+      "newTitle": "វិក្កយបត្រថ្មី",
+      "editTitle": "កែសម្រួល {number}",
+      "backToList": "← វិក្កយបត្រ",
+      "backToOne": "← វិក្កយបត្រ"
     }
   },
   "doctors": {
@@ -814,6 +852,13 @@
       "nameRequired": "ត្រូវការឈ្មោះអ្នកជំងឺ",
       "planLimit": "អ្នកបានឈានដល់ដែនកំណត់អ្នកជំងឺនៃគម្រោងរបស់អ្នក។ សូមដំឡើងកម្រិតដើម្បីបន្ថែម។",
       "createFailed": "មិនអាចបង្កើតអ្នកជំងឺបានទេ។"
+    },
+    "invoice": {
+      "descriptionRequired": "ត្រូវការការពិពណ៌នា",
+      "atLeastOneItem": "បន្ថែមធាតុយ៉ាងហោចណាស់មួយ",
+      "notFound": "រកមិនឃើញវិក្កយបត្រ។",
+      "cancelled": "វិក្កយបត្រនេះត្រូវបានបោះបង់។",
+      "hasPayments": "មិនអាចកែវិក្កយបត្រដែលមានការទូទាត់រួចហើយ។"
     },
     "appointment": {
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",

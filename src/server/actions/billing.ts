@@ -20,6 +20,7 @@ import {
   type UnbillChargeInput,
 } from "@/lib/validations/invoice";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 function revalidateBilling(invoiceId?: string) {
   revalidatePath("/billing");
@@ -32,9 +33,10 @@ export async function createInvoice(
   input: CreateInvoiceInput
 ): Promise<ActionResult<{ invoiceId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = createInvoiceSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 
@@ -93,9 +95,10 @@ export async function createInvoice(
  */
 export async function editInvoice(invoiceId: string, input: EditInvoiceInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = editInvoiceSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 
@@ -106,9 +109,9 @@ export async function editInvoice(invoiceId: string, input: EditInvoiceInput): P
     .eq("id", invoiceId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
-  if (!inv) return fail("Invoice not found.");
-  if (inv.status === "cancelled") return fail("This invoice is cancelled.");
-  if (Number(inv.amount_paid) > 0) return fail("Cannot edit an invoice that already has payments.");
+  if (!inv) return fail(te("invoice.notFound"));
+  if (inv.status === "cancelled") return fail(te("invoice.cancelled"));
+  if (Number(inv.amount_paid) > 0) return fail(te("invoice.hasPayments"));
 
   const { error: upErr } = await supabase
     .from("invoices")

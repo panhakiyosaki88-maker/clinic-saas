@@ -47,7 +47,8 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatusValue, string> = {
 };
 
 export const invoiceItemSchema = z.object({
-  description: z.string().trim().min(1, "Description is required").max(255),
+  // i18n key under the `errors` namespace (localized in the server action).
+  description: z.string().trim().min(1, "invoice.descriptionRequired").max(255),
   quantity: z.preprocess(emptyToUndef, z.coerce.number().min(0.01).max(100000).default(1)),
   unitPrice: z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).default(0)),
   // Same categories as the Billing Workspace; defaults to "other".
@@ -71,7 +72,7 @@ export const createInvoiceSchema = z.object({
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
   // "draft" saves without issuing; otherwise the invoice is issued (unpaid).
   asDraft: z.boolean().optional(),
-  items: z.array(invoiceItemSchema).min(1, "Add at least one line item"),
+  items: z.array(invoiceItemSchema).min(1, "invoice.atLeastOneItem"),
 });
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 

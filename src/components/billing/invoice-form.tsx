@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createInvoice, editInvoice } from "@/server/actions/billing";
 import { formatKHR, usdToKhr } from "@/lib/billing/currency";
-import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, type ServiceCategoryValue } from "@/lib/validations/invoice";
+import { SERVICE_CATEGORIES, type ServiceCategoryValue } from "@/lib/validations/invoice";
 import { MedicinePicker, type MedicinePickOption } from "@/components/billing/medicine-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,8 @@ export function InvoiceForm({
   /** Pharmacy catalog for the Pharmacy line's medicine typeahead. */
   medicines?: MedicinePickOption[];
 }) {
+  const t = useTranslations("billing.invoiceForm");
+  const tc = useTranslations("billing.serviceCategory");
   const router = useRouter();
   const isEdit = !!invoice;
   const [pending, startTransition] = React.useTransition();
@@ -142,34 +145,34 @@ export function InvoiceForm({
     <form onSubmit={(e) => { e.preventDefault(); submit(e.currentTarget, false); }} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="patientId">Patient (optional)</Label>
+          <Label htmlFor="patientId">{t("patient")}</Label>
           <select id="patientId" name="patientId" className={selectClass} value={patientId} onChange={(e) => onPatientChange(e.target.value)}>
-            <option value="">Walk-in / no patient</option>
+            <option value="">{t("walkIn")}</option>
             {patients.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="doctorId">Doctor (optional)</Label>
+          <Label htmlFor="doctorId">{t("doctor")}</Label>
           <select id="doctorId" name="doctorId" className={selectClass} value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
-            <option value="">Unassigned</option>
+            <option value="">{t("unassigned")}</option>
             {doctors.map((d) => <option key={d.id} value={d.id}>{d.full_name}</option>)}
           </select>
         </div>
         {branches.length > 0 && (
           <div className="space-y-2">
-            <Label htmlFor="branchId">Branch (optional)</Label>
+            <Label htmlFor="branchId">{t("branch")}</Label>
             <select id="branchId" name="branchId" className={selectClass} defaultValue={invoice?.branch_id ?? defaultBranchId ?? ""}>
-              <option value="">No branch</option>
+              <option value="">{t("noBranch")}</option>
               {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
         )}
         <div className="space-y-2">
-          <Label htmlFor="serviceType">Service type (optional)</Label>
+          <Label htmlFor="serviceType">{t("serviceType")}</Label>
           <Input id="serviceType" name="serviceType" defaultValue={invoice?.service_type ?? ""} placeholder="e.g. Consultation" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="dueDate">Due date (optional)</Label>
+          <Label htmlFor="dueDate">{t("dueDate")}</Label>
           <Input id="dueDate" name="dueDate" type="date" defaultValue={invoice?.due_date ?? ""} />
         </div>
       </div>
@@ -183,14 +186,14 @@ export function InvoiceForm({
             return (
               <section key={cat} className="space-y-2">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                  {SERVICE_CATEGORY_LABELS[cat]}
+                  {tc(cat)}
                 </h3>
                 <div className="space-y-2">
                   <div className="hidden grid-cols-[1fr_5rem_7rem_5rem_2.5rem] gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] sm:grid">
-                    <span>Description</span>
-                    <span>Quantity</span>
-                    <span>Unit price</span>
-                    <span className="text-right">Amount</span>
+                    <span>{t("description")}</span>
+                    <span>{t("quantity")}</span>
+                    <span>{t("unitPrice")}</span>
+                    <span className="text-right">{t("amount")}</span>
                     <span aria-hidden />
                   </div>
                   {group.map((r) => (
@@ -203,7 +206,7 @@ export function InvoiceForm({
                           onPick={(m) => pickMedicine(r.key, m)}
                         />
                       ) : (
-                        <Input placeholder="Description *" value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
+                        <Input placeholder={t("descriptionPlaceholder")} value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
                       )}
                       <Input type="number" step="0.01" placeholder="Quantity" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} title="Quantity" />
                       <Input type="number" step="0.01" placeholder="Unit price" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} title="Unit price" />
@@ -217,10 +220,10 @@ export function InvoiceForm({
           })}
 
           <div className="flex flex-wrap gap-2 pt-1">
-            <span className="self-center text-xs text-[var(--muted-foreground)]">Add manual item:</span>
+            <span className="self-center text-xs text-[var(--muted-foreground)]">{t("addManualItem")}</span>
             {(["consultation", "lab", "pharmacy", "procedure", "other"] as ServiceCategoryValue[]).map((c) => (
               <Button key={c} type="button" variant="outline" size="sm" onClick={() => addItem(c)}>
-                + {SERVICE_CATEGORY_LABELS[c]}
+                + {tc(c)}
               </Button>
             ))}
           </div>
@@ -229,17 +232,17 @@ export function InvoiceForm({
         {/* Summary rail */}
         <aside className="space-y-4 lg:sticky lg:top-4 self-start">
           <div className="space-y-2 rounded-lg border border-[var(--border)] p-4 text-sm">
-            <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">{t("subtotal")}</span><span className="tabular-nums">{subtotal.toFixed(2)}</span></div>
             <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="discount" className="text-[var(--muted-foreground)]">Discount</Label>
+              <Label htmlFor="discount" className="text-[var(--muted-foreground)]">{t("discount")}</Label>
               <Input id="discount" className="w-24" type="number" step="0.01" value={discount} onChange={(e) => setDiscount(e.target.value)} />
             </div>
             <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="tax" className="text-[var(--muted-foreground)]">Tax</Label>
+              <Label htmlFor="tax" className="text-[var(--muted-foreground)]">{t("tax")}</Label>
               <Input id="tax" className="w-24" type="number" step="0.01" value={tax} onChange={(e) => setTax(e.target.value)} />
             </div>
             <div className="flex justify-between border-t border-[var(--border)] pt-2 font-semibold">
-              <span>Total (USD)</span><span className="tabular-nums">${total.toFixed(2)}</span>
+              <span>{t("totalUsd")}</span><span className="tabular-nums">${total.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-xs text-[var(--muted-foreground)]">
               <span>≈ KHR</span><span className="tabular-nums">{formatKHR(usdToKhr(total, rate))}</span>
@@ -247,21 +250,21 @@ export function InvoiceForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{t("notes")}</Label>
             <Textarea id="notes" name="notes" defaultValue={invoice?.notes ?? ""} />
           </div>
 
           {error && <p className="rounded-md bg-[var(--destructive)]/10 px-3 py-2 text-sm text-[var(--destructive)]">{error}</p>}
 
           <div className="flex flex-col gap-2">
-            <Button type="submit" disabled={pending}>{pending ? "Saving…" : isEdit ? "Save changes" : "Create invoice"}</Button>
+            <Button type="submit" disabled={pending}>{pending ? t("saving") : isEdit ? t("save") : t("create")}</Button>
             {!isEdit && (
               <Button type="button" variant="outline" disabled={pending}
                 onClick={(e) => submit(e.currentTarget.form as HTMLFormElement, true)}>
-                Save as draft
+                {t("saveDraft")}
               </Button>
             )}
-            <Button type="button" variant="ghost" onClick={() => router.back()} disabled={pending}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => router.back()} disabled={pending}>{t("cancel")}</Button>
           </div>
         </aside>
       </div>

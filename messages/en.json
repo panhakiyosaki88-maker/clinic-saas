@@ -590,6 +590,44 @@
       "overdue": "Overdue",
       "cancelled": "Cancelled",
       "refunded": "Refunded"
+    },
+    "serviceCategory": {
+      "consultation": "Consultation",
+      "lab": "Laboratory",
+      "pharmacy": "Pharmacy",
+      "procedure": "Procedures",
+      "membership": "Membership",
+      "other": "Other Services"
+    },
+    "invoiceForm": {
+      "patient": "Patient (optional)",
+      "walkIn": "Walk-in / no patient",
+      "doctor": "Doctor (optional)",
+      "unassigned": "Unassigned",
+      "branch": "Branch (optional)",
+      "noBranch": "No branch",
+      "serviceType": "Service type (optional)",
+      "dueDate": "Due date (optional)",
+      "description": "Description",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "amount": "Amount",
+      "descriptionPlaceholder": "Description *",
+      "addManualItem": "Add manual item:",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "tax": "Tax",
+      "totalUsd": "Total (USD)",
+      "notes": "Notes",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "create": "Create invoice",
+      "saveDraft": "Save as draft",
+      "cancel": "Cancel",
+      "newTitle": "New invoice",
+      "editTitle": "Edit {number}",
+      "backToList": "← Invoices",
+      "backToOne": "← Invoice"
     }
   },
   "doctors": {
@@ -814,6 +852,13 @@
       "nameRequired": "Patient name is required",
       "planLimit": "You've reached your plan's patient limit. Upgrade to add more.",
       "createFailed": "Could not create patient."
+    },
+    "invoice": {
+      "descriptionRequired": "Description is required",
+      "atLeastOneItem": "Add at least one line item",
+      "notFound": "Invoice not found.",
+      "cancelled": "This invoice is cancelled.",
+      "hasPayments": "Cannot edit an invoice that already has payments."
     },
     "appointment": {
       "patientRequired": "Choose a patient",

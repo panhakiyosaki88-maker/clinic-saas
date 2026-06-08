@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getInvoice } from "@/lib/db/queries/billing";
@@ -38,12 +39,13 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   // Default the branch to where the patient consulted when this invoice has none.
   const branchId =
     inv.branch_id ?? (inv.visit_id ? await resolveVisitBranchId(inv.visit_id) : null);
+  const t = await getTranslations("billing.invoiceForm");
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <header>
-        <BackLink label="← Invoice" fallback={`/billing/${id}`} />
-        <h1 className="mt-1 text-2xl font-bold">Edit {inv.invoice_number}</h1>
+        <BackLink label={t("backToOne")} fallback={`/billing/${id}`} />
+        <h1 className="mt-1 text-2xl font-bold">{t("editTitle", { number: inv.invoice_number })}</h1>
       </header>
       <InvoiceForm
         patients={patients}
