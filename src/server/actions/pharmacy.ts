@@ -197,9 +197,10 @@ export async function deleteMedicine(medicineId: string): Promise<ActionResult> 
  */
 export async function recordTransaction(input: RecordTransactionInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PHARMACY_WRITE);
+  const te = await getErrorT();
   const parsed = recordTransactionSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 
@@ -218,9 +219,9 @@ export async function recordTransaction(input: RecordTransactionInput): Promise<
       .eq("id", v.medicineId)
       .eq("clinic_id", clinicId)
       .maybeSingle();
-    if (!med) return fail("Medicine not found.");
+    if (!med) return fail(te("medicine.notFound"));
     if (med.stock_quantity + change < 0) {
-      return fail(`Only ${med.stock_quantity} in stock.`);
+      return fail(te("medicine.onlyInStock", { count: med.stock_quantity }));
     }
   }
 

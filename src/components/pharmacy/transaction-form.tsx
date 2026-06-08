@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { recordTransaction } from "@/server/actions/pharmacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export function TransactionForm({
   defaultBranchId?: string | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("pharmacy.transactionForm");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [reason, setReason] = React.useState("purchase");
@@ -57,25 +59,25 @@ export function TransactionForm({
     <form onSubmit={onSubmit} className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1">
-          <Label htmlFor="reason" className="text-xs">Reason</Label>
+          <Label htmlFor="reason" className="text-xs">{t("reason")}</Label>
           <select id="reason" name="reason" className={selectClass} value={reason} onChange={(e) => setReason(e.target.value)}>
-            <option value="purchase">Purchase (in)</option>
-            <option value="dispense">Dispense (out)</option>
-            <option value="return">Return (in)</option>
-            <option value="expiry">Expiry (out)</option>
-            <option value="adjustment">Adjustment</option>
+            <option value="purchase">{t("reasons.purchase")}</option>
+            <option value="dispense">{t("reasons.dispense")}</option>
+            <option value="return">{t("reasons.return")}</option>
+            <option value="expiry">{t("reasons.expiry")}</option>
+            <option value="adjustment">{t("reasons.adjustment")}</option>
           </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="quantity" className="text-xs">Quantity</Label>
+          <Label htmlFor="quantity" className="text-xs">{t("quantity")}</Label>
           <Input id="quantity" name="quantity" type="number" min={1} required />
         </div>
         {isAdjustment && (
           <div className="space-y-1">
-            <Label htmlFor="direction" className="text-xs">Direction</Label>
+            <Label htmlFor="direction" className="text-xs">{t("direction")}</Label>
             <select id="direction" name="direction" className={selectClass} defaultValue="increase">
-              <option value="increase">Increase</option>
-              <option value="decrease">Decrease</option>
+              <option value="increase">{t("increase")}</option>
+              <option value="decrease">{t("decrease")}</option>
             </select>
           </div>
         )}
@@ -83,9 +85,9 @@ export function TransactionForm({
 
       {branches.length > 0 && (
         <div className="space-y-1">
-          <Label htmlFor="branchId" className="text-xs">Branch (optional)</Label>
+          <Label htmlFor="branchId" className="text-xs">{t("branch")}</Label>
           <select id="branchId" name="branchId" className={selectClass} defaultValue={defaultBranchId ?? ""}>
-            <option value="">No branch</option>
+            <option value="">{t("noBranch")}</option>
             {branches.map((b) => (
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
@@ -96,27 +98,27 @@ export function TransactionForm({
       {isPurchase && (
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1">
-            <Label htmlFor="batchNumber" className="text-xs">Batch number</Label>
+            <Label htmlFor="batchNumber" className="text-xs">{t("batchNumber")}</Label>
             <Input id="batchNumber" name="batchNumber" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="expiryDate" className="text-xs">Expiry date</Label>
+            <Label htmlFor="expiryDate" className="text-xs">{t("expiryDate")}</Label>
             <Input id="expiryDate" name="expiryDate" type="date" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="unitCost" className="text-xs">Unit cost</Label>
+            <Label htmlFor="unitCost" className="text-xs">{t("unitCost")}</Label>
             <Input id="unitCost" name="unitCost" type="number" step="0.01" />
           </div>
         </div>
       )}
 
       <div className="space-y-1">
-        <Label htmlFor="note" className="text-xs">Note</Label>
+        <Label htmlFor="note" className="text-xs">{t("note")}</Label>
         <Input id="note" name="note" />
       </div>
 
       {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
-      <Button type="submit" size="sm" disabled={pending}>{pending ? "Saving…" : "Record movement"}</Button>
+      <Button type="submit" size="sm" disabled={pending}>{pending ? t("saving") : t("record")}</Button>
     </form>
   );
 }

@@ -922,6 +922,28 @@
       "add": "Add medicine",
       "cancel": "Cancel",
       "openingStockHint": "Add opening stock from the medicine page after saving."
+    },
+    "transactionForm": {
+      "reason": "Reason",
+      "reasons": {
+        "purchase": "Purchase (in)",
+        "dispense": "Dispense (out)",
+        "return": "Return (in)",
+        "expiry": "Expiry (out)",
+        "adjustment": "Adjustment"
+      },
+      "quantity": "Quantity",
+      "direction": "Direction",
+      "increase": "Increase",
+      "decrease": "Decrease",
+      "branch": "Branch (optional)",
+      "noBranch": "No branch",
+      "batchNumber": "Batch number",
+      "expiryDate": "Expiry date",
+      "unitCost": "Unit cost",
+      "note": "Note",
+      "saving": "Saving…",
+      "record": "Record movement"
     }
   },
   "errors": {
@@ -978,7 +1000,9 @@
       "skuOrAuto": "Enter a SKU or turn on auto-generate.",
       "skuInUse": "That SKU is already in use.",
       "createFailed": "Could not create medicine.",
-      "skuGenFailed": "Could not generate a unique SKU. Please try again."
+      "skuGenFailed": "Could not generate a unique SKU. Please try again.",
+      "notFound": "Medicine not found.",
+      "onlyInStock": "Only {count} in stock."
     }
   }
 }
