@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -13,11 +14,7 @@ import { paymentQrUrl } from "@/lib/payment-qr";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
-  PAYMENT_METHOD_LABELS,
-  INVOICE_STATUS_LABELS,
   SERVICE_CATEGORIES,
-  SERVICE_CATEGORY_LABELS,
-  type InvoiceStatusValue,
   type ServiceCategoryValue,
 } from "@/lib/validations/invoice";
 import { PrintButton } from "@/components/print-button";
@@ -50,6 +47,7 @@ export default async function InvoiceDetailPage({
     getBillingSettings(inv.branch_id),
   ]);
   const ctx = currencyContext(settings);
+  const t = await getTranslations("billing");
   const one = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   const active = inv.status !== "cancelled";
   const editable = active && Number(inv.amount_paid) === 0;
@@ -92,18 +90,18 @@ export default async function InvoiceDetailPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6 print:max-w-none print:p-0">
       <div className="flex items-center justify-between print:hidden">
-        <BackLink label="← Invoices" fallback="/billing/invoices" />
+        <BackLink label={t("invoiceDetail.backToList")} fallback="/billing/invoices" />
         <div className="flex flex-wrap items-center gap-2">
-          <PrintButton label="Invoice PDF" />
+          <PrintButton label={t("invoiceDetail.invoicePdf")} />
           {inv.payments.length > 0 && (
-            <Button asChild variant="outline" size="sm"><Link href={`/billing/${inv.id}/receipt`}>Receipt</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link href={`/billing/${inv.id}/receipt`}>{t("invoiceDetail.receipt")}</Link></Button>
           )}
           {canWrite && editable && (
-            <Button asChild variant="outline" size="sm"><Link href={`/billing/${inv.id}/edit`}>Edit</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link href={`/billing/${inv.id}/edit`}>{t("invoiceDetail.edit")}</Link></Button>
           )}
           {canWrite && <InvoiceActions invoiceId={inv.id} isDraft={isDraft} />}
           {canNotify && active && !isDraft && Number(inv.balance) > 0 && (
-            <ReminderButton kind="payment" id={inv.id} label="Payment reminder" />
+            <ReminderButton kind="payment" id={inv.id} label={t("invoiceDetail.paymentReminder")} />
           )}
           {canWrite && active && <CancelInvoiceButton invoiceId={inv.id} />}
         </div>
@@ -114,25 +112,25 @@ export default async function InvoiceDetailPage({
         <header className="mb-6 flex items-start justify-between border-b border-[var(--border)] pb-4">
           <div>
             <h1 className="text-xl font-bold">{inv.clinic_name}</h1>
-            <p className="text-sm text-[var(--muted-foreground)]">Invoice</p>
+            <p className="text-sm text-[var(--muted-foreground)]">{t("invoiceDetail.heading")}</p>
           </div>
           <div className="text-right text-sm">
             <p className="font-mono font-medium">{inv.invoice_number}</p>
             <p className="text-[var(--muted-foreground)]">{new Date(inv.issued_at).toLocaleDateString()}</p>
-            <p className="mt-1">{INVOICE_STATUS_LABELS[inv.status as InvoiceStatusValue] ?? inv.status}</p>
+            <p className="mt-1">{t.has(`status.${inv.status}`) ? t(`status.${inv.status}`) : inv.status}</p>
           </div>
         </header>
 
         {inv.patient_name && (
           <p className="mb-4 text-sm">
-            <span className="text-[var(--muted-foreground)]">Bill to: </span>
+            <span className="text-[var(--muted-foreground)]">{t("invoiceDetail.billTo")} </span>
             {inv.patient_name} {inv.patient_number ? `(${inv.patient_number})` : ""}
           </p>
         )}
 
         <table className="w-full text-sm">
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
-            <tr><th className="pb-2">Description</th><th className="pb-2 text-right">Quantity</th><th className="pb-2 text-right">Unit</th><th className="pb-2 text-right">Amount</th></tr>
+            <tr><th className="pb-2">{t("invoiceDetail.thDescription")}</th><th className="pb-2 text-right">{t("invoiceDetail.thQuantity")}</th><th className="pb-2 text-right">{t("invoiceDetail.thUnit")}</th><th className="pb-2 text-right">{t("invoiceDetail.thAmount")}</th></tr>
           </thead>
           <tbody>
             {itemGroups.map((g) => (
@@ -140,7 +138,7 @@ export default async function InvoiceDetailPage({
                 {itemGroups.length > 1 && (
                   <tr>
                     <td colSpan={4} className="pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                      {SERVICE_CATEGORY_LABELS[g.cat]}
+                      {t(`serviceCategory.${g.cat}`)}
                     </td>
                   </tr>
                 )}
@@ -160,9 +158,9 @@ export default async function InvoiceDetailPage({
         <div className="mt-4 flex items-start justify-between gap-4">
           {showPaymentQr ? (
             <div className="text-center">
-              <p className="text-xs font-medium">Scan to pay</p>
+              <p className="text-xs font-medium">{t("invoiceDetail.scanToPay")}</p>
               {/* eslint-disable-next-line @next/next/no-img-element -- public URL / data-URL, prints on the invoice */}
-              <img src={qrSrc!} alt="Payment QR" className="mt-1 size-32 object-contain" />
+              <img src={qrSrc!} alt={t("invoiceDetail.qrAlt")} className="mt-1 size-32 object-contain" />
               {qrUrl && inv.payment_qr_caption && (
                 <p className="mt-1 max-w-32 text-[10px] text-[var(--muted-foreground)]">{inv.payment_qr_caption}</p>
               )}
@@ -173,15 +171,15 @@ export default async function InvoiceDetailPage({
 
           <div className="max-w-xs flex-1 sm:max-w-[16rem]">
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Subtotal</span><span className="tabular-nums">{one(inv.subtotal)}</span></div>
-              {Number(inv.discount) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Discount</span><span className="tabular-nums">−{one(inv.discount)}</span></div>}
-              {Number(inv.tax) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Tax</span><span className="tabular-nums">{one(inv.tax)}</span></div>}
-              <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-1 font-semibold"><span>Total</span><Money usd={Number(inv.total)} ctx={ctx} /></div>
-              <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">Paid</span><span className="tabular-nums">{one(inv.amount_paid)}</span></div>
-              <div className="flex items-baseline justify-between gap-2 font-semibold"><span>Balance</span><Money usd={Number(inv.balance)} ctx={ctx} /></div>
+              <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">{t("invoiceDetail.subtotal")}</span><span className="tabular-nums">{one(inv.subtotal)}</span></div>
+              {Number(inv.discount) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">{t("invoiceDetail.discount")}</span><span className="tabular-nums">−{one(inv.discount)}</span></div>}
+              {Number(inv.tax) > 0 && <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">{t("invoiceDetail.tax")}</span><span className="tabular-nums">{one(inv.tax)}</span></div>}
+              <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-1 font-semibold"><span>{t("invoiceDetail.total")}</span><Money usd={Number(inv.total)} ctx={ctx} /></div>
+              <div className="flex justify-between"><span className="text-[var(--muted-foreground)]">{t("invoiceDetail.paid")}</span><span className="tabular-nums">{one(inv.amount_paid)}</span></div>
+              <div className="flex items-baseline justify-between gap-2 font-semibold"><span>{t("invoiceDetail.balance")}</span><Money usd={Number(inv.balance)} ctx={ctx} /></div>
             </div>
             <p className="mt-1 text-right text-[10px] text-[var(--muted-foreground)]">
-              1 USD = {ctx.rate.toLocaleString()} KHR
+              {t("invoiceDetail.rate", { rate: ctx.rate.toLocaleString() })}
             </p>
           </div>
         </div>
@@ -191,7 +189,7 @@ export default async function InvoiceDetailPage({
 
       {canWrite && active && !isDraft && Number(inv.balance) > 0 && (
         <Card className="print:hidden">
-          <CardHeader><CardTitle>Record payment</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("invoiceDetail.recordPayment")}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <PaymentForm invoiceId={inv.id} balance={Number(inv.balance)} rate={ctx.rate} />
           </CardContent>
@@ -200,14 +198,14 @@ export default async function InvoiceDetailPage({
 
       <Card className="print:hidden">
         <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle>Payments</CardTitle>
+          <CardTitle>{t("invoiceDetail.payments")}</CardTitle>
           {canWrite && active && Number(inv.amount_paid) > 0 && (
             <RefundForm invoiceId={inv.id} amountPaid={Number(inv.amount_paid)} />
           )}
         </CardHeader>
         <CardContent>
           {inv.payments.length === 0 ? (
-            <p className="text-sm text-[var(--muted-foreground)]">No payments recorded.</p>
+            <p className="text-sm text-[var(--muted-foreground)]">{t("invoiceDetail.noPayments")}</p>
           ) : (
             <ul className="divide-y divide-[var(--border)]">
               {inv.payments.map((p) => {
@@ -215,8 +213,8 @@ export default async function InvoiceDetailPage({
                 return (
                   <li key={p.id} className="flex items-center justify-between py-2 text-sm">
                     <span>
-                      <span className="font-mono text-xs">{p.receipt_number}</span> · {PAYMENT_METHOD_LABELS[p.method]}
-                      {refund && <span className="ml-1 text-xs font-medium text-[var(--destructive)]">refund</span>}
+                      <span className="font-mono text-xs">{p.receipt_number}</span> · {t(`paymentMethods.${p.method}`)}
+                      {refund && <span className="ml-1 text-xs font-medium text-[var(--destructive)]">{t("invoiceDetail.refund")}</span>}
                       {p.reference ? ` · ${p.reference}` : ""}
                     </span>
                     <span className={`tabular-nums ${refund ? "text-[var(--destructive)]" : ""}`}>
