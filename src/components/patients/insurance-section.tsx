@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ShieldCheck } from "lucide-react";
 import { addInsurancePolicy, deleteInsurancePolicy } from "@/server/actions/patients";
 import type { InsurancePolicy } from "@/lib/db/queries/patients";
@@ -19,6 +20,7 @@ export function InsuranceSection({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("patients.insurance");
   const [pending, startTransition] = React.useTransition();
   const [pendingId, setPendingId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -61,7 +63,7 @@ export function InsuranceSection({
   return (
     <div className="space-y-4">
       {policies.length === 0 ? (
-        <p className="text-sm text-[var(--muted-foreground)]">No insurance policies recorded.</p>
+        <p className="text-sm text-[var(--muted-foreground)]">{t("noPolicies")}</p>
       ) : (
         <ul className="divide-y divide-[var(--border)]">
           {policies.map((p) => (
@@ -73,14 +75,14 @@ export function InsuranceSection({
                     {p.provider}
                     {p.is_primary && (
                       <span className="ml-2 rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-normal text-[var(--primary)]">
-                        Primary
+                        {t("primary")}
                       </span>
                     )}
                   </p>
                   <p className="text-xs text-[var(--muted-foreground)]">
                     {[
-                      p.policy_number && `Policy ${p.policy_number}`,
-                      p.group_number && `Group ${p.group_number}`,
+                      p.policy_number && t("policyPrefix", { number: p.policy_number }),
+                      p.group_number && t("groupPrefix", { number: p.group_number }),
                       (p.coverage_start || p.coverage_end) &&
                         `${p.coverage_start ?? "?"} → ${p.coverage_end ?? "?"}`,
                     ]
@@ -97,7 +99,7 @@ export function InsuranceSection({
                   disabled={pendingId === p.id}
                   onClick={() => onDelete(p.id)}
                 >
-                  Remove
+                  {t("remove")}
                 </Button>
               )}
             </li>
@@ -110,47 +112,47 @@ export function InsuranceSection({
           <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-[var(--border)] p-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label htmlFor="provider">Provider</Label>
+                <Label htmlFor="provider">{t("provider")}</Label>
                 <Input id="provider" name="provider" required />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="policyNumber">Policy number</Label>
+                <Label htmlFor="policyNumber">{t("policyNumber")}</Label>
                 <Input id="policyNumber" name="policyNumber" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="groupNumber">Group number</Label>
+                <Label htmlFor="groupNumber">{t("groupNumber")}</Label>
                 <Input id="groupNumber" name="groupNumber" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="coverageStart">Coverage start</Label>
+                <Label htmlFor="coverageStart">{t("coverageStart")}</Label>
                 <Input id="coverageStart" name="coverageStart" type="date" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="coverageEnd">Coverage end</Label>
+                <Label htmlFor="coverageEnd">{t("coverageEnd")}</Label>
                 <Input id="coverageEnd" name="coverageEnd" type="date" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">{t("notes")}</Label>
                 <Input id="notes" name="notes" />
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input name="isPrimary" type="checkbox" className="h-4 w-4 rounded border-slate-300" />
-              Primary policy
+              {t("primaryPolicy")}
             </label>
             {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
             <div className="flex gap-2">
               <Button type="submit" size="sm" disabled={pending}>
-                {pending ? "Saving…" : "Add policy"}
+                {pending ? t("saving") : t("addPolicy")}
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={() => setShowForm(false)}>
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           </form>
         ) : (
           <Button variant="outline" size="sm" onClick={() => setShowForm(true)}>
-            Add insurance policy
+            {t("addInsurance")}
           </Button>
         ))}
     </div>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { MessageSquare } from "lucide-react";
 import { addConsent, deleteConsent } from "@/server/actions/patients";
 import type { PatientConsent, PatientCommunication } from "@/lib/db/queries/patients";
@@ -12,12 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
 
-const CONSENT_TYPES = [
-  { value: "treatment", label: "Treatment" },
-  { value: "data_sharing", label: "Data sharing" },
-  { value: "marketing", label: "Marketing" },
-  { value: "photography", label: "Photography" },
-];
+const CONSENT_TYPE_VALUES = ["treatment", "data_sharing", "marketing", "photography"] as const;
 
 function ConsentList({
   patientId,
@@ -29,6 +25,8 @@ function ConsentList({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("patients.engagement");
+  const consentTypeLabel = (v: string) => (t.has(`consentType.${v}`) ? t(`consentType.${v}`) : v.replace("_", " "));
   const [open, setOpen] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const [pendingId, setPendingId] = React.useState<string | null>(null);
@@ -60,23 +58,23 @@ function ConsentList({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle>Consent ({consents.length})</CardTitle>
+        <CardTitle>{t("consent", { count: consents.length })}</CardTitle>
         {canWrite && !open && (
           <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-            Record consent
+            {t("recordConsent")}
           </Button>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
         {consents.length === 0 && !open && (
-          <p className="text-sm text-[var(--muted-foreground)]">No consent records.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("noConsent")}</p>
         )}
         <ul className="divide-y divide-[var(--border)]">
           {consents.map((c) => (
             <li key={c.id} className="flex items-start justify-between gap-3 py-2">
               <div className="min-w-0">
-                <p className="text-sm font-medium capitalize">
-                  {c.consent_type.replace("_", " ")}
+                <p className="text-sm font-medium">
+                  {consentTypeLabel(c.consent_type)}
                   <span
                     className={
                       "ml-2 rounded-full px-2 py-0.5 text-xs font-normal " +
@@ -85,11 +83,11 @@ function ConsentList({
                         : "bg-[var(--destructive)]/10 text-[var(--destructive)]")
                     }
                   >
-                    {c.granted ? "Granted" : "Declined"}
+                    {c.granted ? t("granted") : t("declined")}
                   </span>
                 </p>
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  {[c.signed_on && `Signed ${new Date(c.signed_on).toLocaleDateString()}`, c.notes]
+                  {[c.signed_on && t("signed", { date: new Date(c.signed_on).toLocaleDateString() }), c.notes]
                     .filter(Boolean)
                     .join(" · ") || "—"}
                 </p>
@@ -107,7 +105,7 @@ function ConsentList({
                     });
                   }}
                 >
-                  Remove
+                  {t("remove")}
                 </Button>
               )}
             </li>
@@ -117,21 +115,21 @@ function ConsentList({
           <form onSubmit={onSubmit} className="space-y-2 rounded-md border border-[var(--border)] p-3">
             <div className="grid gap-2 sm:grid-cols-2">
               <select name="consentType" className={selectClass} defaultValue="treatment">
-                {CONSENT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                {CONSENT_TYPE_VALUES.map((v) => (
+                  <option key={v} value={v}>{consentTypeLabel(v)}</option>
                 ))}
               </select>
               <select name="granted" className={selectClass} defaultValue="granted">
-                <option value="granted">Granted</option>
-                <option value="declined">Declined</option>
+                <option value="granted">{t("granted")}</option>
+                <option value="declined">{t("declined")}</option>
               </select>
               <Input name="signedOn" type="date" />
-              <Input name="notes" placeholder="Notes (optional)" />
+              <Input name="notes" placeholder={t("notesPlaceholder")} />
             </div>
             {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={pending}>Save</Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={pending}>{t("save")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{t("cancel")}</Button>
             </div>
           </form>
         )}
@@ -141,14 +139,15 @@ function ConsentList({
 }
 
 function CommunicationLog({ communications }: { communications: PatientCommunication[] }) {
+  const t = useTranslations("patients.engagement");
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Communication log ({communications.length})</CardTitle>
+        <CardTitle>{t("commLog", { count: communications.length })}</CardTitle>
       </CardHeader>
       <CardContent>
         {communications.length === 0 ? (
-          <p className="text-sm text-[var(--muted-foreground)]">No messages logged yet.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("noMessages")}</p>
         ) : (
           <ul className="space-y-3">
             {communications.map((m) => (
@@ -156,7 +155,7 @@ function CommunicationLog({ communications }: { communications: PatientCommunica
                 <MessageSquare className="mt-0.5 size-4 shrink-0 text-[var(--muted-foreground)]" />
                 <div className="min-w-0">
                   <p className="text-sm font-medium">
-                    {m.subject || "(no subject)"}
+                    {m.subject || t("noSubject")}
                     {m.channel && (
                       <span className="ml-2 text-xs font-normal capitalize text-[var(--muted-foreground)]">
                         {m.channel} · {m.direction}

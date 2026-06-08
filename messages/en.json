@@ -457,6 +457,51 @@
         "next": "next {date}"
       }
     },
+    "insurance": {
+      "noPolicies": "No insurance policies recorded.",
+      "primary": "Primary",
+      "policyPrefix": "Policy {number}",
+      "groupPrefix": "Group {number}",
+      "remove": "Remove",
+      "provider": "Provider",
+      "policyNumber": "Policy number",
+      "groupNumber": "Group number",
+      "coverageStart": "Coverage start",
+      "coverageEnd": "Coverage end",
+      "notes": "Notes",
+      "primaryPolicy": "Primary policy",
+      "saving": "Saving…",
+      "addPolicy": "Add policy",
+      "cancel": "Cancel",
+      "addInsurance": "Add insurance policy"
+    },
+    "engagement": {
+      "consent": "Consent ({count})",
+      "recordConsent": "Record consent",
+      "noConsent": "No consent records.",
+      "granted": "Granted",
+      "declined": "Declined",
+      "signed": "Signed {date}",
+      "remove": "Remove",
+      "notesPlaceholder": "Notes (optional)",
+      "save": "Save",
+      "cancel": "Cancel",
+      "consentType": {
+        "treatment": "Treatment",
+        "data_sharing": "Data sharing",
+        "marketing": "Marketing",
+        "photography": "Photography"
+      },
+      "commLog": "Communication log ({count})",
+      "noMessages": "No messages logged yet.",
+      "noSubject": "(no subject)"
+    },
+    "tags": {
+      "removeAria": "Remove {name}",
+      "placeholder": "Tag…",
+      "add": "Add",
+      "addTag": "+ Tag"
+    },
     "title": "Patients",
     "registered": "{count, plural, one {# patient registered} other {# patients registered}}",
     "newPatient": "New patient",

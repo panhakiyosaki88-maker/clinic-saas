@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { createAndAssignTag, unassignTag } from "@/server/actions/patients";
 import type { PatientTag } from "@/lib/db/queries/patients";
@@ -18,12 +19,13 @@ export function PatientTags({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("patients.tags");
   const [adding, setAdding] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const assigned = new Set(tags.map((t) => t.id));
-  const suggestions = clinicTags.filter((t) => !assigned.has(t.id));
+  const assigned = new Set(tags.map((tag) => tag.id));
+  const suggestions = clinicTags.filter((tag) => !assigned.has(tag.id));
 
   function add(name: string) {
     const trimmed = name.trim();
@@ -44,19 +46,19 @@ export function PatientTags({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {tags.map((t) => (
+      {tags.map((tag) => (
         <span
-          key={t.id}
+          key={tag.id}
           className="inline-flex items-center gap-1 rounded-full bg-[var(--muted)] px-2.5 py-1 text-xs font-medium text-[var(--foreground)]"
-          style={t.color ? { backgroundColor: `${t.color}22`, color: t.color } : undefined}
+          style={tag.color ? { backgroundColor: `${tag.color}22`, color: tag.color } : undefined}
         >
-          {t.name}
+          {tag.name}
           {canWrite && (
             <button
               type="button"
-              aria-label={`Remove ${t.name}`}
+              aria-label={t("removeAria", { name: tag.name })}
               disabled={pending}
-              onClick={() => remove(t.id)}
+              onClick={() => remove(tag.id)}
               className="opacity-60 hover:opacity-100"
             >
               <X className="size-3" />
@@ -71,7 +73,7 @@ export function PatientTags({
             <input
               ref={inputRef}
               list="clinic-tags"
-              placeholder="Tag…"
+              placeholder={t("placeholder")}
               disabled={pending}
               autoFocus
               onKeyDown={(e) => {
@@ -85,8 +87,8 @@ export function PatientTags({
               className="h-7 w-28 rounded-full border border-slate-200 bg-white px-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
             />
             <datalist id="clinic-tags">
-              {suggestions.map((t) => (
-                <option key={t.id} value={t.name} />
+              {suggestions.map((tag) => (
+                <option key={tag.id} value={tag.name} />
               ))}
             </datalist>
             <button
@@ -95,7 +97,7 @@ export function PatientTags({
               onClick={() => add(inputRef.current?.value ?? "")}
               className="text-xs text-[var(--primary)] hover:underline"
             >
-              Add
+              {t("add")}
             </button>
           </span>
         ) : (
@@ -104,7 +106,7 @@ export function PatientTags({
             onClick={() => setAdding(true)}
             className="rounded-full border border-dashed border-[var(--border)] px-2.5 py-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
-            + Tag
+            {t("addTag")}
           </button>
         ))}
     </div>

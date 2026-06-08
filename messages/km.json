@@ -457,6 +457,51 @@
         "next": "បន្ទាប់ {date}"
       }
     },
+    "insurance": {
+      "noPolicies": "មិនមានបណ្ណធានារ៉ាប់រងត្រូវបានកត់ត្រាទេ។",
+      "primary": "ចម្បង",
+      "policyPrefix": "បណ្ណ {number}",
+      "groupPrefix": "ក្រុម {number}",
+      "remove": "លុបចេញ",
+      "provider": "អ្នកផ្តល់សេវា",
+      "policyNumber": "លេខបណ្ណ",
+      "groupNumber": "លេខក្រុម",
+      "coverageStart": "ចាប់ផ្តើមធានា",
+      "coverageEnd": "បញ្ចប់ធានា",
+      "notes": "កំណត់សម្គាល់",
+      "primaryPolicy": "បណ្ណចម្បង",
+      "saving": "កំពុងរក្សាទុក…",
+      "addPolicy": "បន្ថែមបណ្ណ",
+      "cancel": "បោះបង់",
+      "addInsurance": "បន្ថែមបណ្ណធានារ៉ាប់រង"
+    },
+    "engagement": {
+      "consent": "ការយល់ព្រម ({count})",
+      "recordConsent": "កត់ត្រាការយល់ព្រម",
+      "noConsent": "មិនមានកំណត់ត្រាការយល់ព្រមទេ។",
+      "granted": "បានផ្តល់",
+      "declined": "បានបដិសេធ",
+      "signed": "បានចុះហត្ថលេខា {date}",
+      "remove": "លុបចេញ",
+      "notesPlaceholder": "កំណត់សម្គាល់ (ស្រេចចិត្ត)",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់",
+      "consentType": {
+        "treatment": "ការព្យាបាល",
+        "data_sharing": "ការចែករំលែកទិន្នន័យ",
+        "marketing": "ទីផ្សារ",
+        "photography": "ការថតរូប"
+      },
+      "commLog": "កំណត់ហេតុទំនាក់ទំនង ({count})",
+      "noMessages": "មិនទាន់មានសារត្រូវបានកត់ត្រាទេ។",
+      "noSubject": "(គ្មានប្រធានបទ)"
+    },
+    "tags": {
+      "removeAria": "លុប {name}",
+      "placeholder": "ស្លាក…",
+      "add": "បន្ថែម",
+      "addTag": "+ ស្លាក"
+    },
     "title": "អ្នកជំងឺ",
     "registered": "{count, plural, other {អ្នកជំងឺ # នាក់បានចុះឈ្មោះ}}",
     "newPatient": "អ្នកជំងឺថ្មី",
