@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
@@ -23,15 +24,16 @@ type SortKey = keyof Pick<
 >;
 type Kind = "text" | "number" | "date";
 
-const COLUMNS: { key: SortKey; label: string; kind: Kind }[] = [
-  { key: "patient_number", label: "Number", kind: "text" },
-  { key: "patient_name", label: "Patient", kind: "text" },
-  { key: "doctor_name", label: "Doctor", kind: "text" },
-  { key: "prescribed_at", label: "Prescribed", kind: "date" },
-  { key: "item_count", label: "Items", kind: "number" },
+const COLUMNS: { key: SortKey; labelKey: string; kind: Kind }[] = [
+  { key: "patient_number", labelKey: "number", kind: "text" },
+  { key: "patient_name", labelKey: "patient", kind: "text" },
+  { key: "doctor_name", labelKey: "doctor", kind: "text" },
+  { key: "prescribed_at", labelKey: "prescribed", kind: "date" },
+  { key: "item_count", labelKey: "items", kind: "number" },
 ];
 
-const fmtDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString() : "—");
+const fmtDate = (d: string | null | undefined, locale: string) =>
+  d ? new Date(d).toLocaleDateString(locale) : "—";
 
 function compare(a: PrescriptionRow, b: PrescriptionRow, key: SortKey, kind: Kind, dir: 1 | -1): number {
   const av = a[key];
@@ -51,6 +53,8 @@ function compare(a: PrescriptionRow, b: PrescriptionRow, key: SortKey, kind: Kin
 }
 
 export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
+  const t = useTranslations("prescriptions.table");
+  const locale = useLocale();
   const [filter, setFilter] = React.useState("");
   const [doctor, setDoctor] = React.useState("");
   const [sort, setSort] = React.useState<{ key: SortKey; dir: 1 | -1 } | null>({
@@ -96,11 +100,11 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
           type="search"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter by number, patient, or doctor…"
+          placeholder={t("filterPlaceholder")}
           className="h-9 max-w-xs"
         />
         <select className={selectClass} value={doctor} onChange={(e) => setDoctor(e.target.value)}>
-          <option value="">All doctors</option>
+          <option value="">{t("allDoctors")}</option>
           {doctors.map((d) => (
             <option key={d} value={d}>
               {d}
@@ -108,12 +112,12 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
           ))}
         </select>
         <span className="ml-auto text-xs text-[var(--muted-foreground)]">
-          {view.length} of {rows.length}
+          {t("countOf", { shown: view.length, total: rows.length })}
         </span>
       </div>
 
       {view.length === 0 ? (
-        <p className="p-6 text-sm text-slate-400">No prescriptions match your filter.</p>
+        <p className="p-6 text-sm text-slate-400">{t("noMatch")}</p>
       ) : (
         <Table>
           <THead>
@@ -128,7 +132,7 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
                       onClick={() => toggleSort(c.key)}
                       className={`-mx-1 inline-flex items-center gap-1 rounded px-1 hover:text-slate-900 dark:hover:text-slate-100 ${active ? "text-slate-900 dark:text-slate-100" : ""}`}
                     >
-                      {c.label}
+                      {t(c.labelKey)}
                       <Icon className={`h-3.5 w-3.5 ${active ? "" : "opacity-40"}`} />
                     </button>
                   </TH>
@@ -158,7 +162,7 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
                     "—"
                   )}
                 </TD>
-                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.prescribed_at)}</TD>
+                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.prescribed_at, locale)}</TD>
                 <TD className="text-right text-slate-500 dark:text-slate-400">{p.item_count}</TD>
               </TR>
             ))}

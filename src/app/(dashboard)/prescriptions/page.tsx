@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPrescriptions } from "@/lib/db/queries/prescriptions";
@@ -14,11 +15,12 @@ export const metadata = { title: "Prescriptions" };
 export default async function PrescriptionsPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("prescriptions");
   if (!(await hasPermission(PERMISSIONS.PRESCRIPTIONS_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have permission to view prescriptions.
+          {t("noPermission")}
         </p>
       </main>
     );
@@ -32,12 +34,12 @@ export default async function PrescriptionsPage() {
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Pill}
-        title="Prescriptions"
-        subtitle={`${prescriptions.length} ${prescriptions.length === 1 ? "prescription" : "prescriptions"}`}
+        title={t("title")}
+        subtitle={t("summary", { count: prescriptions.length })}
         actions={
           canWrite && (
             <HeaderAction href="/prescriptions/new">
-              <Plus /> New prescription
+              <Plus /> {t("newPrescription")}
             </HeaderAction>
           )
         }
@@ -46,7 +48,7 @@ export default async function PrescriptionsPage() {
       <Card className="overflow-hidden">
         <CardContent className="p-0">
           {prescriptions.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">No prescriptions yet.</p>
+            <p className="p-6 text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
           ) : (
             <PrescriptionsTable
               rows={prescriptions.map((p) => ({

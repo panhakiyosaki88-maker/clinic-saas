@@ -425,6 +425,24 @@
       "inactive": "អសកម្ម"
     }
   },
+  "prescriptions": {
+    "title": "វេជ្ជបញ្ជា",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលវេជ្ជបញ្ជាទេ។",
+    "summary": "{count, plural, other {វេជ្ជបញ្ជា #}}",
+    "newPrescription": "វេជ្ជបញ្ជាថ្មី",
+    "empty": "មិនទាន់មានវេជ្ជបញ្ជា។",
+    "table": {
+      "number": "លេខ",
+      "patient": "អ្នកជំងឺ",
+      "doctor": "វេជ្ជបណ្ឌិត",
+      "prescribed": "បានចេញ",
+      "items": "ចំនួនធាតុ",
+      "filterPlaceholder": "ច្រោះតាមលេខ អ្នកជំងឺ ឬវេជ្ជបណ្ឌិត…",
+      "allDoctors": "វេជ្ជបណ្ឌិតទាំងអស់",
+      "countOf": "{shown} ក្នុង {total}",
+      "noMatch": "គ្មានវេជ្ជបញ្ជាត្រូវនឹងតម្រងរបស់អ្នក។"
+    }
+  },
   "lab": {
     "title": "មន្ទីរពិសោធន៍",
     "noPermission": "អ្នកគ្មានសិទ្ធិមើលមន្ទីរពិសោធន៍ទេ។",

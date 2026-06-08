@@ -425,6 +425,24 @@
       "inactive": "Inactive"
     }
   },
+  "prescriptions": {
+    "title": "Prescriptions",
+    "noPermission": "You don't have permission to view prescriptions.",
+    "summary": "{count, plural, one {# prescription} other {# prescriptions}}",
+    "newPrescription": "New prescription",
+    "empty": "No prescriptions yet.",
+    "table": {
+      "number": "Number",
+      "patient": "Patient",
+      "doctor": "Doctor",
+      "prescribed": "Prescribed",
+      "items": "Items",
+      "filterPlaceholder": "Filter by number, patient, or doctor…",
+      "allDoctors": "All doctors",
+      "countOf": "{shown} of {total}",
+      "noMatch": "No prescriptions match your filter."
+    }
+  },
   "lab": {
     "title": "Laboratory",
     "noPermission": "You don't have permission to view the laboratory.",
