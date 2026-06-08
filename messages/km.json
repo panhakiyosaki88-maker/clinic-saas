@@ -1028,6 +1028,59 @@
       "totalPaid": "សរុបបានបង់",
       "balance": "សមតុល្យ",
       "thankYou": "សូមអរគុណ។"
+    },
+    "debt": {
+      "title": "បំណុលអ្នកជំងឺ",
+      "subtitle": "សមតុល្យនៅសល់ និងអាយុបំណុល",
+      "totalOutstanding": "សរុបនៅសល់",
+      "overduePatients": "អ្នកជំងឺហួសកំណត់",
+      "aging": "អាយុបំណុល",
+      "buckets": {
+        "d0_30": "0–30 ថ្ងៃ",
+        "d31_60": "31–60 ថ្ងៃ",
+        "d61_90": "61–90 ថ្ងៃ",
+        "d90plus": "90+ ថ្ងៃ"
+      },
+      "byPatient": "នៅសល់តាមអ្នកជំងឺ",
+      "noOutstanding": "មិនមានសមតុល្យនៅសល់ទេ។",
+      "thPatient": "អ្នកជំងឺ",
+      "thInvoices": "វិក្កយបត្រ",
+      "thOldest": "ចាស់បំផុត (ថ្ងៃ)",
+      "thBalance": "សមតុល្យ",
+      "overdue": "ហួសកំណត់"
+    },
+    "payments": {
+      "title": "ការទូទាត់",
+      "subtitle": "{count} ថ្មីៗ · សុទ្ធ {net}",
+      "noPayments": "មិនទាន់មានការទូទាត់ត្រូវបានកត់ត្រាទេ។",
+      "thReceipt": "បង្កាន់ដៃ",
+      "thDate": "កាលបរិច្ឆេទ",
+      "thInvoice": "វិក្កយបត្រ",
+      "thPatient": "អ្នកជំងឺ",
+      "thMethod": "វិធីសាស្ត្រ",
+      "thAmount": "ចំនួនទឹកប្រាក់",
+      "refund": "សងវិញ"
+    },
+    "audit": {
+      "title": "សវនកម្មការគិតប្រាក់",
+      "subtitle": "ការផ្លាស់ប្តូរវិក្កយបត្រ ការទូទាត់ ការសងវិញ និងតម្លៃ",
+      "noActivity": "មិនទាន់មានសកម្មភាពគិតប្រាក់ត្រូវបានកត់ត្រាទេ។",
+      "thWhen": "ពេលណា",
+      "thAction": "សកម្មភាព",
+      "thRecord": "កំណត់ត្រា",
+      "actions": {
+        "created": "បានបង្កើត",
+        "updated": "បានកែ",
+        "deleted": "បានលុប"
+      },
+      "tables": {
+        "invoices": "វិក្កយបត្រ",
+        "invoice_items": "ធាតុវិក្កយបត្រ",
+        "payments": "ការទូទាត់",
+        "service_prices": "តម្លៃ",
+        "billing_settings": "ការកំណត់",
+        "invoice_source_links": "តំណភ្ជាប់គិតប្រាក់ស្វ័យប្រវត្តិ"
+      }
     }
   },
   "doctors": {

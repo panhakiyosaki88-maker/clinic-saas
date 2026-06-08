@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getDebtReport } from "@/lib/db/queries/billing-debt";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
@@ -20,29 +21,29 @@ export default async function DebtPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
-  const [d, settings] = await Promise.all([getDebtReport(), getBillingSettings()]);
+  const [d, settings, t] = await Promise.all([getDebtReport(), getBillingSettings(), getTranslations("billing.debt")]);
   const ctx = currencyContext(settings);
   const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   const b = d.buckets;
   const buckets = [
-    { label: "0–30 days", value: b.d0_30 },
-    { label: "31–60 days", value: b.d31_60 },
-    { label: "61–90 days", value: b.d61_90 },
-    { label: "90+ days", value: b.d90plus },
+    { label: t("buckets.d0_30"), value: b.d0_30 },
+    { label: t("buckets.d31_60"), value: b.d31_60 },
+    { label: t("buckets.d61_90"), value: b.d61_90 },
+    { label: t("buckets.d90plus"), value: b.d90plus },
   ];
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
-      <PageHeader icon={Wallet} title="Patient debt" subtitle="Outstanding balances and aging" />
+      <PageHeader icon={Wallet} title={t("title")} subtitle={t("subtitle")} />
       <BillingTabs />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <StatCard title="Total outstanding" value={money(d.totalOutstanding)} icon={Wallet} tint="rose" />
-        <StatCard title="Overdue patients" value={d.overduePatients} icon={Users} tint="amber" />
+        <StatCard title={t("totalOutstanding")} value={money(d.totalOutstanding)} icon={Wallet} tint="rose" />
+        <StatCard title={t("overduePatients")} value={d.overduePatients} icon={Users} tint="amber" />
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Aging</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("aging")}</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {buckets.map((bk) => (
@@ -56,18 +57,18 @@ export default async function DebtPage() {
       </Card>
 
       <Card className="overflow-hidden">
-        <CardHeader><CardTitle>Outstanding by patient</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("byPatient")}</CardTitle></CardHeader>
         <CardContent className="p-0">
           {d.byPatient.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400">No outstanding balances.</p>
+            <p className="p-6 text-sm text-slate-400">{t("noOutstanding")}</p>
           ) : (
             <Table>
               <THead>
                 <tr>
-                  <TH>Patient</TH>
-                  <TH className="text-right">Invoices</TH>
-                  <TH className="text-right">Oldest (days)</TH>
-                  <TH className="text-right">Balance</TH>
+                  <TH>{t("thPatient")}</TH>
+                  <TH className="text-right">{t("thInvoices")}</TH>
+                  <TH className="text-right">{t("thOldest")}</TH>
+                  <TH className="text-right">{t("thBalance")}</TH>
                 </tr>
               </THead>
               <TBody>
@@ -77,7 +78,7 @@ export default async function DebtPage() {
                       {p.patientId ? (
                         <Link href={`/patients/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">{p.patient}</Link>
                       ) : p.patient}
-                      {p.overdue && <span className="ml-2 text-xs font-medium text-[var(--destructive)]">overdue</span>}
+                      {p.overdue && <span className="ml-2 text-xs font-medium text-[var(--destructive)]">{t("overdue")}</span>}
                     </TD>
                     <TD className="text-right tabular-nums text-slate-500 dark:text-slate-400">{p.invoiceCount}</TD>
                     <TD className="text-right tabular-nums text-slate-500 dark:text-slate-400">{p.oldestDays}</TD>

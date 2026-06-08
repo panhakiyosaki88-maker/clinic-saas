@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
-import { listBillingAudit, BILLING_TABLE_LABELS } from "@/lib/db/queries/billing-audit";
+import { listBillingAudit } from "@/lib/db/queries/billing-audit";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ScrollText } from "lucide-react";
@@ -22,24 +23,27 @@ export default async function BillingAuditPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
-  const entries = await listBillingAudit();
+  const [entries, t] = await Promise.all([listBillingAudit(), getTranslations("billing.audit")]);
+  const actionLabel = (a: string) =>
+    a === "INSERT" ? t("actions.created") : a === "UPDATE" ? t("actions.updated") : t("actions.deleted");
+  const tableLabel = (name: string) => (t.has(`tables.${name}`) ? t(`tables.${name}`) : name);
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
-      <PageHeader icon={ScrollText} title="Billing audit" subtitle="Invoice, payment, refund and price changes" />
+      <PageHeader icon={ScrollText} title={t("title")} subtitle={t("subtitle")} />
       <BillingTabs />
 
       <Card className="overflow-hidden">
         <CardContent className="p-0">
           {entries.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400">No billing activity recorded yet.</p>
+            <p className="p-6 text-sm text-slate-400">{t("noActivity")}</p>
           ) : (
             <Table>
               <THead>
                 <tr>
-                  <TH>When</TH>
-                  <TH>Action</TH>
-                  <TH>Record</TH>
+                  <TH>{t("thWhen")}</TH>
+                  <TH>{t("thAction")}</TH>
+                  <TH>{t("thRecord")}</TH>
                 </tr>
               </THead>
               <TBody>
@@ -48,10 +52,10 @@ export default async function BillingAuditPage() {
                     <TD className="text-slate-500 dark:text-slate-400">{new Date(e.created_at).toLocaleString()}</TD>
                     <TD>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${ACTION_TONE[e.action] ?? ""}`}>
-                        {e.action === "INSERT" ? "Created" : e.action === "UPDATE" ? "Updated" : "Deleted"}
+                        {actionLabel(e.action)}
                       </span>
                     </TD>
-                    <TD>{BILLING_TABLE_LABELS[e.table_name] ?? e.table_name}</TD>
+                    <TD>{tableLabel(e.table_name)}</TD>
                   </TR>
                 ))}
               </TBody>

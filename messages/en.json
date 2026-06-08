@@ -1028,6 +1028,59 @@
       "totalPaid": "Total paid",
       "balance": "Balance",
       "thankYou": "Thank you."
+    },
+    "debt": {
+      "title": "Patient debt",
+      "subtitle": "Outstanding balances and aging",
+      "totalOutstanding": "Total outstanding",
+      "overduePatients": "Overdue patients",
+      "aging": "Aging",
+      "buckets": {
+        "d0_30": "0–30 days",
+        "d31_60": "31–60 days",
+        "d61_90": "61–90 days",
+        "d90plus": "90+ days"
+      },
+      "byPatient": "Outstanding by patient",
+      "noOutstanding": "No outstanding balances.",
+      "thPatient": "Patient",
+      "thInvoices": "Invoices",
+      "thOldest": "Oldest (days)",
+      "thBalance": "Balance",
+      "overdue": "overdue"
+    },
+    "payments": {
+      "title": "Payments",
+      "subtitle": "{count} recent · net {net}",
+      "noPayments": "No payments recorded yet.",
+      "thReceipt": "Receipt",
+      "thDate": "Date",
+      "thInvoice": "Invoice",
+      "thPatient": "Patient",
+      "thMethod": "Method",
+      "thAmount": "Amount",
+      "refund": "refund"
+    },
+    "audit": {
+      "title": "Billing audit",
+      "subtitle": "Invoice, payment, refund and price changes",
+      "noActivity": "No billing activity recorded yet.",
+      "thWhen": "When",
+      "thAction": "Action",
+      "thRecord": "Record",
+      "actions": {
+        "created": "Created",
+        "updated": "Updated",
+        "deleted": "Deleted"
+      },
+      "tables": {
+        "invoices": "Invoice",
+        "invoice_items": "Invoice item",
+        "payments": "Payment",
+        "service_prices": "Price",
+        "billing_settings": "Settings",
+        "invoice_source_links": "Auto-bill link"
+      }
     }
   },
   "doctors": {
