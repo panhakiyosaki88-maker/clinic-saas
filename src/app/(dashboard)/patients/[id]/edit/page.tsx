@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getPatient } from "@/lib/db/queries/patients";
@@ -20,12 +21,13 @@ export default async function EditPatientPage({
   const { id } = await params;
   const [patient, branches] = await Promise.all([getPatient(id), listBranches()]);
   if (!patient) notFound();
+  const t = await getTranslations("patients.form");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
         <BackLink label={`← ${patient.full_name}`} fallback={`/patients/${id}`} />
-        <h1 className="mt-1 text-2xl font-bold">Edit patient</h1>
+        <h1 className="mt-1 text-2xl font-bold">{t("editTitle")}</h1>
       </header>
       <PatientForm patient={patient} branches={branches.map((b) => ({ id: b.id, name: b.name }))} />
     </main>

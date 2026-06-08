@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createPatient, updatePatient } from "@/server/actions/patients";
 import type { Patient } from "@/lib/db/queries/patients";
@@ -45,6 +46,8 @@ export function PatientForm({
   branches?: BranchOption[];
   defaultBranchId?: string | null;
 }) {
+  const t = useTranslations("patients.form");
+  const tg = useTranslations("patients.gender");
   const router = useRouter();
   const isEdit = !!patient;
   const [pending, startTransition] = React.useTransition();
@@ -100,94 +103,94 @@ export function PatientForm({
     <form onSubmit={onSubmit} className="space-y-8">
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-          Demographics
+          {t("sections.demographics")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Full name" htmlFor="fullName" errors={fieldErrors.fullName}>
+          <Field label={t("fullName")} htmlFor="fullName" errors={fieldErrors.fullName}>
             <Input id="fullName" name="fullName" defaultValue={patient?.full_name ?? ""} required autoFocus />
           </Field>
-          <Field label="Gender" htmlFor="gender">
+          <Field label={t("gender")} htmlFor="gender">
             <select id="gender" name="gender" className={selectClass} defaultValue={patient?.gender ?? ""}>
               <option value="">—</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
+              <option value="male">{tg("male")}</option>
+              <option value="female">{tg("female")}</option>
+              <option value="other">{tg("other")}</option>
             </select>
           </Field>
-          <Field label="Date of birth" htmlFor="dateOfBirth" errors={fieldErrors.dateOfBirth}>
+          <Field label={t("dateOfBirth")} htmlFor="dateOfBirth" errors={fieldErrors.dateOfBirth}>
             <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={patient?.date_of_birth ?? ""} />
           </Field>
-          <Field label="Occupation" htmlFor="occupation">
+          <Field label={t("occupation")} htmlFor="occupation">
             <Input id="occupation" name="occupation" defaultValue={patient?.occupation ?? ""} />
           </Field>
           {branches.length > 0 && (
-            <Field label="Branch (optional)" htmlFor="branchId">
+            <Field label={t("branch")} htmlFor="branchId">
               <select id="branchId" name="branchId" className={selectClass} defaultValue={patient?.branch_id ?? defaultBranchId ?? ""}>
-                <option value="">No branch</option>
+                <option value="">{t("noBranch")}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
               </select>
             </Field>
           )}
-          <Field label="Phone" htmlFor="phone">
+          <Field label={t("phone")} htmlFor="phone">
             <Input id="phone" name="phone" defaultValue={patient?.phone ?? ""} />
           </Field>
-          <Field label="Email" htmlFor="email" errors={fieldErrors.email}>
+          <Field label={t("email")} htmlFor="email" errors={fieldErrors.email}>
             <Input id="email" name="email" type="email" defaultValue={patient?.email ?? ""} />
           </Field>
-          <Field label="Blood type" htmlFor="bloodType">
+          <Field label={t("bloodType")} htmlFor="bloodType">
             <select id="bloodType" name="bloodType" className={selectClass} defaultValue={patient?.blood_type ?? ""}>
               <option value="">—</option>
               {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"].map((b) => (
-                <option key={b} value={b}>{b === "unknown" ? "Unknown" : b}</option>
+                <option key={b} value={b}>{b === "unknown" ? t("unknown") : b}</option>
               ))}
             </select>
           </Field>
-          <Field label="Marital status" htmlFor="maritalStatus">
+          <Field label={t("maritalStatus")} htmlFor="maritalStatus">
             <select id="maritalStatus" name="maritalStatus" className={selectClass} defaultValue={patient?.marital_status ?? ""}>
               <option value="">—</option>
-              <option value="single">Single</option>
-              <option value="married">Married</option>
-              <option value="divorced">Divorced</option>
-              <option value="widowed">Widowed</option>
-              <option value="other">Other</option>
+              <option value="single">{t("marital.single")}</option>
+              <option value="married">{t("marital.married")}</option>
+              <option value="divorced">{t("marital.divorced")}</option>
+              <option value="widowed">{t("marital.widowed")}</option>
+              <option value="other">{t("marital.other")}</option>
             </select>
           </Field>
-          <Field label="ID document type" htmlFor="nationalIdType">
+          <Field label={t("idDocType")} htmlFor="nationalIdType">
             <select id="nationalIdType" name="nationalIdType" className={selectClass} defaultValue={patient?.national_id_type ?? ""}>
               <option value="">—</option>
-              <option value="national_id">National ID</option>
-              <option value="passport">Passport</option>
-              <option value="driver_license">Driver license</option>
-              <option value="other">Other</option>
+              <option value="national_id">{t("idType.national_id")}</option>
+              <option value="passport">{t("idType.passport")}</option>
+              <option value="driver_license">{t("idType.driver_license")}</option>
+              <option value="other">{t("idType.other")}</option>
             </select>
           </Field>
-          <Field label="ID document number" htmlFor="nationalIdNumber">
+          <Field label={t("idDocNumber")} htmlFor="nationalIdNumber">
             <Input id="nationalIdNumber" name="nationalIdNumber" defaultValue={patient?.national_id_number ?? ""} />
           </Field>
         </div>
-        <Field label="Address" htmlFor="address">
+        <Field label={t("address")} htmlFor="address">
           <Textarea id="address" name="address" defaultValue={patient?.address ?? ""} />
         </Field>
       </section>
 
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-          Contact preferences
+          {t("sections.contact")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Preferred language" htmlFor="preferredLanguage">
+          <Field label={t("preferredLanguage")} htmlFor="preferredLanguage">
             <Input id="preferredLanguage" name="preferredLanguage" defaultValue={patient?.preferred_language ?? ""} />
           </Field>
-          <Field label="Preferred contact method" htmlFor="preferredContactMethod">
+          <Field label={t("preferredContactMethod")} htmlFor="preferredContactMethod">
             <select id="preferredContactMethod" name="preferredContactMethod" className={selectClass} defaultValue={patient?.preferred_contact_method ?? ""}>
               <option value="">—</option>
-              <option value="phone">Phone</option>
-              <option value="sms">SMS</option>
-              <option value="email">Email</option>
-              <option value="telegram">Telegram</option>
-              <option value="none">Do not contact</option>
+              <option value="phone">{t("contact.phone")}</option>
+              <option value="sms">{t("contact.sms")}</option>
+              <option value="email">{t("contact.email")}</option>
+              <option value="telegram">{t("contact.telegram")}</option>
+              <option value="none">{t("contact.none")}</option>
             </select>
           </Field>
         </div>
@@ -199,22 +202,22 @@ export function PatientForm({
             defaultChecked={patient?.do_not_contact ?? false}
             className="h-4 w-4 rounded border-slate-300"
           />
-          Do not contact this patient
+          {t("doNotContact")}
         </label>
       </section>
 
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-          Emergency &amp; next of kin
+          {t("sections.emergency")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Emergency contact name" htmlFor="emergencyContactName">
+          <Field label={t("emergencyName")} htmlFor="emergencyContactName">
             <Input id="emergencyContactName" name="emergencyContactName" defaultValue={patient?.emergency_contact_name ?? ""} />
           </Field>
-          <Field label="Emergency contact phone" htmlFor="emergencyContactPhone">
+          <Field label={t("emergencyPhone")} htmlFor="emergencyContactPhone">
             <Input id="emergencyContactPhone" name="emergencyContactPhone" defaultValue={patient?.emergency_contact_phone ?? ""} />
           </Field>
-          <Field label="Relationship" htmlFor="nextOfKinRelationship">
+          <Field label={t("relationship")} htmlFor="nextOfKinRelationship">
             <Input id="nextOfKinRelationship" name="nextOfKinRelationship" defaultValue={patient?.next_of_kin_relationship ?? ""} />
           </Field>
         </div>
@@ -222,18 +225,18 @@ export function PatientForm({
 
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-          Medical profile
+          {t("sections.medical")}
         </h2>
-        <Field label="Allergies" htmlFor="allergies">
+        <Field label={t("allergies")} htmlFor="allergies">
           <Textarea id="allergies" name="allergies" defaultValue={patient?.allergies ?? ""} />
         </Field>
-        <Field label="Medical history" htmlFor="medicalHistory">
+        <Field label={t("medicalHistory")} htmlFor="medicalHistory">
           <Textarea id="medicalHistory" name="medicalHistory" defaultValue={patient?.medical_history ?? ""} />
         </Field>
-        <Field label="Chronic diseases" htmlFor="chronicDiseases">
+        <Field label={t("chronicDiseases")} htmlFor="chronicDiseases">
           <Textarea id="chronicDiseases" name="chronicDiseases" defaultValue={patient?.chronic_diseases ?? ""} />
         </Field>
-        <Field label="Notes" htmlFor="notes">
+        <Field label={t("notes")} htmlFor="notes">
           <Textarea id="notes" name="notes" defaultValue={patient?.notes ?? ""} />
         </Field>
       </section>
@@ -246,10 +249,10 @@ export function PatientForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : isEdit ? "Save changes" : "Create patient"}
+          {pending ? t("saving") : isEdit ? t("save") : t("create")}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>
-          Cancel
+          {t("cancel")}
         </Button>
       </div>
     </form>

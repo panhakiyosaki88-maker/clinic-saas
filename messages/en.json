@@ -334,6 +334,48 @@
       "placeholder": "Search name, number, phone…",
       "aria": "Search patients"
     },
+    "form": {
+      "sections": {
+        "demographics": "Demographics",
+        "contact": "Contact preferences",
+        "emergency": "Emergency & next of kin",
+        "medical": "Medical profile"
+      },
+      "fullName": "Full name",
+      "gender": "Gender",
+      "dateOfBirth": "Date of birth",
+      "occupation": "Occupation",
+      "branch": "Branch (optional)",
+      "noBranch": "No branch",
+      "phone": "Phone",
+      "email": "Email",
+      "bloodType": "Blood type",
+      "unknown": "Unknown",
+      "maritalStatus": "Marital status",
+      "marital": { "single": "Single", "married": "Married", "divorced": "Divorced", "widowed": "Widowed", "other": "Other" },
+      "idDocType": "ID document type",
+      "idType": { "national_id": "National ID", "passport": "Passport", "driver_license": "Driver license", "other": "Other" },
+      "idDocNumber": "ID document number",
+      "address": "Address",
+      "preferredLanguage": "Preferred language",
+      "preferredContactMethod": "Preferred contact method",
+      "contact": { "phone": "Phone", "sms": "SMS", "email": "Email", "telegram": "Telegram", "none": "Do not contact" },
+      "doNotContact": "Do not contact this patient",
+      "emergencyName": "Emergency contact name",
+      "emergencyPhone": "Emergency contact phone",
+      "relationship": "Relationship",
+      "allergies": "Allergies",
+      "medicalHistory": "Medical history",
+      "chronicDiseases": "Chronic diseases",
+      "notes": "Notes",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "create": "Create patient",
+      "cancel": "Cancel",
+      "newTitle": "New patient",
+      "editTitle": "Edit patient",
+      "backToList": "← Patients"
+    },
     "purge": {
       "delete": "Delete {name}",
       "title": "Delete patient permanently",
@@ -767,6 +809,11 @@
     "doctor": {
       "nameRequired": "Doctor name is required",
       "createFailed": "Could not create doctor."
+    },
+    "patient": {
+      "nameRequired": "Patient name is required",
+      "planLimit": "You've reached your plan's patient limit. Upgrade to add more.",
+      "createFailed": "Could not create patient."
     },
     "appointment": {
       "patientRequired": "Choose a patient",

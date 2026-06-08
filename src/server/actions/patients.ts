@@ -32,6 +32,7 @@ import {
   type AssignTagInput,
 } from "@/lib/validations/patient";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 import type {
   Database,
   Gender,
@@ -79,9 +80,10 @@ export async function createPatient(
   input: CreatePatientInput
 ): Promise<ActionResult<{ patientId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PATIENTS_WRITE);
+  const te = await getErrorT();
   const parsed = createPatientSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
 
   const supabase = await createClient();
@@ -99,9 +101,9 @@ export async function createPatient(
   if (error || !data) {
     // check_violation from the plan-limit trigger.
     if (error?.code === "23514") {
-      return fail("You've reached your plan's patient limit. Upgrade to add more.");
+      return fail(te("patient.planLimit"));
     }
-    return fail(error?.message ?? "Could not create patient.");
+    return fail(error?.message ?? te("patient.createFailed"));
   }
 
   await supabase.from("patient_timeline").insert({
@@ -121,9 +123,10 @@ export async function updatePatient(
   input: UpdatePatientInput
 ): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.PATIENTS_WRITE);
+  const te = await getErrorT();
   const parsed = updatePatientSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
 
   const supabase = await createClient();

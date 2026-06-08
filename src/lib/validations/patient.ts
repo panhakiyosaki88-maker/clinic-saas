@@ -16,12 +16,13 @@ const dateString = z
   .or(z.literal(""));
 
 export const createPatientSchema = z.object({
-  fullName: z.string().trim().min(2, "Patient name is required").max(160),
+  // Messages are i18n keys under the `errors` namespace (localized in the action).
+  fullName: z.string().trim().min(2, "patient.nameRequired").max(160),
   branchId: z.string().uuid().optional().or(z.literal("")),
   gender: genderSchema.optional().or(z.literal("")),
   dateOfBirth: dateString,
   phone: optionalShort,
-  email: z.string().email("Enter a valid email").optional().or(z.literal("")),
+  email: z.string().email("invalidEmail").optional().or(z.literal("")),
   address: optionalText,
   occupation: optionalShort,
   emergencyContactName: optionalShort,

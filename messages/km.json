@@ -334,6 +334,48 @@
       "placeholder": "ស្វែងរកឈ្មោះ លេខ ទូរស័ព្ទ…",
       "aria": "ស្វែងរកអ្នកជំងឺ"
     },
+    "form": {
+      "sections": {
+        "demographics": "ប្រជាសាស្ត្រ",
+        "contact": "ចំណូលចិត្តទំនាក់ទំនង",
+        "emergency": "បន្ទាន់ និងសាច់ញាតិ",
+        "medical": "ប្រវត្តិវេជ្ជសាស្ត្រ"
+      },
+      "fullName": "ឈ្មោះពេញ",
+      "gender": "ភេទ",
+      "dateOfBirth": "ថ្ងៃខែឆ្នាំកំណើត",
+      "occupation": "មុខរបរ",
+      "branch": "សាខា (ស្រេចចិត្ត)",
+      "noBranch": "គ្មានសាខា",
+      "phone": "ទូរស័ព្ទ",
+      "email": "អ៊ីមែល",
+      "bloodType": "ក្រុមឈាម",
+      "unknown": "មិនស្គាល់",
+      "maritalStatus": "ស្ថានភាពអាពាហ៍ពិពាហ៍",
+      "marital": { "single": "នៅលីវ", "married": "រៀបការ", "divorced": "លែងលះ", "widowed": "មេម៉ាយ/ពោះម៉ាយ", "other": "ផ្សេងទៀត" },
+      "idDocType": "ប្រភេទឯកសារសម្គាល់ខ្លួន",
+      "idType": { "national_id": "អត្តសញ្ញាណប័ណ្ណ", "passport": "លិខិតឆ្លងដែន", "driver_license": "បណ្ណបើកបរ", "other": "ផ្សេងទៀត" },
+      "idDocNumber": "លេខឯកសារសម្គាល់ខ្លួន",
+      "address": "អាសយដ្ឋាន",
+      "preferredLanguage": "ភាសាដែលពេញចិត្ត",
+      "preferredContactMethod": "វិធីទំនាក់ទំនងដែលពេញចិត្ត",
+      "contact": { "phone": "ទូរស័ព្ទ", "sms": "សារ SMS", "email": "អ៊ីមែល", "telegram": "តេឡេក្រាម", "none": "កុំទាក់ទង" },
+      "doNotContact": "កុំទាក់ទងអ្នកជំងឺនេះ",
+      "emergencyName": "ឈ្មោះអ្នកទំនាក់ទំនងបន្ទាន់",
+      "emergencyPhone": "ទូរស័ព្ទអ្នកទំនាក់ទំនងបន្ទាន់",
+      "relationship": "ទំនាក់ទំនង",
+      "allergies": "ការអាលែកហ្ស៊ី",
+      "medicalHistory": "ប្រវត្តិវេជ្ជសាស្ត្រ",
+      "chronicDiseases": "ជំងឺរ៉ាំរ៉ៃ",
+      "notes": "កំណត់ចំណាំ",
+      "saving": "កំពុងរក្សាទុក…",
+      "save": "រក្សាទុក",
+      "create": "បង្កើតអ្នកជំងឺ",
+      "cancel": "បោះបង់",
+      "newTitle": "អ្នកជំងឺថ្មី",
+      "editTitle": "កែសម្រួលអ្នកជំងឺ",
+      "backToList": "← អ្នកជំងឺ"
+    },
     "purge": {
       "delete": "លុប {name}",
       "title": "លុបអ្នកជំងឺជាអចិន្ត្រៃយ៍",
@@ -767,6 +809,11 @@
     "doctor": {
       "nameRequired": "ត្រូវការឈ្មោះវេជ្ជបណ្ឌិត",
       "createFailed": "មិនអាចបង្កើតវេជ្ជបណ្ឌិតបានទេ។"
+    },
+    "patient": {
+      "nameRequired": "ត្រូវការឈ្មោះអ្នកជំងឺ",
+      "planLimit": "អ្នកបានឈានដល់ដែនកំណត់អ្នកជំងឺនៃគម្រោងរបស់អ្នក។ សូមដំឡើងកម្រិតដើម្បីបន្ថែម។",
+      "createFailed": "មិនអាចបង្កើតអ្នកជំងឺបានទេ។"
     },
     "appointment": {
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
