@@ -32,16 +32,16 @@ export default async function ClinicSettingsPage() {
   if (!clinic) redirect("/onboarding");
 
   const canManage = await hasPermission(PERMISSIONS.CLINIC_MANAGE);
-  const tLang = await getTranslations("settings.language");
+  const t = await getTranslations("settings");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <PageHeader icon={Building2} title="General" subtitle="Your clinic profile" />
+      <PageHeader icon={Building2} title={t("sections.general.label")} subtitle={t("profileSubtitle")} />
 
       <Card>
         <CardHeader>
-          <CardTitle>{tLang("title")}</CardTitle>
-          <CardDescription>{tLang("description")}</CardDescription>
+          <CardTitle>{t("language.title")}</CardTitle>
+          <CardDescription>{t("language.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <LanguageSwitcher />

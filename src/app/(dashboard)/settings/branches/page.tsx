@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { MapPin } from "lucide-react";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
@@ -17,32 +18,33 @@ export default async function BranchesSettingsPage() {
     hasPermission(PERMISSIONS.CLINIC_MANAGE),
   ]);
   if (!clinic) redirect("/onboarding");
+  const t = await getTranslations("settings");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={MapPin}
-        title="Branches"
-        subtitle={`${branches.length} ${branches.length === 1 ? "location" : "locations"}`}
+        title={t("sections.branches.label")}
+        subtitle={t("branches.summary", { count: branches.length })}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Locations</CardTitle>
+          <CardTitle>{t("branches.locations")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {branches.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">No branches yet.</p>
+            <p className="p-6 text-sm text-[var(--muted-foreground)]">{t("branches.empty")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[32rem] text-sm">
                 <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                   <tr>
-                    <th className="p-3 font-medium">Name</th>
-                    <th className="p-3 font-medium">Code</th>
-                    <th className="p-3 font-medium">Address</th>
-                    <th className="p-3 font-medium">Phone</th>
-                    {canManage && <th className="p-3 font-medium text-right">Actions</th>}
+                    <th className="p-3 font-medium">{t("branches.name")}</th>
+                    <th className="p-3 font-medium">{t("branches.code")}</th>
+                    <th className="p-3 font-medium">{t("branches.address")}</th>
+                    <th className="p-3 font-medium">{t("branches.phone")}</th>
+                    {canManage && <th className="p-3 font-medium text-right">{t("branches.actions")}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -52,7 +54,7 @@ export default async function BranchesSettingsPage() {
                         {b.name}
                         {b.is_primary && (
                           <span className="ml-2 inline-flex rounded-full bg-brand-500/10 px-2 py-0.5 text-xs font-medium text-brand-600 dark:text-brand-400">
-                            Primary
+                            {t("branches.primary")}
                           </span>
                         )}
                       </td>
@@ -65,7 +67,7 @@ export default async function BranchesSettingsPage() {
                             href={`/settings/branches/${b.id}/edit`}
                             className="font-medium text-brand-600 hover:underline dark:text-brand-400"
                           >
-                            Edit
+                            {t("branches.edit")}
                           </Link>
                         </td>
                       )}
@@ -81,7 +83,7 @@ export default async function BranchesSettingsPage() {
       {canManage && (
         <Card>
           <CardHeader>
-            <CardTitle>Add a branch</CardTitle>
+            <CardTitle>{t("branches.addBranch")}</CardTitle>
           </CardHeader>
           <CardContent>
             <BranchForm />

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Settings as SettingsIcon } from "lucide-react";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
@@ -19,18 +20,19 @@ export default async function SettingsPage() {
   const allowed = isSuperAdmin ? null : await getRolePermissionKeys(role ?? "");
   const can = (perm: string) => isSuperAdmin || !!allowed?.has(perm);
   const sections = SETTINGS_SECTIONS.filter((s) => can(s.permission));
+  const t = await getTranslations("settings");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={SettingsIcon}
-        title="Settings"
-        subtitle={`Configure ${clinic.name}`}
+        title={t("title")}
+        subtitle={t("configure", { clinic: clinic.name })}
       />
 
       {sections.length === 0 ? (
         <p className="text-sm text-[var(--muted-foreground)]">
-          You don&apos;t have access to any settings.
+          {t("noAccess")}
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -42,8 +44,8 @@ export default async function SettingsPage() {
                     <s.icon className="size-5" />
                   </span>
                   <div>
-                    <p className="font-medium group-hover:text-brand-700 dark:group-hover:text-brand-400">{s.label}</p>
-                    <p className="text-sm text-[var(--muted-foreground)]">{s.description}</p>
+                    <p className="font-medium group-hover:text-brand-700 dark:group-hover:text-brand-400">{t(`sections.${s.key}.label`)}</p>
+                    <p className="text-sm text-[var(--muted-foreground)]">{t(`sections.${s.key}.description`)}</p>
                   </div>
                 </CardContent>
               </Card>

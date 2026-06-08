@@ -32,6 +32,47 @@
       "description": "Choose the display language for the interface. Medical terms (medicine names, lab tests, diagnoses) always stay in English.",
       "english": "English",
       "khmer": "ខ្មែរ (Khmer)"
+    },
+    "title": "Settings",
+    "configure": "Configure {clinic}",
+    "noAccess": "You don't have access to any settings.",
+    "allSettings": "All settings",
+    "profileSubtitle": "Your clinic profile",
+    "sections": {
+      "general": { "label": "General", "description": "Clinic name, contact details, timezone and currency" },
+      "branches": { "label": "Branches", "description": "Manage your clinic's physical locations" },
+      "billing": { "label": "Billing", "description": "Price catalog, procedures, memberships & payment settings" },
+      "staff": { "label": "Staff & roles", "description": "Invite team members and assign their roles" },
+      "subscription": { "label": "Subscription", "description": "Your plan, limits and usage" }
+    },
+    "branches": {
+      "summary": "{count, plural, one {# location} other {# locations}}",
+      "locations": "Locations",
+      "empty": "No branches yet.",
+      "name": "Name",
+      "code": "Code",
+      "address": "Address",
+      "phone": "Phone",
+      "actions": "Actions",
+      "primary": "Primary",
+      "edit": "Edit",
+      "addBranch": "Add a branch"
+    },
+    "subscription": {
+      "trialEnds": "trial ends {date}",
+      "usage": "Usage",
+      "patients": "Patients",
+      "doctors": "Doctors",
+      "branches": "Branches",
+      "plans": "Plans",
+      "onlyOwner": "Only the clinic owner can change the plan.",
+      "status": {
+        "trialing": "Trialing",
+        "active": "Active",
+        "past_due": "Past due",
+        "canceled": "Canceled",
+        "incomplete": "Incomplete"
+      }
     }
   },
   "dashboard": {

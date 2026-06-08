@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { getCurrentClinic, getCurrentSubscription } from "@/lib/db/queries/clinic";
 import { getSubscriptionUsage } from "@/lib/db/queries/subscription";
 import { hasPermission } from "@/lib/auth/guard";
@@ -43,39 +44,46 @@ export default async function SubscriptionPage() {
   ]);
 
   const plan = subscription ? PLANS[subscription.plan] : PLANS.starter;
+  const [t, locale] = await Promise.all([getTranslations("settings"), getLocale()]);
+  const statusKey = subscription?.status;
+  const statusLabel = statusKey
+    ? t.has(`subscription.status.${statusKey}`)
+      ? t(`subscription.status.${statusKey}`)
+      : statusKey
+    : "—";
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={CreditCard}
-        title="Subscription"
+        title={t("sections.subscription.label")}
         subtitle={
           <>
-            {plan.name} · <span className="capitalize">{subscription?.status ?? "—"}</span>
+            {plan.name} · {statusLabel}
             {subscription?.trial_ends_at && subscription.status === "trialing"
-              ? ` · trial ends ${new Date(subscription.trial_ends_at).toLocaleDateString()}`
+              ? ` · ${t("subscription.trialEnds", { date: new Date(subscription.trial_ends_at).toLocaleDateString(locale) })}`
               : ""}
           </>
         }
       />
 
       <Card>
-        <CardHeader><CardTitle>Usage</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("subscription.usage")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <UsageBar label="Patients" used={usage.patients} max={subscription?.max_patients ?? plan.maxPatients} />
-          <UsageBar label="Doctors" used={usage.doctors} max={subscription?.max_doctors ?? plan.maxDoctors} />
-          <UsageBar label="Branches" used={usage.branches} max={subscription?.max_branches ?? plan.maxBranches} />
+          <UsageBar label={t("subscription.patients")} used={usage.patients} max={subscription?.max_patients ?? plan.maxPatients} />
+          <UsageBar label={t("subscription.doctors")} used={usage.doctors} max={subscription?.max_doctors ?? plan.maxDoctors} />
+          <UsageBar label={t("subscription.branches")} used={usage.branches} max={subscription?.max_branches ?? plan.maxBranches} />
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Plans</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("subscription.plans")}</CardTitle></CardHeader>
         <CardContent>
           {canManage ? (
             <PlanSelector current={subscription?.plan ?? "starter"} />
           ) : (
             <p className="text-sm text-[var(--muted-foreground)]">
-              Only the clinic owner can change the plan.
+              {t("subscription.onlyOwner")}
             </p>
           )}
         </CardContent>

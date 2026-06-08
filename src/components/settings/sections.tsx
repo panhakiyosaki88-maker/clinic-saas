@@ -2,6 +2,8 @@ import { Building2, MapPin, UserCog, CreditCard, Receipt, type LucideIcon } from
 import { PERMISSIONS, type Permission } from "@/lib/auth/permissions";
 
 export interface SettingsSection {
+  /** i18n key under the `settings.sections` namespace. */
+  key: string;
   href: string;
   label: string;
   description: string;
@@ -18,6 +20,7 @@ export interface SettingsSection {
  */
 export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
+    key: "general",
     href: "/settings/clinic",
     label: "General",
     description: "Clinic name, contact details, timezone and currency",
@@ -25,6 +28,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     permission: PERMISSIONS.CLINIC_MANAGE,
   },
   {
+    key: "branches",
     href: "/settings/branches",
     label: "Branches",
     description: "Manage your clinic's physical locations",
@@ -32,6 +36,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     permission: PERMISSIONS.CLINIC_MANAGE,
   },
   {
+    key: "billing",
     href: "/settings/billing",
     label: "Billing",
     description: "Price catalog, procedures, memberships & payment settings",
@@ -39,6 +44,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     permission: PERMISSIONS.BILLING_READ,
   },
   {
+    key: "staff",
     href: "/settings/staff",
     label: "Staff & roles",
     description: "Invite team members and assign their roles",
@@ -46,6 +52,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     permission: PERMISSIONS.STAFF_MANAGE,
   },
   {
+    key: "subscription",
     href: "/settings/subscription",
     label: "Subscription",
     description: "Your plan, limits and usage",

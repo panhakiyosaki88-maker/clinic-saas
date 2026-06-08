@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
@@ -11,6 +12,7 @@ import { ArrowLeft } from "lucide-react";
  * itself on the /settings hub, which already presents the sections as cards.
  */
 export function SettingsNav({ tabs }: { tabs: { href: string; label: string }[] }) {
+  const t = useTranslations("settings");
   const pathname = usePathname();
   if (pathname === "/settings") return null;
 
@@ -21,7 +23,7 @@ export function SettingsNav({ tabs }: { tabs: { href: string; label: string }[] 
           href="/settings"
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
         >
-          <ArrowLeft className="size-4" /> All settings
+          <ArrowLeft className="size-4" /> {t("allSettings")}
         </Link>
         {tabs.map((t) => {
           const active = pathname === t.href || pathname.startsWith(t.href + "/");
