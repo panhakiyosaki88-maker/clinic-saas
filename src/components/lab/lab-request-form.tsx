@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createLabRequest } from "@/server/actions/lab";
 import type { LabTestGroup } from "@/lib/lab/test-panel";
@@ -33,6 +34,7 @@ export function LabRequestForm({
   defaultBranchId?: string | null;
   panel: LabTestGroup[];
 }) {
+  const t = useTranslations("lab.form");
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -95,7 +97,7 @@ export function LabRequestForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="patientId">Patient</Label>
+        <Label htmlFor="patientId">{t("patient")}</Label>
         <select
           id="patientId"
           name="patientId"
@@ -104,14 +106,14 @@ export function LabRequestForm({
           onChange={(e) => onPatientChange(e.target.value)}
           required
         >
-          <option value="" disabled>Select a patient…</option>
+          <option value="" disabled>{t("selectPatient")}</option>
           {patients.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
         </select>
         {fieldErrors.patientId?.map((m) => <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>)}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="doctorId">Requesting doctor</Label>
+        <Label htmlFor="doctorId">{t("doctor")}</Label>
         <select
           id="doctorId"
           name="doctorId"
@@ -119,16 +121,16 @@ export function LabRequestForm({
           value={doctorId}
           onChange={(e) => setDoctorId(e.target.value)}
         >
-          <option value="">Unassigned</option>
+          <option value="">{t("unassigned")}</option>
           {doctors.map((d) => <option key={d.id} value={d.id}>{d.full_name}</option>)}
         </select>
       </div>
 
       {branches.length > 0 && (
         <div className="space-y-2">
-          <Label htmlFor="branchId">Branch (optional)</Label>
+          <Label htmlFor="branchId">{t("branch")}</Label>
           <select id="branchId" name="branchId" className={selectClass} defaultValue={defaultBranchId ?? ""}>
-            <option value="">No branch</option>
+            <option value="">{t("noBranch")}</option>
             {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
@@ -136,14 +138,14 @@ export function LabRequestForm({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <Label>Tests</Label>
+          <Label>{t("tests")}</Label>
           <span className="text-xs text-[var(--muted-foreground)]">
-            {selected.size} selected
+            {t("selectedCount", { count: selected.size })}
           </span>
         </div>
         <Input
           type="search"
-          placeholder="Filter tests…"
+          placeholder={t("filterTests")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -151,7 +153,7 @@ export function LabRequestForm({
 
         <div className="max-h-[28rem] space-y-4 overflow-y-auto rounded-md border border-slate-200 p-3 dark:border-slate-700">
           {groups.length === 0 && (
-            <p className="text-sm text-[var(--muted-foreground)]">No tests match “{query}”.</p>
+            <p className="text-sm text-[var(--muted-foreground)]">{t("noMatch", { query })}</p>
           )}
           {groups.map((group) => (
             <fieldset key={group.title} className="space-y-2">
@@ -177,7 +179,7 @@ export function LabRequestForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="notes">Notes</Label>
+        <Label htmlFor="notes">{t("notes")}</Label>
         <Textarea id="notes" name="notes" />
       </div>
 
@@ -185,9 +187,9 @@ export function LabRequestForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending || selected.size === 0}>
-          {pending ? "Saving…" : selected.size > 1 ? `Create ${selected.size} requests` : "Create request"}
+          {pending ? t("saving") : t("createRequests", { count: Math.max(1, selected.size) })}
         </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>Cancel</Button>
+        <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>{t("cancel")}</Button>
       </div>
     </form>
   );

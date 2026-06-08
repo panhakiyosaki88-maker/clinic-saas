@@ -19,6 +19,7 @@ import {
 } from "@/lib/validations/lab";
 import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 /** Maps each panel test name to its group title (which doubles as its category). */
 const TEST_GROUP = new Map<string, string>();
@@ -28,9 +29,10 @@ for (const g of LAB_TEST_PANEL) {
 
 export async function createLabCategory(input: CreateCategoryInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.LAB_WRITE);
+  const te = await getErrorT();
   const parsed = createCategorySchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const supabase = await createClient();
   const { error } = await supabase.from("lab_categories").insert({
@@ -113,9 +115,10 @@ export async function createLabRequest(
   input: CreateLabRequestInput
 ): Promise<ActionResult<{ requestIds: string[] }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.LAB_WRITE);
+  const te = await getErrorT();
   const parsed = createLabRequestSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 

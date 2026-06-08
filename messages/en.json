@@ -793,6 +793,28 @@
       "requested": "Pending",
       "processing": "In Progress",
       "completed": "Finish"
+    },
+    "form": {
+      "patient": "Patient",
+      "selectPatient": "Select a patient…",
+      "doctor": "Requesting doctor",
+      "unassigned": "Unassigned",
+      "branch": "Branch (optional)",
+      "noBranch": "No branch",
+      "tests": "Tests",
+      "selectedCount": "{count} selected",
+      "filterTests": "Filter tests…",
+      "noMatch": "No tests match “{query}”.",
+      "notes": "Notes",
+      "saving": "Saving…",
+      "createRequests": "{count, plural, one {Create request} other {Create # requests}}",
+      "cancel": "Cancel"
+    },
+    "category": {
+      "namePlaceholder": "Group name *",
+      "descPlaceholder": "Description",
+      "adding": "Adding…",
+      "add": "Add group"
     }
   },
   "pharmacy": {
@@ -859,6 +881,11 @@
       "notFound": "Invoice not found.",
       "cancelled": "This invoice is cancelled.",
       "hasPayments": "Cannot edit an invoice that already has payments."
+    },
+    "lab": {
+      "patientRequired": "Choose a patient",
+      "selectTest": "Select at least one test",
+      "categoryNameRequired": "Category name is required"
     },
     "appointment": {
       "patientRequired": "Choose a patient",

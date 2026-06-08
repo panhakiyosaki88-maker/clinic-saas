@@ -12,19 +12,20 @@ export const LAB_STATUS_LABELS: Record<(typeof LAB_STATUSES)[number], string> = 
 const optionalShort = z.string().trim().max(255).optional().or(z.literal(""));
 
 export const createCategorySchema = z.object({
-  name: z.string().trim().min(2, "Category name is required").max(120),
+  name: z.string().trim().min(2, "lab.categoryNameRequired").max(120),
   description: optionalShort,
   parentId: z.string().uuid().optional().or(z.literal("")),
 });
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 
 export const createLabRequestSchema = z.object({
-  patientId: z.string().uuid("Choose a patient"),
+  // i18n keys under the `errors` namespace (localized in the server action).
+  patientId: z.string().uuid("lab.patientRequired"),
   doctorId: z.string().uuid().optional().or(z.literal("")),
   branchId: z.string().uuid().optional().or(z.literal("")),
   testNames: z
     .array(z.string().trim().min(1).max(255))
-    .min(1, "Select at least one test")
+    .min(1, "lab.selectTest")
     .max(100),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
 });

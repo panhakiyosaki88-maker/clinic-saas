@@ -793,6 +793,28 @@
       "requested": "កំពុងរង់ចាំ",
       "processing": "កំពុងដំណើរការ",
       "completed": "បានបញ្ចប់"
+    },
+    "form": {
+      "patient": "អ្នកជំងឺ",
+      "selectPatient": "ជ្រើសរើសអ្នកជំងឺ…",
+      "doctor": "វេជ្ជបណ្ឌិតស្នើសុំ",
+      "unassigned": "មិនបានកំណត់",
+      "branch": "សាខា (ស្រេចចិត្ត)",
+      "noBranch": "គ្មានសាខា",
+      "tests": "ការធ្វើតេស្ត",
+      "selectedCount": "{count} បានជ្រើស",
+      "filterTests": "ច្រោះការធ្វើតេស្ត…",
+      "noMatch": "គ្មានការធ្វើតេស្តត្រូវនឹង “{query}”។",
+      "notes": "កំណត់ចំណាំ",
+      "saving": "កំពុងរក្សាទុក…",
+      "createRequests": "{count, plural, other {បង្កើតសំណើ #}}",
+      "cancel": "បោះបង់"
+    },
+    "category": {
+      "namePlaceholder": "ឈ្មោះក្រុម *",
+      "descPlaceholder": "ការពិពណ៌នា",
+      "adding": "កំពុងបន្ថែម…",
+      "add": "បន្ថែមក្រុម"
     }
   },
   "pharmacy": {
@@ -859,6 +881,11 @@
       "notFound": "រកមិនឃើញវិក្កយបត្រ។",
       "cancelled": "វិក្កយបត្រនេះត្រូវបានបោះបង់។",
       "hasPayments": "មិនអាចកែវិក្កយបត្រដែលមានការទូទាត់រួចហើយ។"
+    },
+    "lab": {
+      "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
+      "selectTest": "សូមជ្រើសរើសការធ្វើតេស្តយ៉ាងហោចណាស់មួយ",
+      "categoryNameRequired": "ត្រូវការឈ្មោះប្រភេទ"
     },
     "appointment": {
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",

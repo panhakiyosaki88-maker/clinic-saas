@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createLabCategory } from "@/server/actions/lab";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 
 /** Creates a new top-level group. Subgroups are added inline under each group. */
 export function CategoryForm() {
+  const t = useTranslations("lab.category");
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -30,9 +32,9 @@ export function CategoryForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-2">
-      <Input name="name" placeholder="Group name *" className="max-w-xs" required />
-      <Input name="description" placeholder="Description" className="flex-1" />
-      <Button type="submit" size="sm" disabled={pending}>{pending ? "Adding…" : "Add group"}</Button>
+      <Input name="name" placeholder={t("namePlaceholder")} className="max-w-xs" required />
+      <Input name="description" placeholder={t("descPlaceholder")} className="flex-1" />
+      <Button type="submit" size="sm" disabled={pending}>{pending ? t("adding") : t("add")}</Button>
       {error && <p className="w-full text-xs text-[var(--destructive)]">{error}</p>}
     </form>
   );
