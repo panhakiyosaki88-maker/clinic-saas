@@ -1154,6 +1154,28 @@
       "editTitle": "Edit medicine",
       "backToList": "← Pharmacy"
     },
+    "detail": {
+      "backToList": "← Pharmacy",
+      "edit": "Edit",
+      "inStock": "In stock",
+      "low": "low",
+      "reorderAt": "Reorder at",
+      "purchase": "Purchase",
+      "selling": "Selling",
+      "recordMovement": "Record stock movement",
+      "history": "Transaction history",
+      "noMovements": "No movements yet.",
+      "thDate": "Date",
+      "thReason": "Reason",
+      "thBatch": "Batch",
+      "thExpiry": "Expiry",
+      "thChange": "Change",
+      "delete": "Delete",
+      "sure": "Sure?",
+      "deleting": "Deleting…",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
     "transactionForm": {
       "reason": "Reason",
       "reasons": {
@@ -1207,7 +1229,12 @@
       "noVitals": "No vitals recorded.",
       "when": "When",
       "attachments": "Attachments",
-      "noAttachments": "No attachments."
+      "noAttachments": "No attachments.",
+      "delete": "Delete",
+      "sure": "Sure?",
+      "deleting": "Deleting…",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     }
   },
   "visits": {

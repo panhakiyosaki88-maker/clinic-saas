@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { deleteMedicalRecord } from "@/server/actions/medical-records";
 import { Button } from "@/components/ui/button";
 
@@ -13,20 +14,21 @@ export function DeleteRecordButton({
   patientId: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("records.recordDetail");
   const [pending, startTransition] = React.useTransition();
   const [confirming, setConfirming] = React.useState(false);
 
   if (!confirming) {
     return (
       <Button variant="outline" size="sm" onClick={() => setConfirming(true)}>
-        Delete
+        {t("delete")}
       </Button>
     );
   }
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-[var(--muted-foreground)]">Sure?</span>
+      <span className="text-sm text-[var(--muted-foreground)]">{t("sure")}</span>
       <Button
         variant="destructive"
         size="sm"
@@ -41,10 +43,10 @@ export function DeleteRecordButton({
           })
         }
       >
-        {pending ? "Deleting…" : "Confirm"}
+        {pending ? t("deleting") : t("confirm")}
       </Button>
       <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={pending}>
-        Cancel
+        {t("cancel")}
       </Button>
     </div>
   );

@@ -1154,6 +1154,28 @@
       "editTitle": "កែសម្រួលឱសថ",
       "backToList": "← ឱសថស្ថាន"
     },
+    "detail": {
+      "backToList": "← ឱសថស្ថាន",
+      "edit": "កែសម្រួល",
+      "inStock": "ក្នុងស្តុក",
+      "low": "ទាប",
+      "reorderAt": "បញ្ជាទិញឡើងវិញនៅ",
+      "purchase": "ការទិញ",
+      "selling": "ការលក់",
+      "recordMovement": "កត់ត្រាចលនាស្តុក",
+      "history": "ប្រវត្តិប្រតិបត្តិការ",
+      "noMovements": "មិនទាន់មានចលនាទេ។",
+      "thDate": "កាលបរិច្ឆេទ",
+      "thReason": "មូលហេតុ",
+      "thBatch": "បាច់",
+      "thExpiry": "ផុតកំណត់",
+      "thChange": "ការផ្លាស់ប្តូរ",
+      "delete": "លុប",
+      "sure": "ប្រាកដទេ?",
+      "deleting": "កំពុងលុប…",
+      "confirm": "បញ្ជាក់",
+      "cancel": "បោះបង់"
+    },
     "transactionForm": {
       "reason": "មូលហេតុ",
       "reasons": {
@@ -1207,7 +1229,12 @@
       "noVitals": "មិនមានសញ្ញាណជីពត្រូវបានកត់ត្រាទេ។",
       "when": "ពេលណា",
       "attachments": "ឯកសារភ្ជាប់",
-      "noAttachments": "មិនមានឯកសារភ្ជាប់ទេ។"
+      "noAttachments": "មិនមានឯកសារភ្ជាប់ទេ។",
+      "delete": "លុប",
+      "sure": "ប្រាកដទេ?",
+      "deleting": "កំពុងលុប…",
+      "confirm": "បញ្ជាក់",
+      "cancel": "បោះបង់"
     }
   },
   "visits": {
