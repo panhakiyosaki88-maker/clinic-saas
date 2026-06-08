@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createServicePrice, updateServicePrice } from "@/server/actions/service-prices";
-import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from "@/lib/validations/service-price";
+import { SERVICE_CATEGORIES } from "@/lib/validations/service-price";
 import type { ServicePrice } from "@/lib/db/queries/service-prices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ export function ServicePriceForm({
   defaultBranchId?: string | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("billing.servicePriceForm");
   const isEdit = !!service;
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -59,44 +61,44 @@ export function ServicePriceForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
       <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor="name" className="text-xs">Name</Label>
+        <Label htmlFor="name" className="text-xs">{t("name")}</Label>
         <Input id="name" name="name" defaultValue={service?.name ?? ""} required />
         {fieldErrors.name?.map((m) => <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>)}
       </div>
       <div className="space-y-1">
-        <Label htmlFor="category" className="text-xs">Category</Label>
+        <Label htmlFor="category" className="text-xs">{t("category")}</Label>
         <select id="category" name="category" className={selectClass} defaultValue={service?.category ?? "consultation"}>
-          {SERVICE_CATEGORIES.map((c) => <option key={c} value={c}>{SERVICE_CATEGORY_LABELS[c]}</option>)}
+          {SERVICE_CATEGORIES.map((c) => <option key={c} value={c}>{t(`categories.${c}`)}</option>)}
         </select>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="code" className="text-xs">Code (optional)</Label>
+        <Label htmlFor="code" className="text-xs">{t("code")}</Label>
         <Input id="code" name="code" defaultValue={service?.code ?? ""} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="unitPrice" className="text-xs">Unit price</Label>
+        <Label htmlFor="unitPrice" className="text-xs">{t("unitPrice")}</Label>
         <Input id="unitPrice" name="unitPrice" type="number" step="0.01" defaultValue={service?.unit_price ?? 0} />
       </div>
       {branches.length > 0 && (
         <div className="space-y-1">
-          <Label htmlFor="branchId" className="text-xs">Branch (optional)</Label>
+          <Label htmlFor="branchId" className="text-xs">{t("branch")}</Label>
           <select id="branchId" name="branchId" className={selectClass} defaultValue={service?.branch_id ?? defaultBranchId ?? ""}>
-            <option value="">All branches</option>
+            <option value="">{t("allBranches")}</option>
             {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
       )}
       <div className="space-y-1">
-        <Label htmlFor="effectiveFrom" className="text-xs">Effective from (optional)</Label>
+        <Label htmlFor="effectiveFrom" className="text-xs">{t("effectiveFrom")}</Label>
         <Input id="effectiveFrom" name="effectiveFrom" type="date" defaultValue={service?.effective_from ?? ""} />
       </div>
 
       {error && <p className="text-xs text-[var(--destructive)] sm:col-span-2">{error}</p>}
       <div className="flex gap-2 sm:col-span-2">
-        <Button type="submit" size="sm" disabled={pending}>{pending ? "Saving…" : isEdit ? "Save changes" : "Add price"}</Button>
+        <Button type="submit" size="sm" disabled={pending}>{pending ? t("saving") : isEdit ? t("save") : t("add")}</Button>
         {isEdit && (
           <Button type="button" variant="ghost" size="sm" onClick={() => { router.push("/settings/billing/catalog"); router.refresh(); }}>
-            Cancel
+            {t("cancel")}
           </Button>
         )}
       </div>

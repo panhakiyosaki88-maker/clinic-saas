@@ -659,6 +659,66 @@
       "refunding": "កំពុងសងប្រាក់វិញ…",
       "confirm": "បញ្ជាក់ការសងប្រាក់វិញ",
       "cancel": "បោះបង់"
+    },
+    "servicePriceForm": {
+      "name": "ឈ្មោះ",
+      "category": "ប្រភេទ",
+      "categories": {
+        "consultation": "ថ្លៃពិគ្រោះ",
+        "lab": "តេស្តមន្ទីរពិសោធន៍",
+        "pharmacy": "ឱសថ",
+        "procedure": "នីតិវិធី",
+        "other": "សេវាផ្សេងៗ"
+      },
+      "code": "កូដ (ស្រេចចិត្ត)",
+      "unitPrice": "តម្លៃឯកតា",
+      "branch": "សាខា (ស្រេចចិត្ត)",
+      "allBranches": "សាខាទាំងអស់",
+      "effectiveFrom": "មានសុពលភាពចាប់ពី (ស្រេចចិត្ត)",
+      "saving": "កំពុងរក្សាទុក…",
+      "save": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "add": "បន្ថែមតម្លៃ",
+      "cancel": "បោះបង់"
+    },
+    "procedureCatalog": {
+      "name": "ឈ្មោះនីតិវិធី",
+      "code": "កូដ (ស្រេចចិត្ត)",
+      "defaultPrice": "តម្លៃលំនាំដើម",
+      "description": "ការពិពណ៌នា (ស្រេចចិត្ត)",
+      "saving": "កំពុងរក្សាទុក…",
+      "add": "បន្ថែមនីតិវិធី",
+      "empty": "មិនទាន់មាននីតិវិធីទេ។ បន្ថែមមួយខាងលើ។",
+      "thName": "ឈ្មោះ",
+      "thCode": "កូដ",
+      "thPrice": "តម្លៃ",
+      "inactive": "(អសកម្ម)",
+      "delete": "លុប"
+    },
+    "membershipCatalog": {
+      "name": "ឈ្មោះគម្រោង",
+      "joiningFee": "ថ្លៃចូលរួម",
+      "benefit": "អត្ថប្រយោជន៍",
+      "percent": "ភាគរយ %",
+      "fixed": "ចំនួនថេរ",
+      "value": "តម្លៃ",
+      "validDays": "ចំនួនថ្ងៃមានសុពលភាព",
+      "description": "ការពិពណ៌នា (ស្រេចចិត្ត)",
+      "saving": "កំពុងរក្សាទុក…",
+      "add": "បន្ថែមគម្រោង",
+      "empty": "មិនទាន់មានគម្រោងសមាជិកភាពទេ។ បន្ថែមមួយខាងលើ។",
+      "thPlan": "គម្រោង",
+      "thFee": "ថ្លៃ",
+      "thBenefit": "អត្ថប្រយោជន៍",
+      "thValid": "សុពលភាព",
+      "inactive": "(អសកម្ម)",
+      "days": "{count, plural, other {# ថ្ងៃ}}",
+      "noExpiry": "គ្មានកំណត់",
+      "delete": "លុប"
+    },
+    "enrolMembership": {
+      "none": "មិនទាន់មានគម្រោងសមាជិកភាពទេ។",
+      "choosePlan": "ជ្រើសរើសគម្រោង…",
+      "enrol": "ចុះឈ្មោះ"
     }
   },
   "doctors": {
@@ -950,6 +1010,22 @@
     "fixFields": "សូមកែតម្រូវវាលដែលបានបន្លិច។",
     "invalidRequest": "សំណើមិនត្រឹមត្រូវ។",
     "invalidEmail": "បញ្ចូលអ៊ីមែលត្រឹមត្រូវ",
+    "dateFormat": "ប្រើទម្រង់ YYYY-MM-DD",
+    "servicePrice": {
+      "nameRequired": "ត្រូវការឈ្មោះ"
+    },
+    "procedure": {
+      "nameRequired": "ត្រូវការឈ្មោះ",
+      "createFailed": "មិនអាចបង្កើតនីតិវិធីបានទេ។"
+    },
+    "membership": {
+      "nameRequired": "ត្រូវការឈ្មោះ",
+      "percentMax": "អត្ថប្រយោជន៍ជាភាគរយមិនអាចលើស 100 ទេ។",
+      "choosePatient": "ជ្រើសរើសអ្នកជំងឺ",
+      "choosePlan": "ជ្រើសរើសគម្រោង",
+      "planNotFound": "រកមិនឃើញគម្រោង។",
+      "createFailed": "មិនអាចបង្កើតគម្រោងបានទេ។"
+    },
     "doctor": {
       "nameRequired": "ត្រូវការឈ្មោះវេជ្ជបណ្ឌិត",
       "createFailed": "មិនអាចបង្កើតវេជ្ជបណ្ឌិតបានទេ។"

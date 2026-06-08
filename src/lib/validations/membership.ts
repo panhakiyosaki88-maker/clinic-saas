@@ -7,7 +7,7 @@ export const BENEFIT_TYPES = ["percent", "fixed"] as const;
 
 export const membershipPlanSchema = z
   .object({
-    name: z.string().trim().min(1, "Name is required").max(255),
+    name: z.string().trim().min(1, "membership.nameRequired").max(255),
     price: money,
     benefitType: z.enum(BENEFIT_TYPES).default("percent"),
     benefitValue: z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).default(0)),
@@ -16,13 +16,13 @@ export const membershipPlanSchema = z
     isActive: z.boolean().optional(),
   })
   .refine((v) => v.benefitType !== "percent" || v.benefitValue <= 100, {
-    message: "A percent benefit can't exceed 100.",
+    message: "membership.percentMax",
     path: ["benefitValue"],
   });
 export type MembershipPlanInput = z.infer<typeof membershipPlanSchema>;
 
 export const assignMembershipSchema = z.object({
-  patientId: z.string().uuid("Choose a patient"),
-  planId: z.string().uuid("Choose a plan"),
+  patientId: z.string().uuid("membership.choosePatient"),
+  planId: z.string().uuid("membership.choosePlan"),
 });
 export type AssignMembershipInput = z.infer<typeof assignMembershipSchema>;

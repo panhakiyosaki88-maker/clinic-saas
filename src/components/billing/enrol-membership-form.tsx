@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { assignMembership } from "@/server/actions/memberships";
 import { formatUSD } from "@/lib/billing/currency";
 import { Button } from "@/components/ui/button";
@@ -14,12 +15,13 @@ export interface PlanOption { id: string; name: string; price: number }
 
 export function EnrolMembershipForm({ patientId, plans }: { patientId: string; plans: PlanOption[] }) {
   const router = useRouter();
+  const t = useTranslations("billing.enrolMembership");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [planId, setPlanId] = React.useState("");
 
   if (plans.length === 0) {
-    return <p className="text-xs text-[var(--muted-foreground)]">No membership plans defined yet.</p>;
+    return <p className="text-xs text-[var(--muted-foreground)]">{t("none")}</p>;
   }
 
   function onSubmit(e: React.FormEvent) {
@@ -36,10 +38,10 @@ export function EnrolMembershipForm({ patientId, plans }: { patientId: string; p
   return (
     <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-2">
       <select className={`${selectClass} flex-1`} value={planId} onChange={(e) => setPlanId(e.target.value)} required>
-        <option value="" disabled>Choose a plan…</option>
+        <option value="" disabled>{t("choosePlan")}</option>
         {plans.map((p) => <option key={p.id} value={p.id}>{p.name} · {money(p.price)}</option>)}
       </select>
-      <Button type="submit" size="sm" disabled={pending || !planId}>{pending ? "…" : "Enrol"}</Button>
+      <Button type="submit" size="sm" disabled={pending || !planId}>{pending ? "…" : t("enrol")}</Button>
       {error && <p className="w-full text-xs text-[var(--destructive)]">{error}</p>}
     </form>
   );

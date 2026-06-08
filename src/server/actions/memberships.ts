@@ -11,11 +11,13 @@ import {
   type AssignMembershipInput,
 } from "@/lib/validations/membership";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 export async function createMembershipPlan(input: MembershipPlanInput): Promise<ActionResult<{ id: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = membershipPlanSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();
@@ -34,7 +36,7 @@ export async function createMembershipPlan(input: MembershipPlanInput): Promise<
     })
     .select("id")
     .single();
-  if (error || !data) return fail(error?.message ?? "Could not create plan.");
+  if (error || !data) return fail(error?.message ?? te("membership.createFailed"));
 
   revalidatePath("/settings/billing/memberships");
   return ok({ id: data.id });
@@ -42,8 +44,9 @@ export async function createMembershipPlan(input: MembershipPlanInput): Promise<
 
 export async function updateMembershipPlan(id: string, input: MembershipPlanInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = membershipPlanSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();
@@ -82,8 +85,9 @@ export async function deleteMembershipPlan(id: string): Promise<ActionResult> {
 /** Enrols a patient in a plan; expiry derived from the plan's duration. */
 export async function assignMembership(input: AssignMembershipInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PATIENTS_WRITE);
+  const te = await getErrorT();
   const parsed = assignMembershipSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();
@@ -93,7 +97,7 @@ export async function assignMembership(input: AssignMembershipInput): Promise<Ac
     .eq("id", v.planId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
-  if (!plan) return fail("Plan not found.");
+  if (!plan) return fail(te("membership.planNotFound"));
 
   let expiresAt: string | null = null;
   if (plan.duration_days) {

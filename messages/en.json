@@ -659,6 +659,66 @@
       "refunding": "Refunding…",
       "confirm": "Confirm refund",
       "cancel": "Cancel"
+    },
+    "servicePriceForm": {
+      "name": "Name",
+      "category": "Category",
+      "categories": {
+        "consultation": "Consultation fees",
+        "lab": "Lab tests",
+        "pharmacy": "Pharmacy",
+        "procedure": "Procedures",
+        "other": "Other services"
+      },
+      "code": "Code (optional)",
+      "unitPrice": "Unit price",
+      "branch": "Branch (optional)",
+      "allBranches": "All branches",
+      "effectiveFrom": "Effective from (optional)",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "add": "Add price",
+      "cancel": "Cancel"
+    },
+    "procedureCatalog": {
+      "name": "Procedure name",
+      "code": "Code (optional)",
+      "defaultPrice": "Default price",
+      "description": "Description (optional)",
+      "saving": "Saving…",
+      "add": "Add procedure",
+      "empty": "No procedures yet. Add one above.",
+      "thName": "Name",
+      "thCode": "Code",
+      "thPrice": "Price",
+      "inactive": "(inactive)",
+      "delete": "Delete"
+    },
+    "membershipCatalog": {
+      "name": "Plan name",
+      "joiningFee": "Joining fee",
+      "benefit": "Benefit",
+      "percent": "Percent %",
+      "fixed": "Fixed amount",
+      "value": "Value",
+      "validDays": "Valid days",
+      "description": "Description (optional)",
+      "saving": "Saving…",
+      "add": "Add plan",
+      "empty": "No membership plans yet. Add one above.",
+      "thPlan": "Plan",
+      "thFee": "Fee",
+      "thBenefit": "Benefit",
+      "thValid": "Valid",
+      "inactive": "(inactive)",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "noExpiry": "No expiry",
+      "delete": "Delete"
+    },
+    "enrolMembership": {
+      "none": "No membership plans defined yet.",
+      "choosePlan": "Choose a plan…",
+      "enrol": "Enrol"
     }
   },
   "doctors": {
@@ -950,6 +1010,22 @@
     "fixFields": "Please fix the highlighted fields.",
     "invalidRequest": "Invalid request.",
     "invalidEmail": "Enter a valid email",
+    "dateFormat": "Use YYYY-MM-DD",
+    "servicePrice": {
+      "nameRequired": "Name is required"
+    },
+    "procedure": {
+      "nameRequired": "Name is required",
+      "createFailed": "Could not create procedure."
+    },
+    "membership": {
+      "nameRequired": "Name is required",
+      "percentMax": "A percent benefit can't exceed 100.",
+      "choosePatient": "Choose a patient",
+      "choosePlan": "Choose a plan",
+      "planNotFound": "Plan not found.",
+      "createFailed": "Could not create plan."
+    },
     "doctor": {
       "nameRequired": "Doctor name is required",
       "createFailed": "Could not create doctor."

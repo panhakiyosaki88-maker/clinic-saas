@@ -13,11 +13,11 @@ export const SERVICE_CATEGORY_LABELS: Record<ServiceCategoryValue, string> = {
 const emptyToUndef = (v: unknown) => (v === "" || v === null ? undefined : v);
 
 export const servicePriceSchema = z.object({
-  name: z.string().trim().min(2, "Name is required").max(160),
+  name: z.string().trim().min(2, "servicePrice.nameRequired").max(160),
   category: z.enum(SERVICE_CATEGORIES),
   code: z.string().trim().max(60).optional().or(z.literal("")),
   unitPrice: z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).default(0)),
   branchId: z.string().uuid().optional().or(z.literal("")),
-  effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD").optional().or(z.literal("")),
+  effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "dateFormat").optional().or(z.literal("")),
 });
 export type ServicePriceInput = z.infer<typeof servicePriceSchema>;

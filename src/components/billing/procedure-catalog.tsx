@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createProcedure, deleteProcedure } from "@/server/actions/procedures";
 import type { Procedure } from "@/lib/db/queries/procedures";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ const money = (n: number) => formatUSD(n);
 
 export function ProcedureCatalog({ procedures }: { procedures: Procedure[] }) {
   const router = useRouter();
+  const t = useTranslations("billing.procedureCatalog");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -45,42 +47,42 @@ export function ProcedureCatalog({ procedures }: { procedures: Procedure[] }) {
     <div className="space-y-6">
       <form onSubmit={onSubmit} className="grid gap-3 rounded-lg border border-[var(--border)] p-4 sm:grid-cols-[2fr_1fr_1fr]">
         <div className="space-y-1">
-          <Label htmlFor="name" className="text-xs">Procedure name</Label>
+          <Label htmlFor="name" className="text-xs">{t("name")}</Label>
           <Input id="name" name="name" required />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="code" className="text-xs">Code (optional)</Label>
+          <Label htmlFor="code" className="text-xs">{t("code")}</Label>
           <Input id="code" name="code" />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="defaultPrice" className="text-xs">Default price</Label>
+          <Label htmlFor="defaultPrice" className="text-xs">{t("defaultPrice")}</Label>
           <Input id="defaultPrice" name="defaultPrice" type="number" step="0.01" defaultValue={0} />
         </div>
         <div className="space-y-1 sm:col-span-3">
-          <Label htmlFor="description" className="text-xs">Description (optional)</Label>
+          <Label htmlFor="description" className="text-xs">{t("description")}</Label>
           <Input id="description" name="description" />
         </div>
         {error && <p className="text-xs text-[var(--destructive)] sm:col-span-3">{error}</p>}
         <div className="sm:col-span-3">
-          <Button type="submit" size="sm" disabled={pending}>{pending ? "Saving…" : "Add procedure"}</Button>
+          <Button type="submit" size="sm" disabled={pending}>{pending ? t("saving") : t("add")}</Button>
         </div>
       </form>
 
       {procedures.length === 0 ? (
-        <p className="text-sm text-[var(--muted-foreground)]">No procedures yet. Add one above.</p>
+        <p className="text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
       ) : (
         <table className="w-full text-sm">
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
-            <tr><th className="pb-2">Name</th><th className="pb-2">Code</th><th className="pb-2 text-right">Price</th><th /></tr>
+            <tr><th className="pb-2">{t("thName")}</th><th className="pb-2">{t("thCode")}</th><th className="pb-2 text-right">{t("thPrice")}</th><th /></tr>
           </thead>
           <tbody>
             {procedures.map((p) => (
               <tr key={p.id} className="border-b border-[var(--border)]">
-                <td className="py-2 font-medium">{p.name}{!p.is_active && <span className="ml-2 text-xs text-[var(--muted-foreground)]">(inactive)</span>}</td>
+                <td className="py-2 font-medium">{p.name}{!p.is_active && <span className="ml-2 text-xs text-[var(--muted-foreground)]">{t("inactive")}</span>}</td>
                 <td className="py-2">{p.code ?? "—"}</td>
                 <td className="py-2 text-right tabular-nums">{money(Number(p.default_price))}</td>
                 <td className="py-2 text-right">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(p.id)} disabled={pending}>Delete</Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(p.id)} disabled={pending}>{t("delete")}</Button>
                 </td>
               </tr>
             ))}

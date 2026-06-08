@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createMembershipPlan, deleteMembershipPlan } from "@/server/actions/memberships";
 import { BENEFIT_TYPES } from "@/lib/validations/membership";
 import type { MembershipPlan } from "@/lib/db/queries/memberships";
@@ -16,6 +17,7 @@ const money = (n: number) => formatUSD(n);
 
 export function MembershipCatalog({ plans }: { plans: MembershipPlan[] }) {
   const router = useRouter();
+  const t = useTranslations("billing.membershipCatalog");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -50,54 +52,54 @@ export function MembershipCatalog({ plans }: { plans: MembershipPlan[] }) {
     <div className="space-y-6">
       <form onSubmit={onSubmit} className="grid gap-3 rounded-lg border border-[var(--border)] p-4 sm:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
         <div className="space-y-1">
-          <Label htmlFor="name" className="text-xs">Plan name</Label>
+          <Label htmlFor="name" className="text-xs">{t("name")}</Label>
           <Input id="name" name="name" required />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="price" className="text-xs">Joining fee</Label>
+          <Label htmlFor="price" className="text-xs">{t("joiningFee")}</Label>
           <Input id="price" name="price" type="number" step="0.01" defaultValue={0} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="benefitType" className="text-xs">Benefit</Label>
+          <Label htmlFor="benefitType" className="text-xs">{t("benefit")}</Label>
           <select id="benefitType" name="benefitType" className={selectClass} defaultValue="percent">
-            <option value="percent">Percent %</option>
-            <option value="fixed">Fixed amount</option>
+            <option value="percent">{t("percent")}</option>
+            <option value="fixed">{t("fixed")}</option>
           </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="benefitValue" className="text-xs">Value</Label>
+          <Label htmlFor="benefitValue" className="text-xs">{t("value")}</Label>
           <Input id="benefitValue" name="benefitValue" type="number" step="0.01" defaultValue={0} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="durationDays" className="text-xs">Valid days</Label>
+          <Label htmlFor="durationDays" className="text-xs">{t("validDays")}</Label>
           <Input id="durationDays" name="durationDays" type="number" placeholder="∞" />
         </div>
         <div className="space-y-1 sm:col-span-5">
-          <Label htmlFor="description" className="text-xs">Description (optional)</Label>
+          <Label htmlFor="description" className="text-xs">{t("description")}</Label>
           <Input id="description" name="description" />
         </div>
         {error && <p className="text-xs text-[var(--destructive)] sm:col-span-5">{error}</p>}
         <div className="sm:col-span-5">
-          <Button type="submit" size="sm" disabled={pending}>{pending ? "Saving…" : "Add plan"}</Button>
+          <Button type="submit" size="sm" disabled={pending}>{pending ? t("saving") : t("add")}</Button>
         </div>
       </form>
 
       {plans.length === 0 ? (
-        <p className="text-sm text-[var(--muted-foreground)]">No membership plans yet. Add one above.</p>
+        <p className="text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
       ) : (
         <table className="w-full text-sm">
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
-            <tr><th className="pb-2">Plan</th><th className="pb-2 text-right">Fee</th><th className="pb-2">Benefit</th><th className="pb-2">Valid</th><th /></tr>
+            <tr><th className="pb-2">{t("thPlan")}</th><th className="pb-2 text-right">{t("thFee")}</th><th className="pb-2">{t("thBenefit")}</th><th className="pb-2">{t("thValid")}</th><th /></tr>
           </thead>
           <tbody>
             {plans.map((p) => (
               <tr key={p.id} className="border-b border-[var(--border)]">
-                <td className="py-2 font-medium">{p.name}{!p.is_active && <span className="ml-2 text-xs text-[var(--muted-foreground)]">(inactive)</span>}</td>
+                <td className="py-2 font-medium">{p.name}{!p.is_active && <span className="ml-2 text-xs text-[var(--muted-foreground)]">{t("inactive")}</span>}</td>
                 <td className="py-2 text-right tabular-nums">{money(Number(p.price))}</td>
                 <td className="py-2">{p.benefit_type === "percent" ? `${Number(p.benefit_value)}%` : money(Number(p.benefit_value))}</td>
-                <td className="py-2">{p.duration_days ? `${p.duration_days} days` : "No expiry"}</td>
+                <td className="py-2">{p.duration_days ? t("days", { count: p.duration_days }) : t("noExpiry")}</td>
                 <td className="py-2 text-right">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(p.id)} disabled={pending}>Delete</Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(p.id)} disabled={pending}>{t("delete")}</Button>
                 </td>
               </tr>
             ))}

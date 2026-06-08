@@ -6,11 +6,13 @@ import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { servicePriceSchema, type ServicePriceInput } from "@/lib/validations/service-price";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 export async function createServicePrice(input: ServicePriceInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = servicePriceSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();
@@ -31,8 +33,9 @@ export async function createServicePrice(input: ServicePriceInput): Promise<Acti
 
 export async function updateServicePrice(id: string, input: ServicePriceInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = servicePriceSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();
