@@ -1663,6 +1663,27 @@
       "reopen": "Reopen"
     }
   },
+  "superAdmin": {
+    "nav": {
+      "platformAdmin": "Platform admin",
+      "overview": "Overview",
+      "clinics": "Clinics",
+      "users": "Users",
+      "auditLog": "Audit log",
+      "backToApp": "Back to app"
+    },
+    "overview": {
+      "title": "Platform analytics",
+      "subtitle": "{clinics} clinics · {users} users",
+      "pendingSuffix": "{count, plural, one {account is} other {accounts are}} awaiting approval",
+      "reviewNow": "review now",
+      "clinics": "Clinics",
+      "patients": "Patients",
+      "users": "Users",
+      "subscriptionsByPlan": "Subscriptions by plan",
+      "noSubscriptions": "No subscriptions yet."
+    }
+  },
   "errors": {
     "fixFields": "Please fix the highlighted fields.",
     "invalidRequest": "Invalid request.",

@@ -1663,6 +1663,27 @@
       "reopen": "បើកឡើងវិញ"
     }
   },
+  "superAdmin": {
+    "nav": {
+      "platformAdmin": "អ្នកគ្រប់គ្រងវេទិកា",
+      "overview": "ទិដ្ឋភាពទូទៅ",
+      "clinics": "គ្លីនិក",
+      "users": "អ្នកប្រើ",
+      "auditLog": "កំណត់ហេតុសវនកម្ម",
+      "backToApp": "ត្រឡប់ទៅកម្មវិធី"
+    },
+    "overview": {
+      "title": "ការវិភាគវេទិកា",
+      "subtitle": "គ្លីនិក {clinics} · អ្នកប្រើ {users}",
+      "pendingSuffix": "{count, plural, other {គណនី}} កំពុងរង់ចាំការអនុម័ត",
+      "reviewNow": "ពិនិត្យឥឡូវនេះ",
+      "clinics": "គ្លីនិក",
+      "patients": "អ្នកជំងឺ",
+      "users": "អ្នកប្រើ",
+      "subscriptionsByPlan": "ការជាវតាមគម្រោង",
+      "noSubscriptions": "មិនទាន់មានការជាវទេ។"
+    }
+  },
   "errors": {
     "fixFields": "សូមកែតម្រូវវាលដែលបានបន្លិច។",
     "invalidRequest": "សំណើមិនត្រឹមត្រូវ។",
