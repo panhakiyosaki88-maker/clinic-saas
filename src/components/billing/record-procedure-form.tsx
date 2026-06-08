@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { recordProcedure } from "@/server/actions/visits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export function RecordProcedureForm({
   procedures: ProcedureOption[];
 }) {
   const router = useRouter();
+  const t = useTranslations("billing.recordProcedureForm");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [name, setName] = React.useState("");
@@ -60,17 +62,17 @@ export function RecordProcedureForm({
     <form onSubmit={onSubmit} className="grid gap-2 sm:grid-cols-[1.5fr_1fr_0.6fr_auto]">
       {procedures.length > 0 && (
         <div className="space-y-1 sm:col-span-4">
-          <Label className="text-xs">From catalog (optional)</Label>
+          <Label className="text-xs">{t("fromCatalog")}</Label>
           <select className={selectClass} value={procedureId} onChange={(e) => onPick(e.target.value)}>
-            <option value="">Custom procedure…</option>
+            <option value="">{t("custom")}</option>
             {procedures.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
       )}
-      <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} required />
-      <Input type="number" step="0.01" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
-      <Input type="number" step="0.01" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-      <Button type="submit" size="sm" disabled={pending}>{pending ? "…" : "Add"}</Button>
+      <Input placeholder={t("name")} value={name} onChange={(e) => setName(e.target.value)} required />
+      <Input type="number" step="0.01" placeholder={t("price")} value={price} onChange={(e) => setPrice(e.target.value)} />
+      <Input type="number" step="0.01" placeholder={t("quantity")} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+      <Button type="submit" size="sm" disabled={pending}>{pending ? "…" : t("add")}</Button>
       {error && <p className="text-xs text-[var(--destructive)] sm:col-span-4">{error}</p>}
     </form>
   );

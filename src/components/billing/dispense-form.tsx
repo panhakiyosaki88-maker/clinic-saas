@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { recordDispense } from "@/server/actions/visits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ export function DispenseForm({
   medicines: MedicineOption[];
 }) {
   const router = useRouter();
+  const t = useTranslations("billing.dispenseForm");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [medicineId, setMedicineId] = React.useState("");
@@ -66,21 +68,21 @@ export function DispenseForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-2 sm:grid-cols-[1.5fr_0.6fr_1fr_auto]">
       <div className="space-y-1 sm:col-span-4">
-        <Label className="text-xs">Medicine *</Label>
+        <Label className="text-xs">{t("medicine")}</Label>
         <select className={selectClass} value={medicineId} onChange={(e) => onPick(e.target.value)} required>
-          <option value="" disabled>Select a medicine…</option>
+          <option value="" disabled>{t("selectMedicine")}</option>
           {medicines.map((m) => (
             <option key={m.id} value={m.id}>
-              {m.name} (stock {m.stock_quantity}){m.prescribed_quantity != null ? ` · Rx ×${m.prescribed_quantity}` : ""}
+              {m.name} {t("stock", { count: m.stock_quantity })}{m.prescribed_quantity != null ? ` · Rx ×${m.prescribed_quantity}` : ""}
             </option>
           ))}
         </select>
       </div>
-      <Input type="number" step="1" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-      <Input type="number" step="0.01" placeholder="Unit price" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
-      <Button type="submit" size="sm" disabled={pending || !medicineId}>{pending ? "…" : "Dispense"}</Button>
+      <Input type="number" step="1" placeholder={t("quantity")} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+      <Input type="number" step="0.01" placeholder={t("unitPrice")} value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
+      <Button type="submit" size="sm" disabled={pending || !medicineId}>{pending ? "…" : t("dispense")}</Button>
       {chosen && Number(quantity) > chosen.stock_quantity && (
-        <p className="text-xs text-amber-600 sm:col-span-4">Only {chosen.stock_quantity} in stock.</p>
+        <p className="text-xs text-amber-600 sm:col-span-4">{t("onlyInStock", { count: chosen.stock_quantity })}</p>
       )}
       {error && <p className="text-xs text-[var(--destructive)] sm:col-span-4">{error}</p>}
     </form>

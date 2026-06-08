@@ -16,12 +16,14 @@ import {
   type RecordProcedureInput,
 } from "@/lib/validations/visit";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 /** Opens a visit (encounter) for a patient. Front desk / clinical staff. */
 export async function createVisit(input: CreateVisitInput): Promise<ActionResult<{ visitId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.APPOINTMENTS_WRITE);
+  const te = await getErrorT();
   const parsed = createVisitSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();
@@ -39,7 +41,7 @@ export async function createVisit(input: CreateVisitInput): Promise<ActionResult
     })
     .select("id")
     .single();
-  if (error || !data) return fail(error?.message ?? "Could not create visit.");
+  if (error || !data) return fail(error?.message ?? te("visit.createFailed"));
 
   // Attach the originating appointment to this visit when given.
   if (v.appointmentId) {
@@ -53,8 +55,9 @@ export async function createVisit(input: CreateVisitInput): Promise<ActionResult
 
 export async function closeVisit(input: CloseVisitInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.APPOINTMENTS_WRITE);
+  const te = await getErrorT();
   const parsed = closeVisitSchema.safeParse(input);
-  if (!parsed.success) return fail("Invalid visit.");
+  if (!parsed.success) return fail(te("visit.invalid"));
 
   const supabase = await createClient();
   const now = new Date().toISOString();
@@ -86,8 +89,9 @@ export async function closeVisit(input: CloseVisitInput): Promise<ActionResult> 
 /** Reopens a closed visit so further charges/records can be threaded to it. */
 export async function reopenVisit(input: CloseVisitInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.APPOINTMENTS_WRITE);
+  const te = await getErrorT();
   const parsed = closeVisitSchema.safeParse(input);
-  if (!parsed.success) return fail("Invalid visit.");
+  if (!parsed.success) return fail(te("visit.invalid"));
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -121,8 +125,9 @@ export async function reopenVisit(input: CloseVisitInput): Promise<ActionResult>
  */
 export async function recordDispense(input: DispenseInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PHARMACY_WRITE);
+  const te = await getErrorT();
   const parsed = dispenseSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();
@@ -132,8 +137,8 @@ export async function recordDispense(input: DispenseInput): Promise<ActionResult
     .eq("id", v.medicineId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
-  if (!med) return fail("Medicine not found.");
-  if (med.stock_quantity - v.quantity < 0) return fail(`Only ${med.stock_quantity} in stock.`);
+  if (!med) return fail(te("medicine.notFound"));
+  if (med.stock_quantity - v.quantity < 0) return fail(te("medicine.onlyInStock", { count: med.stock_quantity }));
 
   const unitPrice = v.unitPrice ?? Number(med.selling_price ?? 0);
   const visitId = v.visitId || (await resolveOpenVisitId(supabase, v.patientId));
@@ -161,8 +166,9 @@ export async function recordDispense(input: DispenseInput): Promise<ActionResult
 /** Records a procedure performed in a visit (snapshots name + price → billable). */
 export async function recordProcedure(input: RecordProcedureInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.EMR_WRITE);
+  const te = await getErrorT();
   const parsed = recordProcedureSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   const supabase = await createClient();

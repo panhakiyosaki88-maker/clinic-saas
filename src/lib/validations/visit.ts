@@ -5,7 +5,7 @@ const money = z.preprocess(emptyToUndef, z.coerce.number().min(0).max(100_000_00
 const optId = z.string().uuid().optional().or(z.literal(""));
 
 export const createVisitSchema = z.object({
-  patientId: z.string().uuid("Choose a patient"),
+  patientId: z.string().uuid("visit.choosePatient"),
   branchId: optId,
   doctorId: optId,
   appointmentId: optId,
@@ -19,11 +19,11 @@ export type CloseVisitInput = z.infer<typeof closeVisitSchema>;
 
 /** Dispense medicine to a patient (reduces stock + records a billable sale). */
 export const dispenseSchema = z.object({
-  patientId: z.string().uuid("Choose a patient"),
+  patientId: z.string().uuid("visit.choosePatient"),
   visitId: optId,
-  medicineId: z.string().uuid("Choose a medicine"),
+  medicineId: z.string().uuid("visit.chooseMedicine"),
   branchId: optId,
-  quantity: z.coerce.number().int().min(1, "Quantity must be at least 1").max(100000),
+  quantity: z.coerce.number().int().min(1, "visit.quantityMin").max(100000),
   unitPrice: z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).optional()),
   note: z.string().trim().max(255).optional().or(z.literal("")),
 });
@@ -31,11 +31,11 @@ export type DispenseInput = z.infer<typeof dispenseSchema>;
 
 /** Record a procedure performed during a visit (a billable line). */
 export const recordProcedureSchema = z.object({
-  patientId: z.string().uuid("Choose a patient"),
+  patientId: z.string().uuid("visit.choosePatient"),
   visitId: optId,
   procedureId: optId,
   doctorId: optId,
-  name: z.string().trim().min(1, "Procedure name is required").max(255),
+  name: z.string().trim().min(1, "visit.procedureNameRequired").max(255),
   price: money,
   quantity: z.coerce.number().min(0.01).max(100000).default(1),
   notes: z.string().trim().max(500).optional().or(z.literal("")),

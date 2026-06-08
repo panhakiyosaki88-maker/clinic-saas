@@ -719,6 +719,23 @@
       "none": "No membership plans defined yet.",
       "choosePlan": "Choose a plan…",
       "enrol": "Enrol"
+    },
+    "dispenseForm": {
+      "medicine": "Medicine *",
+      "selectMedicine": "Select a medicine…",
+      "stock": "(stock {count})",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "dispense": "Dispense",
+      "onlyInStock": "Only {count} in stock."
+    },
+    "recordProcedureForm": {
+      "fromCatalog": "From catalog (optional)",
+      "custom": "Custom procedure…",
+      "name": "Procedure name *",
+      "price": "Price",
+      "quantity": "Quantity",
+      "add": "Add"
     }
   },
   "doctors": {
@@ -1025,6 +1042,14 @@
       "choosePlan": "Choose a plan",
       "planNotFound": "Plan not found.",
       "createFailed": "Could not create plan."
+    },
+    "visit": {
+      "invalid": "Invalid visit.",
+      "createFailed": "Could not create visit.",
+      "choosePatient": "Choose a patient",
+      "chooseMedicine": "Choose a medicine",
+      "quantityMin": "Quantity must be at least 1",
+      "procedureNameRequired": "Procedure name is required"
     },
     "doctor": {
       "nameRequired": "Doctor name is required",

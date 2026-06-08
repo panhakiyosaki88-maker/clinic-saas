@@ -719,6 +719,23 @@
       "none": "មិនទាន់មានគម្រោងសមាជិកភាពទេ។",
       "choosePlan": "ជ្រើសរើសគម្រោង…",
       "enrol": "ចុះឈ្មោះ"
+    },
+    "dispenseForm": {
+      "medicine": "ឱសថ *",
+      "selectMedicine": "ជ្រើសរើសឱសថ…",
+      "stock": "(ស្តុក {count})",
+      "quantity": "បរិមាណ",
+      "unitPrice": "តម្លៃឯកតា",
+      "dispense": "ចេញ​ឱ្យ",
+      "onlyInStock": "មានតែ {count} ក្នុងស្តុក។"
+    },
+    "recordProcedureForm": {
+      "fromCatalog": "ពីបញ្ជី (ស្រេចចិត្ត)",
+      "custom": "នីតិវិធីផ្ទាល់ខ្លួន…",
+      "name": "ឈ្មោះនីតិវិធី *",
+      "price": "តម្លៃ",
+      "quantity": "បរិមាណ",
+      "add": "បន្ថែម"
     }
   },
   "doctors": {
@@ -1025,6 +1042,14 @@
       "choosePlan": "ជ្រើសរើសគម្រោង",
       "planNotFound": "រកមិនឃើញគម្រោង។",
       "createFailed": "មិនអាចបង្កើតគម្រោងបានទេ។"
+    },
+    "visit": {
+      "invalid": "ការមកជួបមិនត្រឹមត្រូវ។",
+      "createFailed": "មិនអាចបង្កើតការមកជួបបានទេ។",
+      "choosePatient": "ជ្រើសរើសអ្នកជំងឺ",
+      "chooseMedicine": "ជ្រើសរើសឱសថ",
+      "quantityMin": "បរិមាណត្រូវយ៉ាងហោចណាស់ 1",
+      "procedureNameRequired": "ត្រូវការឈ្មោះនីតិវិធី"
     },
     "doctor": {
       "nameRequired": "ត្រូវការឈ្មោះវេជ្ជបណ្ឌិត",
