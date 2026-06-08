@@ -773,6 +773,37 @@
       "allDoctors": "All doctors",
       "countOf": "{shown} of {total}",
       "noMatch": "No prescriptions match your filter."
+    },
+    "form": {
+      "patient": "Patient",
+      "selectPatient": "Select a patient…",
+      "doctor": "Prescribing doctor",
+      "unassigned": "Unassigned",
+      "branch": "Branch (optional)",
+      "noBranch": "No branch",
+      "medicines": "Medicines",
+      "addMedicine": "Add medicine",
+      "medicine": "Medicine *",
+      "dosage": "Dosage — amount per time of day",
+      "times": { "morning": "Morning", "afternoon": "Afternoon", "evening": "Evening", "night": "Night" },
+      "decreaseDose": "Decrease {time} dose",
+      "increaseDose": "Increase {time} dose",
+      "duration": "Duration",
+      "days": "days",
+      "quantity": "Quantity",
+      "quantityTitle": "Auto = duration × amount per day. Type to override, clear to reset.",
+      "instructions": "Instructions",
+      "remove": "Remove",
+      "notes": "Notes",
+      "saving": "Saving…",
+      "issue": "Issue prescription",
+      "cancel": "Cancel",
+      "pharmacy": "Pharmacy",
+      "usedBefore": "Used before",
+      "removeSuggestion": "Remove “{name}” from suggestions",
+      "removeFromSuggestions": "Remove from suggestions",
+      "newTitle": "New prescription",
+      "backToList": "← Prescriptions"
     }
   },
   "lab": {
@@ -886,6 +917,11 @@
       "patientRequired": "Choose a patient",
       "selectTest": "Select at least one test",
       "categoryNameRequired": "Category name is required"
+    },
+    "prescription": {
+      "medicineRequired": "Medicine is required",
+      "patientRequired": "Choose a patient",
+      "atLeastOneMedicine": "Add at least one medicine"
     },
     "appointment": {
       "patientRequired": "Choose a patient",

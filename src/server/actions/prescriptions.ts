@@ -10,14 +10,16 @@ import {
   type CreatePrescriptionInput,
 } from "@/lib/validations/prescription";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 export async function createPrescription(
   input: CreatePrescriptionInput
 ): Promise<ActionResult<{ prescriptionId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PRESCRIPTIONS_WRITE);
+  const te = await getErrorT();
   const parsed = createPrescriptionSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 

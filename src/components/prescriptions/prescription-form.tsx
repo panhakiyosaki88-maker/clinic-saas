@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createPrescription, dismissMedicineSuggestion } from "@/server/actions/prescriptions";
 import { Button } from "@/components/ui/button";
@@ -112,6 +113,8 @@ export function PrescriptionForm({
   defaultPatientId?: string;
   defaultBranchId?: string | null;
 }) {
+  const t = useTranslations("prescriptions.form");
+  const timeLabel = (time: TimeOfDay) => t(`times.${time.toLowerCase()}`);
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -206,7 +209,7 @@ export function PrescriptionForm({
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="patientId">Patient</Label>
+          <Label htmlFor="patientId">{t("patient")}</Label>
           <select
             id="patientId"
             name="patientId"
@@ -215,14 +218,14 @@ export function PrescriptionForm({
             onChange={(e) => onPatientChange(e.target.value)}
             required
           >
-            <option value="" disabled>Select a patient…</option>
+            <option value="" disabled>{t("selectPatient")}</option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="doctorId">Prescribing doctor</Label>
+          <Label htmlFor="doctorId">{t("doctor")}</Label>
           <select
             id="doctorId"
             name="doctorId"
@@ -230,7 +233,7 @@ export function PrescriptionForm({
             value={doctorId}
             onChange={(e) => setDoctorId(e.target.value)}
           >
-            <option value="">Unassigned</option>
+            <option value="">{t("unassigned")}</option>
             {doctors.map((d) => (
               <option key={d.id} value={d.id}>{d.full_name}</option>
             ))}
@@ -238,9 +241,9 @@ export function PrescriptionForm({
         </div>
         {branches.length > 0 && (
           <div className="space-y-2">
-            <Label htmlFor="branchId">Branch (optional)</Label>
+            <Label htmlFor="branchId">{t("branch")}</Label>
             <select id="branchId" name="branchId" className={selectClass} defaultValue={defaultBranchId ?? ""}>
-              <option value="">No branch</option>
+              <option value="">{t("noBranch")}</option>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
@@ -251,13 +254,13 @@ export function PrescriptionForm({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Medicines</Label>
-          <Button type="button" variant="outline" size="sm" onClick={addRow}>Add medicine</Button>
+          <Label>{t("medicines")}</Label>
+          <Button type="button" variant="outline" size="sm" onClick={addRow}>{t("addMedicine")}</Button>
         </div>
         {rows.map((r) => (
           <div key={r.key} className="space-y-3 rounded-lg border border-[var(--border)] p-3">
             <div className="space-y-1">
-              <span className="text-xs font-medium text-[var(--muted-foreground)]">Medicine *</span>
+              <span className="text-xs font-medium text-[var(--muted-foreground)]">{t("medicine")}</span>
               <MedicineCombobox
                 value={r.medicineName}
                 suggestions={suggestions}
@@ -268,15 +271,15 @@ export function PrescriptionForm({
               />
             </div>
             <div className="space-y-1">
-              <span className="text-xs font-medium text-[var(--muted-foreground)]">Dosage — amount per time of day</span>
+              <span className="text-xs font-medium text-[var(--muted-foreground)]">{t("dosage")}</span>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {TIMES_OF_DAY.map((time) => (
                   <label key={time} className="space-y-1">
-                    <span className="text-xs text-[var(--muted-foreground)]">{time}</span>
+                    <span className="text-xs text-[var(--muted-foreground)]">{timeLabel(time)}</span>
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        aria-label={`Decrease ${time} dose`}
+                        aria-label={t("decreaseDose", { time: timeLabel(time) })}
                         onClick={() => stepAmount(r.key, time, -1)}
                         className="h-9 w-7 shrink-0 rounded-md border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
                       >
@@ -292,7 +295,7 @@ export function PrescriptionForm({
                       />
                       <button
                         type="button"
-                        aria-label={`Increase ${time} dose`}
+                        aria-label={t("increaseDose", { time: timeLabel(time) })}
                         onClick={() => stepAmount(r.key, time, 1)}
                         className="h-9 w-7 shrink-0 rounded-md border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
                       >
@@ -305,31 +308,31 @@ export function PrescriptionForm({
             </div>
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_2fr]">
               <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Duration</span>
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">{t("duration")}</span>
                 <div className="flex items-center gap-1.5">
                   <Input type="number" min="0" value={r.durationDays} onChange={(e) => update(r.key, "durationDays", e.target.value)} />
-                  <span className="text-sm text-[var(--muted-foreground)]">days</span>
+                  <span className="text-sm text-[var(--muted-foreground)]">{t("days")}</span>
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Quantity</span>
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">{t("quantity")}</span>
                 <Input
                   type="number"
                   min="0"
                   value={r.quantity !== "" ? r.quantity : autoQty(r) > 0 ? String(autoQty(r)) : ""}
                   placeholder="0"
                   onChange={(e) => update(r.key, "quantity", e.target.value)}
-                  title="Auto = duration × amount per day. Type to override, clear to reset."
+                  title={t("quantityTitle")}
                 />
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">Instructions</span>
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">{t("instructions")}</span>
                 <Input value={r.instructions} onChange={(e) => update(r.key, "instructions", e.target.value)} />
               </div>
             </div>
             <div className="flex justify-end">
               <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>
-                Remove
+                {t("remove")}
               </Button>
             </div>
           </div>
@@ -337,7 +340,7 @@ export function PrescriptionForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="notes">Notes</Label>
+        <Label htmlFor="notes">{t("notes")}</Label>
         <Textarea id="notes" name="notes" />
       </div>
 
@@ -346,8 +349,8 @@ export function PrescriptionForm({
       )}
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Issue prescription"}</Button>
-        <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>Cancel</Button>
+        <Button type="submit" disabled={pending}>{pending ? t("saving") : t("issue")}</Button>
+        <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>{t("cancel")}</Button>
       </div>
     </form>
   );
@@ -371,6 +374,7 @@ function MedicineCombobox({
   onDismiss?: (name: string) => void;
   required?: boolean;
 }) {
+  const t = useTranslations("prescriptions.form");
   const [open, setOpen] = React.useState(false);
   const [highlight, setHighlight] = React.useState(0);
   const boxRef = React.useRef<HTMLDivElement>(null);
@@ -442,14 +446,14 @@ function MedicineCombobox({
                   )}
                 </span>
                 <span className="shrink-0 text-[10px] uppercase tracking-wide text-[var(--muted-foreground)]">
-                  {s.inCatalog ? "Pharmacy" : "Used before"}
+                  {s.inCatalog ? t("pharmacy") : t("usedBefore")}
                 </span>
               </button>
               {!s.inCatalog && onDismiss && (
                 <button
                   type="button"
-                  aria-label={`Remove “${s.name}” from suggestions`}
-                  title="Remove from suggestions"
+                  aria-label={t("removeSuggestion", { name: s.name })}
+                  title={t("removeFromSuggestions")}
                   className="px-2 py-1.5 text-[var(--muted-foreground)] hover:text-[var(--destructive)]"
                   onClick={() => onDismiss(s.name)}
                 >

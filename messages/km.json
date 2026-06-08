@@ -773,6 +773,37 @@
       "allDoctors": "វេជ្ជបណ្ឌិតទាំងអស់",
       "countOf": "{shown} ក្នុង {total}",
       "noMatch": "គ្មានវេជ្ជបញ្ជាត្រូវនឹងតម្រងរបស់អ្នក។"
+    },
+    "form": {
+      "patient": "អ្នកជំងឺ",
+      "selectPatient": "ជ្រើសរើសអ្នកជំងឺ…",
+      "doctor": "វេជ្ជបណ្ឌិតចេញវេជ្ជបញ្ជា",
+      "unassigned": "មិនបានកំណត់",
+      "branch": "សាខា (ស្រេចចិត្ត)",
+      "noBranch": "គ្មានសាខា",
+      "medicines": "ឱសថ",
+      "addMedicine": "បន្ថែមឱសថ",
+      "medicine": "ឱសថ *",
+      "dosage": "កម្រិតប្រើ — បរិមាណតាមពេលវេលា",
+      "times": { "morning": "ព្រឹក", "afternoon": "រសៀល", "evening": "ល្ងាច", "night": "យប់" },
+      "decreaseDose": "បន្ថយកម្រិត {time}",
+      "increaseDose": "បង្កើនកម្រិត {time}",
+      "duration": "រយៈពេល",
+      "days": "ថ្ងៃ",
+      "quantity": "បរិមាណ",
+      "quantityTitle": "ស្វ័យប្រវត្តិ = រយៈពេល × បរិមាណក្នុងមួយថ្ងៃ។ វាយដើម្បីប្តូរ លុបដើម្បីកំណត់ឡើងវិញ។",
+      "instructions": "ការណែនាំ",
+      "remove": "លុបចេញ",
+      "notes": "កំណត់ចំណាំ",
+      "saving": "កំពុងរក្សាទុក…",
+      "issue": "ចេញវេជ្ជបញ្ជា",
+      "cancel": "បោះបង់",
+      "pharmacy": "ឱសថស្ថាន",
+      "usedBefore": "ធ្លាប់ប្រើ",
+      "removeSuggestion": "លុប “{name}” ចេញពីការណែនាំ",
+      "removeFromSuggestions": "លុបចេញពីការណែនាំ",
+      "newTitle": "វេជ្ជបញ្ជាថ្មី",
+      "backToList": "← វេជ្ជបញ្ជា"
     }
   },
   "lab": {
@@ -886,6 +917,11 @@
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
       "selectTest": "សូមជ្រើសរើសការធ្វើតេស្តយ៉ាងហោចណាស់មួយ",
       "categoryNameRequired": "ត្រូវការឈ្មោះប្រភេទ"
+    },
+    "prescription": {
+      "medicineRequired": "ត្រូវការឱសថ",
+      "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
+      "atLeastOneMedicine": "បន្ថែមឱសថយ៉ាងហោចណាស់មួយ"
     },
     "appointment": {
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
