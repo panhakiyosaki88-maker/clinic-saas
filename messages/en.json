@@ -406,7 +406,9 @@
       "sure": "Sure?",
       "deleting": "Deleting…",
       "confirmDelete": "Confirm delete",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "noDocuments": "No documents yet.",
+      "remove": "Remove"
     },
     "title": "Patients",
     "registered": "{count, plural, one {# patient registered} other {# patients registered}}",
@@ -1196,6 +1198,18 @@
       "requested": "Pending",
       "processing": "In Progress",
       "completed": "Finish"
+    },
+    "statusBadge": {
+      "requested": "Requested",
+      "collected": "Collected",
+      "processing": "Processing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "byDate": {
+      "noRequests": "No lab requests yet.",
+      "tests": "{count, plural, one {# test} other {# tests}}",
+      "viewRecord": "View record"
     },
     "form": {
       "patient": "Patient",

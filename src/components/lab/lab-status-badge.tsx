@@ -1,4 +1,4 @@
-import { LAB_STATUS_LABELS } from "@/lib/validations/lab";
+import { useTranslations } from "next-intl";
 import type { LabStatus } from "@/types/database";
 
 const TONE: Record<LabStatus, string> = {
@@ -10,9 +10,10 @@ const TONE: Record<LabStatus, string> = {
 };
 
 export function LabStatusBadge({ status }: { status: LabStatus }) {
+  const t = useTranslations("lab.statusBadge");
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE[status]}`}>
-      {LAB_STATUS_LABELS[status]}
+      {t(status)}
     </span>
   );
 }

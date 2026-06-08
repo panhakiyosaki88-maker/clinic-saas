@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 import { LabStatusBadge } from "@/components/lab/lab-status-badge";
 import { Button } from "@/components/ui/button";
@@ -39,9 +40,10 @@ export function PatientLabByDate({
   }, [requests]);
 
   const [open, setOpen] = React.useState<string | null>(null);
+  const t = useTranslations("lab.byDate");
 
   if (requests.length === 0) {
-    return <p className="text-sm text-[var(--muted-foreground)]">No lab requests yet.</p>;
+    return <p className="text-sm text-[var(--muted-foreground)]">{t("noRequests")}</p>;
   }
 
   return (
@@ -58,7 +60,7 @@ export function PatientLabByDate({
             >
               <span className="text-sm font-medium">{formatLabSessionDate(key)}</span>
               <span className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
-                {tests.length} {tests.length === 1 ? "test" : "tests"}
+                {t("tests", { count: tests.length })}
                 <ChevronDown
                   className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
                 />
@@ -77,7 +79,7 @@ export function PatientLabByDate({
                 </ul>
                 <Button asChild size="sm" variant="outline">
                   <Link href={`/lab/patient/${patientId}#${labSessionAnchor(key)}`}>
-                    View record
+                    {t("viewRecord")}
                   </Link>
                 </Button>
               </div>
