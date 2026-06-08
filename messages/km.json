@@ -628,6 +628,37 @@
       "editTitle": "កែសម្រួល {number}",
       "backToList": "← វិក្កយបត្រ",
       "backToOne": "← វិក្កយបត្រ"
+    },
+    "paymentMethods": {
+      "cash": "សាច់ប្រាក់",
+      "khqr": "KHQR",
+      "aba_transfer": "ផ្ទេរ ABA",
+      "acleda_transfer": "ផ្ទេរ ACLEDA",
+      "wing": "Wing",
+      "bank_transfer": "ផ្ទេរតាមធនាគារ",
+      "credit_card": "កាតឥណទាន",
+      "other": "ផ្សេងៗ"
+    },
+    "paymentForm": {
+      "amount": "ចំនួនទឹកប្រាក់",
+      "method": "វិធីសាស្ត្រ",
+      "reference": "លេខយោង",
+      "referencePlaceholder": "លេខយោងប្រតិបត្តិការ (ធនាគារ / KHQR)",
+      "note": "កំណត់សម្គាល់",
+      "approxBalance": "≈ {approx} · សមតុល្យ {balance}",
+      "recording": "កំពុងកត់ត្រា…",
+      "record": "កត់ត្រាការទូទាត់"
+    },
+    "refundForm": {
+      "refund": "សងប្រាក់វិញ",
+      "maxLabel": "សងប្រាក់វិញ (អតិបរមា {max})",
+      "amount": "ចំនួនទឹកប្រាក់",
+      "method": "វិធីសាស្ត្រ",
+      "reference": "លេខយោង",
+      "note": "កំណត់សម្គាល់",
+      "refunding": "កំពុងសងប្រាក់វិញ…",
+      "confirm": "បញ្ជាក់ការសងប្រាក់វិញ",
+      "cancel": "បោះបង់"
     }
   },
   "doctors": {
@@ -912,6 +943,12 @@
       "notFound": "រកមិនឃើញវិក្កយបត្រ។",
       "cancelled": "វិក្កយបត្រនេះត្រូវបានបោះបង់។",
       "hasPayments": "មិនអាចកែវិក្កយបត្រដែលមានការទូទាត់រួចហើយ។"
+    },
+    "payment": {
+      "enterAmount": "បញ្ចូលចំនួនទឹកប្រាក់",
+      "finalizeDraft": "សូមបញ្ចប់សេចក្តីព្រាងជាមុនមុនពេលទទួលការទូទាត់។",
+      "exceedsBalance": "ចំនួនទឹកប្រាក់លើសសមតុល្យដែលនៅសល់ ({balance})។",
+      "exceedsPaid": "ការសងប្រាក់វិញលើសចំនួនទឹកប្រាក់ដែលបានបង់ ({amount})។"
     },
     "lab": {
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",

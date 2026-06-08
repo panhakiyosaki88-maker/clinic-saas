@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { refundPayment } from "@/server/actions/billing";
-import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
+import { PAYMENT_METHODS } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,8 @@ const selectClass =
 /** Records a refund against an invoice (capped at the amount paid). */
 export function RefundForm({ invoiceId, amountPaid }: { invoiceId: string; amountPaid: number }) {
   const router = useRouter();
+  const t = useTranslations("billing.refundForm");
+  const tm = useTranslations("billing.paymentMethods");
   const [open, setOpen] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -21,7 +24,7 @@ export function RefundForm({ invoiceId, amountPaid }: { invoiceId: string; amoun
   if (!open) {
     return (
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        Refund
+        {t("refund")}
       </Button>
     );
   }
@@ -47,31 +50,31 @@ export function RefundForm({ invoiceId, amountPaid }: { invoiceId: string; amoun
 
   return (
     <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-[var(--border)] p-3">
-      <p className="text-sm font-medium">Refund (max {amountPaid.toFixed(2)})</p>
+      <p className="text-sm font-medium">{t("maxLabel", { max: amountPaid.toFixed(2) })}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
-          <Label htmlFor="r-amount" className="text-xs">Amount</Label>
+          <Label htmlFor="r-amount" className="text-xs">{t("amount")}</Label>
           <Input id="r-amount" name="amount" type="number" step="0.01" defaultValue={amountPaid > 0 ? amountPaid.toFixed(2) : ""} required />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="r-method" className="text-xs">Method</Label>
+          <Label htmlFor="r-method" className="text-xs">{t("method")}</Label>
           <select id="r-method" name="method" className={selectClass} defaultValue="cash">
-            {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>)}
+            {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{tm(m)}</option>)}
           </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="r-reference" className="text-xs">Reference</Label>
+          <Label htmlFor="r-reference" className="text-xs">{t("reference")}</Label>
           <Input id="r-reference" name="reference" />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="r-note" className="text-xs">Note</Label>
+          <Label htmlFor="r-note" className="text-xs">{t("note")}</Label>
           <Input id="r-note" name="note" />
         </div>
       </div>
       {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
       <div className="flex gap-2">
-        <Button type="submit" variant="destructive" size="sm" disabled={pending}>{pending ? "Refunding…" : "Confirm refund"}</Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button>
+        <Button type="submit" variant="destructive" size="sm" disabled={pending}>{pending ? t("refunding") : t("confirm")}</Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>{t("cancel")}</Button>
       </div>
     </form>
   );

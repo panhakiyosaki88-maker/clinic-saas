@@ -628,6 +628,37 @@
       "editTitle": "Edit {number}",
       "backToList": "← Invoices",
       "backToOne": "← Invoice"
+    },
+    "paymentMethods": {
+      "cash": "Cash",
+      "khqr": "KHQR",
+      "aba_transfer": "ABA Transfer",
+      "acleda_transfer": "ACLEDA Transfer",
+      "wing": "Wing",
+      "bank_transfer": "Bank Transfer",
+      "credit_card": "Credit Card",
+      "other": "Other"
+    },
+    "paymentForm": {
+      "amount": "Amount",
+      "method": "Method",
+      "reference": "Reference",
+      "referencePlaceholder": "Txn ref (bank / KHQR)",
+      "note": "Note",
+      "approxBalance": "≈ {approx} · balance {balance}",
+      "recording": "Recording…",
+      "record": "Record payment"
+    },
+    "refundForm": {
+      "refund": "Refund",
+      "maxLabel": "Refund (max {max})",
+      "amount": "Amount",
+      "method": "Method",
+      "reference": "Reference",
+      "note": "Note",
+      "refunding": "Refunding…",
+      "confirm": "Confirm refund",
+      "cancel": "Cancel"
     }
   },
   "doctors": {
@@ -912,6 +943,12 @@
       "notFound": "Invoice not found.",
       "cancelled": "This invoice is cancelled.",
       "hasPayments": "Cannot edit an invoice that already has payments."
+    },
+    "payment": {
+      "enterAmount": "Enter an amount",
+      "finalizeDraft": "Finalize the draft before taking payment.",
+      "exceedsBalance": "Amount exceeds the outstanding balance ({balance}).",
+      "exceedsPaid": "Refund exceeds the amount paid ({amount})."
     },
     "lab": {
       "patientRequired": "Choose a patient",

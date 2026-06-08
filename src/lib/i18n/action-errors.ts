@@ -20,7 +20,7 @@ import { getTranslations } from "next-intl/server";
  * still renders verbatim until its key is added.
  */
 export type ErrorT = {
-  (key: string): string;
+  (key: string, values?: Record<string, string | number>): string;
   has: (key: string) => boolean;
 };
 

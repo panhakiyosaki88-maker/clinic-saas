@@ -81,7 +81,7 @@ export type EditInvoiceInput = z.infer<typeof editInvoiceSchema>;
 
 export const recordPaymentSchema = z.object({
   invoiceId: z.string().uuid(),
-  amount: z.coerce.number().positive("Enter an amount"),
+  amount: z.coerce.number().positive("payment.enterAmount"),
   method: z.enum(PAYMENT_METHODS),
   reference: z.string().trim().max(255).optional().or(z.literal("")),
   note: z.string().trim().max(255).optional().or(z.literal("")),
@@ -159,7 +159,7 @@ export type BillFromVisitInput = z.infer<typeof billFromVisitSchema>;
 
 export const refundPaymentSchema = z.object({
   invoiceId: z.string().uuid(),
-  amount: z.coerce.number().positive("Enter an amount"),
+  amount: z.coerce.number().positive("payment.enterAmount"),
   method: z.enum(PAYMENT_METHODS),
   reference: z.string().trim().max(255).optional().or(z.literal("")),
   note: z.string().trim().max(255).optional().or(z.literal("")),

@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { recordPayment } from "@/server/actions/billing";
-import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
+import { PAYMENT_METHODS } from "@/lib/validations/invoice";
 import { formatUSD, formatKHR, usdToKhr } from "@/lib/billing/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ const selectClass =
 
 export function PaymentForm({ invoiceId, balance, rate = 4100 }: { invoiceId: string; balance: number; rate?: number }) {
   const router = useRouter();
+  const t = useTranslations("billing.paymentForm");
+  const tm = useTranslations("billing.paymentMethods");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -59,7 +62,7 @@ export function PaymentForm({ invoiceId, balance, rate = 4100 }: { invoiceId: st
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="amount" className="text-xs">Amount</Label>
+            <Label htmlFor="amount" className="text-xs">{t("amount")}</Label>
             <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)] text-[10px]">
               {(["USD", "KHR"] as const).map((c) => (
                 <button
@@ -83,30 +86,31 @@ export function PaymentForm({ invoiceId, balance, rate = 4100 }: { invoiceId: st
             required
           />
           <p className="text-[10px] text-[var(--muted-foreground)]">
-            {payCurrency === "KHR"
-              ? `≈ ${formatUSD(usdAmount)} · balance ${formatUSD(balance)}`
-              : `≈ ${formatKHR(usdToKhr(Number(amount) || 0, rate))} · balance ${formatUSD(balance)}`}
+            {t("approxBalance", {
+              approx: payCurrency === "KHR" ? formatUSD(usdAmount) : formatKHR(usdToKhr(Number(amount) || 0, rate)),
+              balance: formatUSD(balance),
+            })}
           </p>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="method" className="text-xs">Method</Label>
+          <Label htmlFor="method" className="text-xs">{t("method")}</Label>
           <select id="method" name="method" className={selectClass} defaultValue="cash">
             {PAYMENT_METHODS.map((m) => (
-              <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>
+              <option key={m} value={m}>{tm(m)}</option>
             ))}
           </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="reference" className="text-xs">Reference</Label>
-          <Input id="reference" name="reference" placeholder="Txn ref (bank / KHQR)" />
+          <Label htmlFor="reference" className="text-xs">{t("reference")}</Label>
+          <Input id="reference" name="reference" placeholder={t("referencePlaceholder")} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="note" className="text-xs">Note</Label>
+          <Label htmlFor="note" className="text-xs">{t("note")}</Label>
           <Input id="note" name="note" />
         </div>
       </div>
       {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
-      <Button type="submit" size="sm" disabled={pending}>{pending ? "Recording…" : "Record payment"}</Button>
+      <Button type="submit" size="sm" disabled={pending}>{pending ? t("recording") : t("record")}</Button>
     </form>
   );
 }

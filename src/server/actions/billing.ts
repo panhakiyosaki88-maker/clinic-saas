@@ -489,9 +489,10 @@ export async function voidInvoices(invoiceIds: string[]): Promise<ActionResult<{
 /** Records a payment against an invoice. Triggers recompute the balance/status. */
 export async function recordPayment(input: RecordPaymentInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = recordPaymentSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 
@@ -502,11 +503,11 @@ export async function recordPayment(input: RecordPaymentInput): Promise<ActionRe
     .eq("id", v.invoiceId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
-  if (!invoice) return fail("Invoice not found.");
-  if (invoice.status === "cancelled") return fail("This invoice is cancelled.");
-  if (invoice.status === "draft") return fail("Finalize the draft before taking payment.");
+  if (!invoice) return fail(te("invoice.notFound"));
+  if (invoice.status === "cancelled") return fail(te("invoice.cancelled"));
+  if (invoice.status === "draft") return fail(te("payment.finalizeDraft"));
   if (v.amount > Number(invoice.balance) + 0.001) {
-    return fail(`Amount exceeds the outstanding balance (${invoice.balance}).`);
+    return fail(te("payment.exceedsBalance", { balance: Number(invoice.balance) }));
   }
 
   const { error } = await supabase.from("payments").insert({
@@ -531,9 +532,10 @@ export async function recordPayment(input: RecordPaymentInput): Promise<ActionRe
  */
 export async function refundPayment(input: RefundPaymentInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = refundPaymentSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 
@@ -544,10 +546,10 @@ export async function refundPayment(input: RefundPaymentInput): Promise<ActionRe
     .eq("id", v.invoiceId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
-  if (!invoice) return fail("Invoice not found.");
-  if (invoice.status === "cancelled") return fail("This invoice is cancelled.");
+  if (!invoice) return fail(te("invoice.notFound"));
+  if (invoice.status === "cancelled") return fail(te("invoice.cancelled"));
   if (v.amount > Number(invoice.amount_paid) + 0.001) {
-    return fail(`Refund exceeds the amount paid (${invoice.amount_paid}).`);
+    return fail(te("payment.exceedsPaid", { amount: Number(invoice.amount_paid) }));
   }
 
   const { error } = await supabase.from("payments").insert({
