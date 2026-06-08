@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -25,16 +26,18 @@ export default async function BillingWorkspacePage({
   const sp = await searchParams;
   const patientId = sp.patientId;
 
+  const t = await getTranslations("billing.workspace");
+
   // No patient chosen yet → show a picker.
   if (!patientId) {
     const patients = await listPatientOptions();
     return (
       <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
         <header>
-          <BackLink label="← Billing" fallback="/billing" />
-          <h1 className="mt-1 text-2xl font-bold">Billing workspace</h1>
+          <BackLink label={t("backToList")} fallback="/billing" />
+          <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
-            Pick a patient to detect every billable activity from their visit.
+            {t("pickPatient")}
           </p>
         </header>
         <form className="flex gap-2" action="/billing/workspace">
@@ -44,12 +47,12 @@ export default async function BillingWorkspacePage({
             defaultValue=""
             className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
           >
-            <option value="" disabled>Select a patient…</option>
+            <option value="" disabled>{t("selectPatient")}</option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>
-          <button className="h-9 shrink-0 rounded-md bg-brand-600 px-4 text-sm font-medium text-white">Open</button>
+          <button className="h-9 shrink-0 rounded-md bg-brand-600 px-4 text-sm font-medium text-white">{t("open")}</button>
         </form>
       </main>
     );
@@ -96,11 +99,11 @@ export default async function BillingWorkspacePage({
     <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <header className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <BackLink label="← Billing" fallback="/billing" />
-          <h1 className="mt-1 text-2xl font-bold">Billing workspace</h1>
+          <BackLink label={t("backToList")} fallback="/billing" />
+          <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             {patient.full_name} · {patient.patient_number}
-            {draft ? " · continuing draft" : ""}
+            {draft ? ` · ${t("continuingDraft")}` : ""}
           </p>
         </div>
       </header>

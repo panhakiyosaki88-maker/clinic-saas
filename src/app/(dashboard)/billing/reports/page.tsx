@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getBillingBreakdowns, type BreakdownRow } from "@/lib/db/queries/billing-reports";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
@@ -16,16 +17,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Billing reports" };
 
-function BreakdownCard({ title, name, rows, fmt }: { title: string; name: string; rows: BreakdownRow[]; fmt: (n: number) => string }) {
+function BreakdownCard({ title, name, rows, fmt, amountLabel, emptyLabel }: { title: string; name: string; rows: BreakdownRow[]; fmt: (n: number) => string; amountLabel: string; emptyLabel: string }) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle>{title}</CardTitle>
-        <ReportExport name={name} columns={[{ key: "label", label: title }, { key: "amount", label: "Amount" }]} rows={rows} />
+        <ReportExport name={name} columns={[{ key: "label", label: title }, { key: "amount", label: amountLabel }]} rows={rows} />
       </CardHeader>
       <CardContent>
         {rows.length === 0 ? (
-          <p className="text-sm text-[var(--muted-foreground)]">No revenue in range.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{emptyLabel}</p>
         ) : (
           <table className="w-full text-sm">
             <tbody>
@@ -61,23 +62,28 @@ export default async function BillingReportsPage({
   ]);
   const ctx = currencyContext(settings);
   const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
+  const t = await getTranslations("billing.reports");
+  const fromYmd = sp.from ?? ymd(startOfMonth(new Date()));
+  const toYmd = sp.to ?? ymd(new Date());
+  const amountLabel = t("amount");
+  const emptyLabel = t("noRevenue");
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 print:max-w-none print:p-0">
-      <PageHeader icon={BarChart3} title="Billing reports" subtitle={`Collected ${money(d.total)} · ${sp.from ?? ymd(startOfMonth(new Date()))} → ${sp.to ?? ymd(new Date())}`} />
+      <PageHeader icon={BarChart3} title={t("title")} subtitle={t("subtitle", { amount: money(d.total), from: fromYmd, to: toYmd })} />
       <BillingTabs />
 
       <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
-        <DateRange from={sp.from ?? ymd(startOfMonth(new Date()))} to={sp.to ?? ymd(new Date())} />
-        <PrintButton label="PDF" />
+        <DateRange from={fromYmd} to={toYmd} />
+        <PrintButton label={t("pdf")} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <BreakdownCard title="Revenue by category" name="revenue-by-category" rows={d.byCategory} fmt={money} />
-        <BreakdownCard title="Revenue by doctor" name="revenue-by-doctor" rows={d.byDoctor} fmt={money} />
-        <BreakdownCard title="Revenue by branch" name="revenue-by-branch" rows={d.byBranch} fmt={money} />
-        <BreakdownCard title="Revenue by service" name="revenue-by-service" rows={d.byService} fmt={money} />
-        <BreakdownCard title="Revenue by method" name="revenue-by-method" rows={d.byMethod} fmt={money} />
+        <BreakdownCard title={t("byCategory")} name="revenue-by-category" rows={d.byCategory} fmt={money} amountLabel={amountLabel} emptyLabel={emptyLabel} />
+        <BreakdownCard title={t("byDoctor")} name="revenue-by-doctor" rows={d.byDoctor} fmt={money} amountLabel={amountLabel} emptyLabel={emptyLabel} />
+        <BreakdownCard title={t("byBranch")} name="revenue-by-branch" rows={d.byBranch} fmt={money} amountLabel={amountLabel} emptyLabel={emptyLabel} />
+        <BreakdownCard title={t("byService")} name="revenue-by-service" rows={d.byService} fmt={money} amountLabel={amountLabel} emptyLabel={emptyLabel} />
+        <BreakdownCard title={t("byMethod")} name="revenue-by-method" rows={d.byMethod} fmt={money} amountLabel={amountLabel} emptyLabel={emptyLabel} />
       </div>
     </main>
   );

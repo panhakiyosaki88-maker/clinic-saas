@@ -1081,6 +1081,26 @@
         "billing_settings": "Settings",
         "invoice_source_links": "Auto-bill link"
       }
+    },
+    "reports": {
+      "title": "Billing reports",
+      "subtitle": "Collected {amount} · {from} → {to}",
+      "amount": "Amount",
+      "noRevenue": "No revenue in range.",
+      "byCategory": "Revenue by category",
+      "byDoctor": "Revenue by doctor",
+      "byBranch": "Revenue by branch",
+      "byService": "Revenue by service",
+      "byMethod": "Revenue by method",
+      "pdf": "PDF"
+    },
+    "workspace": {
+      "backToList": "← Billing",
+      "title": "Billing workspace",
+      "pickPatient": "Pick a patient to detect every billable activity from their visit.",
+      "selectPatient": "Select a patient…",
+      "open": "Open",
+      "continuingDraft": "continuing draft"
     }
   },
   "doctors": {
