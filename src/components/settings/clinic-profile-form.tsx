@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { updateClinic } from "@/server/actions/clinic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ export interface ClinicProfile {
 
 export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
   const router = useRouter();
+  const t = useTranslations("settings.profileForm");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [saved, setSaved] = React.useState(false);
@@ -48,7 +50,7 @@ export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Clinic name</Label>
+        <Label htmlFor="name">{t("name")}</Label>
         <Input id="name" name="name" defaultValue={clinic.name} aria-invalid={!!fieldErrors.name} required />
         {fieldErrors.name?.map((m) => (
           <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
@@ -56,16 +58,16 @@ export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="subtitle">Subtitle</Label>
+        <Label htmlFor="subtitle">{t("subtitle")}</Label>
         <Input
           id="subtitle"
           name="subtitle"
           defaultValue={clinic.subtitle ?? ""}
           maxLength={120}
-          placeholder="e.g. Family & General Practice"
+          placeholder={t("subtitlePlaceholder")}
           aria-invalid={!!fieldErrors.subtitle}
         />
-        <p className="text-xs text-[var(--muted-foreground)]">Shown under the clinic name in the side menu.</p>
+        <p className="text-xs text-[var(--muted-foreground)]">{t("subtitleHint")}</p>
         {fieldErrors.subtitle?.map((m) => (
           <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
         ))}
@@ -73,14 +75,14 @@ export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="contactEmail">Contact email</Label>
+          <Label htmlFor="contactEmail">{t("contactEmail")}</Label>
           <Input id="contactEmail" name="contactEmail" type="email" defaultValue={clinic.contactEmail ?? ""} />
           {fieldErrors.contactEmail?.map((m) => (
             <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
           ))}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="contactPhone">Contact phone</Label>
+          <Label htmlFor="contactPhone">{t("contactPhone")}</Label>
           <Input id="contactPhone" name="contactPhone" defaultValue={clinic.contactPhone ?? ""} />
         </div>
       </div>
@@ -92,12 +94,12 @@ export function ClinicProfileForm({ clinic }: { clinic: ClinicProfile }) {
       )}
       {saved && (
         <p className="rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400">
-          Changes saved.
+          {t("saved")}
         </p>
       )}
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save changes"}
+        {pending ? t("saving") : t("save")}
       </Button>
     </form>
   );

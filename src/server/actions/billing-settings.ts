@@ -7,6 +7,7 @@ import { listBranches } from "@/lib/db/queries/clinic";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 const schema = z.object({
   branchId: z.string().uuid(),
@@ -22,13 +23,14 @@ export type BillingSettingsInput = z.infer<typeof schema>;
 
 export async function saveBillingSettings(input: BillingSettingsInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
   const parsed = schema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   const v = parsed.data;
 
   // Only accept a branch that belongs to the caller's clinic.
   const branches = await listBranches();
-  if (!branches.some((b) => b.id === v.branchId)) return fail("Unknown branch.");
+  if (!branches.some((b) => b.id === v.branchId)) return fail(te("branch.unknown"));
 
   const supabase = await createClient();
   const { error } = await supabase.from("billing_settings").upsert(

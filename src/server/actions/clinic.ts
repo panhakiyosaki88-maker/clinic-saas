@@ -138,9 +138,10 @@ export async function updateClinic(
   input: UpdateClinicInput
 ): Promise<ActionResult> {
   const { clinicId } = await requireClinic();
+  const te = await getErrorT();
   const parsed = updateClinicSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 

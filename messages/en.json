@@ -92,6 +92,17 @@
       "cancel": "Cancel",
       "created": "User created — they can sign in now."
     },
+    "profileForm": {
+      "name": "Clinic name",
+      "subtitle": "Subtitle",
+      "subtitlePlaceholder": "e.g. Family & General Practice",
+      "subtitleHint": "Shown under the clinic name in the side menu.",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone",
+      "saved": "Changes saved.",
+      "saving": "Saving…",
+      "save": "Save changes"
+    },
     "language": {
       "title": "Language",
       "description": "Choose the display language for the interface. Medical terms (medicine names, lab tests, diagnoses) always stay in English.",
@@ -495,6 +506,18 @@
     }
   },
   "billingSettings": {
+    "form": {
+      "merchantAccount": "KHQR merchant account (Bakong ID)",
+      "merchantName": "Merchant name",
+      "merchantCity": "Merchant city",
+      "currency": "Primary currency",
+      "exchangeRate": "Exchange rate (1 USD = … KHR)",
+      "invoiceDue": "Invoice due (days)",
+      "taxRate": "Default tax rate (%)",
+      "saved": "Saved.",
+      "saving": "Saving…",
+      "save": "Save settings"
+    },
     "tabs": {
       "catalog": "Price catalog",
       "procedures": "Procedures",
@@ -1159,7 +1182,8 @@
       "nameRequired": "Branch name is required",
       "codeTaken": "A branch with that code already exists.",
       "alreadyInUse": "Already in use",
-      "createFailed": "Could not create branch."
+      "createFailed": "Could not create branch.",
+      "unknown": "Unknown branch."
     },
     "medicine": {
       "nameRequired": "Medicine name is required",

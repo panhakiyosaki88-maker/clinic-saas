@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { saveBillingSettings } from "@/server/actions/billing-settings";
 import type { BillingSettings } from "@/lib/db/queries/billing-settings";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export function BillingSettingsForm({
   settings: BillingSettings | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("billingSettings.form");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [done, setDone] = React.useState(false);
@@ -48,41 +50,41 @@ export function BillingSettingsForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
       <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor="khqrMerchantAccount" className="text-xs">KHQR merchant account (Bakong ID)</Label>
+        <Label htmlFor="khqrMerchantAccount" className="text-xs">{t("merchantAccount")}</Label>
         <Input id="khqrMerchantAccount" name="khqrMerchantAccount" defaultValue={settings?.khqr_merchant_account ?? ""} placeholder="name@bank" />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="khqrMerchantName" className="text-xs">Merchant name</Label>
+        <Label htmlFor="khqrMerchantName" className="text-xs">{t("merchantName")}</Label>
         <Input id="khqrMerchantName" name="khqrMerchantName" defaultValue={settings?.khqr_merchant_name ?? ""} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="khqrMerchantCity" className="text-xs">Merchant city</Label>
+        <Label htmlFor="khqrMerchantCity" className="text-xs">{t("merchantCity")}</Label>
         <Input id="khqrMerchantCity" name="khqrMerchantCity" defaultValue={settings?.khqr_merchant_city ?? "Phnom Penh"} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="currency" className="text-xs">Primary currency</Label>
+        <Label htmlFor="currency" className="text-xs">{t("currency")}</Label>
         <select id="currency" name="currency" className={selectClass} defaultValue={settings?.currency ?? "USD"}>
           <option value="USD">USD</option>
           <option value="KHR">KHR</option>
         </select>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="usdToKhrRate" className="text-xs">Exchange rate (1 USD = … KHR)</Label>
+        <Label htmlFor="usdToKhrRate" className="text-xs">{t("exchangeRate")}</Label>
         <Input id="usdToKhrRate" name="usdToKhrRate" type="number" step="1" defaultValue={settings?.usd_to_khr_rate ?? 4100} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="invoiceDueDays" className="text-xs">Invoice due (days)</Label>
+        <Label htmlFor="invoiceDueDays" className="text-xs">{t("invoiceDue")}</Label>
         <Input id="invoiceDueDays" name="invoiceDueDays" type="number" defaultValue={settings?.invoice_due_days ?? 14} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="taxRate" className="text-xs">Default tax rate (%)</Label>
+        <Label htmlFor="taxRate" className="text-xs">{t("taxRate")}</Label>
         <Input id="taxRate" name="taxRate" type="number" step="0.01" defaultValue={settings?.tax_rate ?? 0} />
       </div>
 
       {error && <p className="text-xs text-[var(--destructive)] sm:col-span-2">{error}</p>}
-      {done && <p className="text-xs text-emerald-600 dark:text-emerald-400 sm:col-span-2">Saved.</p>}
+      {done && <p className="text-xs text-emerald-600 dark:text-emerald-400 sm:col-span-2">{t("saved")}</p>}
       <div className="sm:col-span-2">
-        <Button type="submit" size="sm" disabled={pending}>{pending ? "Saving…" : "Save settings"}</Button>
+        <Button type="submit" size="sm" disabled={pending}>{pending ? t("saving") : t("save")}</Button>
       </div>
     </form>
   );
