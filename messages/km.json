@@ -579,6 +579,42 @@
       "general": "ទូទៅ",
       "lic": "អាជ្ញាប័ណ្ណ",
       "inactive": "អសកម្ម"
+    },
+    "form": {
+      "sections": {
+        "identity": "អត្តសញ្ញាណ",
+        "professional": "វិជ្ជាជីវៈ",
+        "credentials": "សញ្ញាប័ត្រ",
+        "employment": "ការងារ"
+      },
+      "title": "ងារ",
+      "fullName": "ឈ្មោះពេញ",
+      "gender": "ភេទ",
+      "genderOpt": { "male": "ប្រុស", "female": "ស្រី", "other": "ផ្សេងទៀត" },
+      "languages": "ភាសា",
+      "phone": "ទូរស័ព្ទ",
+      "email": "អ៊ីមែល",
+      "specialization": "ជំនាញ",
+      "subSpecialty": "ជំនាញរង",
+      "yearsExperience": "ឆ្នាំបទពិសោធន៍",
+      "consultationFee": "ថ្លៃពិគ្រោះ",
+      "bio": "ប្រវត្តិរូប",
+      "licenseNumber": "លេខអាជ្ញាប័ណ្ណ",
+      "licenseExpiry": "ថ្ងៃផុតកំណត់អាជ្ញាប័ណ្ណ",
+      "licenseVerified": "អាជ្ញាប័ណ្ណបានផ្ទៀងផ្ទាត់",
+      "employmentType": "ប្រភេទការងារ",
+      "joinedOn": "បានចូលធ្វើការនៅ",
+      "room": "បន្ទប់ / ការិយាល័យ",
+      "branch": "សាខា (ស្រេចចិត្ត)",
+      "noBranch": "គ្មានសាខា",
+      "active": "សកម្ម (ទទួលអ្នកជំងឺ)",
+      "saving": "កំពុងរក្សាទុក…",
+      "save": "រក្សាទុក",
+      "create": "បង្កើតវេជ្ជបណ្ឌិត",
+      "cancel": "បោះបង់",
+      "newTitle": "វេជ្ជបណ្ឌិតថ្មី",
+      "editTitle": "កែសម្រួលវេជ្ជបណ្ឌិត",
+      "backToList": "← វេជ្ជបណ្ឌិត"
     }
   },
   "notifications": {
@@ -727,6 +763,11 @@
   "errors": {
     "fixFields": "សូមកែតម្រូវវាលដែលបានបន្លិច។",
     "invalidRequest": "សំណើមិនត្រឹមត្រូវ។",
+    "invalidEmail": "បញ្ចូលអ៊ីមែលត្រឹមត្រូវ",
+    "doctor": {
+      "nameRequired": "ត្រូវការឈ្មោះវេជ្ជបណ្ឌិត",
+      "createFailed": "មិនអាចបង្កើតវេជ្ជបណ្ឌិតបានទេ។"
+    },
     "appointment": {
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
       "dateFormat": "ប្រើទម្រង់ YYYY-MM-DD",

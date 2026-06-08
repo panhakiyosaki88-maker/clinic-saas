@@ -21,6 +21,7 @@ import {
   type LicenseInput,
 } from "@/lib/validations/doctor";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 import type { Database, Gender, EmploymentType } from "@/types/database";
 
 type DoctorWrite = Database["public"]["Tables"]["doctors"]["Update"];
@@ -55,9 +56,10 @@ export async function createDoctor(
   input: CreateDoctorInput
 ): Promise<ActionResult<{ doctorId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.DOCTORS_WRITE);
+  const te = await getErrorT();
   const parsed = createDoctorSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
 
   const supabase = await createClient();
@@ -71,7 +73,7 @@ export async function createDoctor(
     })
     .select("id")
     .single();
-  if (error || !data) return fail(error?.message ?? "Could not create doctor.");
+  if (error || !data) return fail(error?.message ?? te("doctor.createFailed"));
 
   revalidatePath("/doctors");
   return ok({ doctorId: data.id });
@@ -82,9 +84,10 @@ export async function updateDoctor(
   input: UpdateDoctorInput
 ): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.DOCTORS_WRITE);
+  const te = await getErrorT();
   const parsed = updateDoctorSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
 
   const supabase = await createClient();

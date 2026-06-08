@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createDoctor, updateDoctor } from "@/server/actions/doctors";
 import type { Doctor } from "@/lib/db/queries/doctors";
@@ -35,6 +36,8 @@ export function DoctorForm({
   branches?: BranchOption[];
   defaultBranchId?: string | null;
 }) {
+  const t = useTranslations("doctors.form");
+  const te = useTranslations("doctors.employment");
   const router = useRouter();
   const isEdit = !!doctor;
   const [pending, startTransition] = React.useTransition();
@@ -86,94 +89,94 @@ export function DoctorForm({
   return (
     <form onSubmit={onSubmit} className="space-y-8">
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Identity</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("sections.identity")}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Title" htmlFor="title">
+          <Field label={t("title")} htmlFor="title">
             <Input id="title" name="title" placeholder="Dr. / Prof." defaultValue={doctor?.title ?? ""} />
           </Field>
-          <Field label="Full name" htmlFor="fullName" errors={fieldErrors.fullName}>
+          <Field label={t("fullName")} htmlFor="fullName" errors={fieldErrors.fullName}>
             <Input id="fullName" name="fullName" defaultValue={doctor?.full_name ?? ""} required autoFocus />
           </Field>
-          <Field label="Gender" htmlFor="gender">
+          <Field label={t("gender")} htmlFor="gender">
             <select id="gender" name="gender" className={selectClass} defaultValue={doctor?.gender ?? ""}>
               <option value="">—</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
+              <option value="male">{t("genderOpt.male")}</option>
+              <option value="female">{t("genderOpt.female")}</option>
+              <option value="other">{t("genderOpt.other")}</option>
             </select>
           </Field>
-          <Field label="Languages" htmlFor="languages">
+          <Field label={t("languages")} htmlFor="languages">
             <Input id="languages" name="languages" placeholder="English, Khmer" defaultValue={doctor?.languages ?? ""} />
           </Field>
-          <Field label="Phone" htmlFor="phone">
+          <Field label={t("phone")} htmlFor="phone">
             <Input id="phone" name="phone" defaultValue={doctor?.phone ?? ""} />
           </Field>
-          <Field label="Email" htmlFor="email" errors={fieldErrors.email}>
+          <Field label={t("email")} htmlFor="email" errors={fieldErrors.email}>
             <Input id="email" name="email" type="email" defaultValue={doctor?.email ?? ""} />
           </Field>
         </div>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Professional</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("sections.professional")}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Specialization" htmlFor="specialization">
+          <Field label={t("specialization")} htmlFor="specialization">
             <Input id="specialization" name="specialization" defaultValue={doctor?.specialization ?? ""} />
           </Field>
-          <Field label="Sub-specialty" htmlFor="subSpecialty">
+          <Field label={t("subSpecialty")} htmlFor="subSpecialty">
             <Input id="subSpecialty" name="subSpecialty" defaultValue={doctor?.sub_specialty ?? ""} />
           </Field>
-          <Field label="Years of experience" htmlFor="yearsExperience">
+          <Field label={t("yearsExperience")} htmlFor="yearsExperience">
             <Input id="yearsExperience" name="yearsExperience" type="number" min="0" defaultValue={doctor?.years_experience ?? ""} />
           </Field>
-          <Field label="Consultation fee" htmlFor="consultationFee">
+          <Field label={t("consultationFee")} htmlFor="consultationFee">
             <Input id="consultationFee" name="consultationFee" type="number" step="0.01" defaultValue={doctor?.consultation_fee ?? ""} />
           </Field>
         </div>
-        <Field label="Bio" htmlFor="bio">
+        <Field label={t("bio")} htmlFor="bio">
           <Textarea id="bio" name="bio" defaultValue={doctor?.bio ?? ""} />
         </Field>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Credentials</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("sections.credentials")}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="License number" htmlFor="licenseNumber">
+          <Field label={t("licenseNumber")} htmlFor="licenseNumber">
             <Input id="licenseNumber" name="licenseNumber" defaultValue={doctor?.license_number ?? ""} />
           </Field>
-          <Field label="License expiry" htmlFor="licenseExpiry">
+          <Field label={t("licenseExpiry")} htmlFor="licenseExpiry">
             <Input id="licenseExpiry" name="licenseExpiry" type="date" defaultValue={doctor?.license_expiry ?? ""} />
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="licenseVerified" defaultChecked={doctor?.license_verified ?? false} className="h-4 w-4 rounded border-slate-300" />
-          License verified
+          {t("licenseVerified")}
         </label>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Employment</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("sections.employment")}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Employment type" htmlFor="employmentType">
+          <Field label={t("employmentType")} htmlFor="employmentType">
             <select id="employmentType" name="employmentType" className={selectClass} defaultValue={doctor?.employment_type ?? ""}>
               <option value="">—</option>
-              <option value="full_time">Full time</option>
-              <option value="part_time">Part time</option>
-              <option value="contract">Contract</option>
-              <option value="visiting">Visiting</option>
-              <option value="locum">Locum</option>
+              <option value="full_time">{te("full_time")}</option>
+              <option value="part_time">{te("part_time")}</option>
+              <option value="contract">{te("contract")}</option>
+              <option value="visiting">{te("visiting")}</option>
+              <option value="locum">{te("locum")}</option>
             </select>
           </Field>
-          <Field label="Joined on" htmlFor="joinedOn">
+          <Field label={t("joinedOn")} htmlFor="joinedOn">
             <Input id="joinedOn" name="joinedOn" type="date" defaultValue={doctor?.joined_on ?? ""} />
           </Field>
-          <Field label="Room / office" htmlFor="room">
+          <Field label={t("room")} htmlFor="room">
             <Input id="room" name="room" defaultValue={doctor?.room ?? ""} />
           </Field>
           {branches.length > 0 && (
-            <Field label="Branch (optional)" htmlFor="branchId">
+            <Field label={t("branch")} htmlFor="branchId">
               <select id="branchId" name="branchId" className={selectClass} defaultValue={doctor?.branch_id ?? defaultBranchId ?? ""}>
-                <option value="">No branch</option>
+                <option value="">{t("noBranch")}</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
@@ -183,7 +186,7 @@ export function DoctorForm({
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="isActive" defaultChecked={doctor?.is_active ?? true} className="h-4 w-4 rounded border-slate-300" />
-          Active (accepting patients)
+          {t("active")}
         </label>
       </section>
 
@@ -193,10 +196,10 @@ export function DoctorForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : isEdit ? "Save changes" : "Create doctor"}
+          {pending ? t("saving") : isEdit ? t("save") : t("create")}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>
-          Cancel
+          {t("cancel")}
         </Button>
       </div>
     </form>

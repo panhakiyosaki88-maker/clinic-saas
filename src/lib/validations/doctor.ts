@@ -18,14 +18,15 @@ export const employmentTypeSchema = z.enum([
 ]);
 
 export const createDoctorSchema = z.object({
-  fullName: z.string().trim().min(2, "Doctor name is required").max(160),
+  // Messages are i18n keys under the `errors` namespace (localized in the action).
+  fullName: z.string().trim().min(2, "doctor.nameRequired").max(160),
   branchId: z.string().uuid().optional().or(z.literal("")),
   title: optionalShort,
   specialization: optionalShort,
   subSpecialty: optionalShort,
   licenseNumber: optionalShort,
   phone: optionalShort,
-  email: z.string().email("Enter a valid email").optional().or(z.literal("")),
+  email: z.string().email("invalidEmail").optional().or(z.literal("")),
   bio: z.string().trim().max(2000).optional().or(z.literal("")),
   consultationFee: z.preprocess(
     emptyToUndef,
