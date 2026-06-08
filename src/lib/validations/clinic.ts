@@ -38,7 +38,8 @@ export const updateClinicSchema = z.object({
 export type UpdateClinicInput = z.infer<typeof updateClinicSchema>;
 
 export const createBranchSchema = z.object({
-  name: z.string().min(2, "Branch name is required").max(120),
+  // i18n key under the `errors` namespace (localized in the server action).
+  name: z.string().min(2, "branch.nameRequired").max(120),
   code: z.string().max(20).optional().or(z.literal("")),
   address: z.string().max(255).optional().or(z.literal("")),
   phone: z.string().max(40).optional().or(z.literal("")),

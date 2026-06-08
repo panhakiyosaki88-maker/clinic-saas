@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createBranch, updateBranch } from "@/server/actions/clinic";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export interface BranchFormData {
 
 /** Add (no `branch`) or edit (with `branch`) a clinic branch. */
 export function BranchForm({ branch }: { branch?: BranchFormData }) {
+  const t = useTranslations("settings.branches.form");
   const router = useRouter();
   const isEdit = !!branch;
   const alreadyPrimary = branch?.isPrimary ?? false;
@@ -65,14 +67,14 @@ export function BranchForm({ branch }: { branch?: BranchFormData }) {
     <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="name">Branch name</Label>
+          <Label htmlFor="name">{t("name")}</Label>
           <Input id="name" name="name" defaultValue={branch?.name ?? ""} placeholder="Downtown Branch" aria-invalid={!!fieldErrors.name} required />
           {fieldErrors.name?.map((m) => (
             <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
           ))}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="code">Code</Label>
+          <Label htmlFor="code">{t("code")}</Label>
           <Input id="code" name="code" defaultValue={branch?.code ?? ""} placeholder="DT" maxLength={20} aria-invalid={!!fieldErrors.code} />
           {fieldErrors.code?.map((m) => (
             <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
@@ -81,11 +83,11 @@ export function BranchForm({ branch }: { branch?: BranchFormData }) {
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="address">Address</Label>
+          <Label htmlFor="address">{t("address")}</Label>
           <Input id="address" name="address" defaultValue={branch?.address ?? ""} placeholder="Street, city" maxLength={255} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">{t("phone")}</Label>
           <Input id="phone" name="phone" defaultValue={branch?.phone ?? ""} placeholder="+855 ..." maxLength={40} />
         </div>
       </div>
@@ -98,11 +100,11 @@ export function BranchForm({ branch }: { branch?: BranchFormData }) {
           onChange={(e) => setMakePrimary(e.target.checked)}
           className="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800"
         />
-        <span>Primary location{alreadyPrimary ? " (current)" : ""}</span>
+        <span>{t("primaryLocation")}{alreadyPrimary ? ` ${t("current")}` : ""}</span>
       </label>
       {alreadyPrimary && (
         <p className="-mt-2 text-xs text-[var(--muted-foreground)]">
-          To move the primary elsewhere, set another branch as primary.
+          {t("movePrimaryHint")}
         </p>
       )}
 
@@ -114,11 +116,11 @@ export function BranchForm({ branch }: { branch?: BranchFormData }) {
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? (isEdit ? "Saving…" : "Adding…") : isEdit ? "Save changes" : "Add branch"}
+          {pending ? (isEdit ? t("saving") : t("adding")) : isEdit ? t("save") : t("add")}
         </Button>
         {isEdit && (
           <Button type="button" variant="outline" asChild>
-            <Link href="/settings/branches">Cancel</Link>
+            <Link href="/settings/branches">{t("cancel")}</Link>
           </Button>
         )}
       </div>

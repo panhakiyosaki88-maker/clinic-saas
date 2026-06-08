@@ -18,6 +18,7 @@ import {
   type UpdateBranchInput,
 } from "@/lib/validations/clinic";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 /**
  * Onboards the authenticated user as the owner of a NEW clinic:
@@ -243,9 +244,10 @@ export async function createBranch(
   input: CreateBranchInput
 ): Promise<ActionResult<{ branchId: string }>> {
   const { clinicId } = await requireClinic();
+  const te = await getErrorT();
   const parsed = createBranchSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 
@@ -265,9 +267,9 @@ export async function createBranch(
 
   if (error || !data) {
     if (error?.code === "23505") {
-      return fail("A branch with that code already exists.", { code: ["Already in use"] });
+      return fail(te("branch.codeTaken"), { code: [te("branch.alreadyInUse")] });
     }
-    return fail(error?.message ?? "Could not create branch.");
+    return fail(error?.message ?? te("branch.createFailed"));
   }
 
   revalidatePath("/settings/branches");
@@ -278,9 +280,10 @@ export async function createBranch(
  *  clinic always has exactly one primary location. */
 export async function updateBranch(input: UpdateBranchInput): Promise<ActionResult> {
   const { clinicId } = await requireClinic();
+  const te = await getErrorT();
   const parsed = updateBranchSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const v = parsed.data;
 
@@ -311,7 +314,7 @@ export async function updateBranch(input: UpdateBranchInput): Promise<ActionResu
 
   if (error) {
     if (error.code === "23505") {
-      return fail("A branch with that code already exists.", { code: ["Already in use"] });
+      return fail(te("branch.codeTaken"), { code: [te("branch.alreadyInUse")] });
     }
     return fail(error.message);
   }

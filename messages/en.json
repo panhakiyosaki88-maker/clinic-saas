@@ -109,7 +109,21 @@
       "actions": "Actions",
       "primary": "Primary",
       "edit": "Edit",
-      "addBranch": "Add a branch"
+      "addBranch": "Add a branch",
+      "form": {
+        "name": "Branch name",
+        "code": "Code",
+        "address": "Address",
+        "phone": "Phone",
+        "primaryLocation": "Primary location",
+        "current": "(current)",
+        "movePrimaryHint": "To move the primary elsewhere, set another branch as primary.",
+        "saving": "Saving…",
+        "adding": "Adding…",
+        "save": "Save changes",
+        "add": "Add branch",
+        "cancel": "Cancel"
+      }
     },
     "subscription": {
       "trialEnds": "trial ends {date}",
@@ -694,6 +708,12 @@
       "timeFormat": "Use HH:MM",
       "scheduleRequired": "Pick a date and time (or mark as walk-in)",
       "createFailed": "Could not create appointment."
+    },
+    "branch": {
+      "nameRequired": "Branch name is required",
+      "codeTaken": "A branch with that code already exists.",
+      "alreadyInUse": "Already in use",
+      "createFailed": "Could not create branch."
     }
   }
 }
