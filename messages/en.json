@@ -26,6 +26,59 @@
     "notifications": "Notifications",
     "searchPlaceholder": "Search patients, doctors, invoices…"
   },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "description": "Sign in to your clinic workspace.",
+      "email": "Email",
+      "password": "Password",
+      "signingIn": "Signing in…",
+      "signIn": "Sign in",
+      "noAccount": "No account?",
+      "createOne": "Create one"
+    },
+    "signup": {
+      "title": "Create your account",
+      "description": "Start your 14-day free trial. No card required.",
+      "fullName": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "creating": "Creating account…",
+      "create": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "confirmEmail": "Check your inbox to confirm your email, then sign in to continue.",
+      "backToSignIn": "Back to sign in"
+    },
+    "onboarding": {
+      "invitedTitle": "You've been invited",
+      "invitedDescription": "Join <b>{clinic}</b> as {role}.",
+      "setupTitle": "Set up your clinic",
+      "setupDescription": "Create your clinic workspace. You can add branches, doctors and staff once you're in. You start on a 14-day Starter trial.",
+      "clinicName": "Clinic name",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone",
+      "country": "Country",
+      "currency": "Currency",
+      "timezone": "Timezone",
+      "creating": "Creating your clinic…",
+      "createClinic": "Create clinic"
+    },
+    "accept": {
+      "joining": "Joining…",
+      "join": "Accept & join"
+    },
+    "pending": {
+      "rejectedTitle": "Account not approved",
+      "pendingTitle": "Awaiting approval",
+      "rejectedBody": "Your account request was declined by an administrator. If you believe this is a mistake, please contact support.",
+      "pendingBody": "Thanks for signing up, {email}. A platform administrator needs to approve your account before you can set up your clinic. You'll be able to continue here once it's approved."
+    },
+    "signOut": {
+      "signingOut": "Signing out…",
+      "signOut": "Sign out"
+    }
+  },
   "settings": {
     "language": {
       "title": "Language",

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { LoginForm } from "@/components/auth/login-form";
 import {
   Card,
@@ -9,12 +10,13 @@ import {
 
 export const metadata = { title: "Sign in" };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const t = await getTranslations("auth.login");
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your clinic workspace.</CardDescription>
+        <CardTitle className="text-xl">{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <LoginForm />

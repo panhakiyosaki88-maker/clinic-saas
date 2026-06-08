@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Clock, ShieldX } from "lucide-react";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getAccountStatus } from "@/lib/auth/account";
@@ -24,6 +25,7 @@ export default async function AccountPendingPage() {
   if (status === "approved") redirect(clinic_id ? "/dashboard" : "/onboarding");
 
   const rejected = status === "rejected";
+  const t = await getTranslations("auth.pending");
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
@@ -39,21 +41,10 @@ export default async function AccountPendingPage() {
             {rejected ? <ShieldX className="size-6" /> : <Clock className="size-6" />}
           </div>
           <CardTitle className="text-xl">
-            {rejected ? "Account not approved" : "Awaiting approval"}
+            {rejected ? t("rejectedTitle") : t("pendingTitle")}
           </CardTitle>
           <CardDescription>
-            {rejected ? (
-              <>
-                Your account request was declined by an administrator. If you
-                believe this is a mistake, please contact support.
-              </>
-            ) : (
-              <>
-                Thanks for signing up, {user.email}. A platform administrator
-                needs to approve your account before you can set up your clinic.
-                You&apos;ll be able to continue here once it&apos;s approved.
-              </>
-            )}
+            {rejected ? t("rejectedBody") : t("pendingBody", { email: user.email ?? "" })}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">

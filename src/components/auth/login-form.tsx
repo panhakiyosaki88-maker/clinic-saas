@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/server/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -38,14 +40,14 @@ export function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("email")}</Label>
         <Input id="email" name="email" type="email" autoComplete="email" required autoFocus />
         {fieldErrors.email?.map((m) => (
           <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>
         ))}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("password")}</Label>
         <Input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
 
@@ -56,13 +58,13 @@ export function LoginForm() {
       )}
 
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Signing in…" : "Sign in"}
+        {pending ? t("signingIn") : t("signIn")}
       </Button>
 
       <p className="text-center text-sm text-[var(--muted-foreground)]">
-        No account?{" "}
+        {t("noAccount")}{" "}
         <Link href="/signup" className="font-medium text-[var(--primary)] hover:underline">
-          Create one
+          {t("createOne")}
         </Link>
       </p>
     </form>

@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { acceptInvitation } from "@/server/actions/members";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export function AcceptInvite() {
+  const t = useTranslations("auth.accept");
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -29,7 +31,7 @@ export function AcceptInvite() {
   return (
     <div className="space-y-3">
       <Button className="w-full" onClick={onAccept} disabled={pending}>
-        {pending ? "Joining…" : "Accept & join"}
+        {pending ? t("joining") : t("join")}
       </Button>
       {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
     </div>

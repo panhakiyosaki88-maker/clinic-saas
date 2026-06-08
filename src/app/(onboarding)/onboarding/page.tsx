@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentUser, getClinicClaims } from "@/lib/auth/session";
 import { getAccountStatus } from "@/lib/auth/account";
 import { getPendingInvitationByEmail } from "@/lib/db/invitations";
@@ -29,6 +30,7 @@ export default async function OnboardingPage() {
 
   // Invited by an existing clinic? Offer to accept instead of creating one.
   const invitation = user.email ? await getPendingInvitationByEmail(user.email) : null;
+  const t = await getTranslations("auth.onboarding");
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
@@ -36,9 +38,13 @@ export default async function OnboardingPage() {
         {invitation ? (
           <>
             <CardHeader>
-              <CardTitle className="text-xl">You&apos;ve been invited</CardTitle>
+              <CardTitle className="text-xl">{t("invitedTitle")}</CardTitle>
               <CardDescription>
-                Join <strong>{invitation.clinicName}</strong> as {invitation.roleName}.
+                {t.rich("invitedDescription", {
+                  clinic: invitation.clinicName,
+                  role: invitation.roleName,
+                  b: (chunks) => <strong>{chunks}</strong>,
+                })}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -48,10 +54,9 @@ export default async function OnboardingPage() {
         ) : (
           <>
             <CardHeader>
-              <CardTitle className="text-xl">Set up your clinic</CardTitle>
+              <CardTitle className="text-xl">{t("setupTitle")}</CardTitle>
               <CardDescription>
-                Create your clinic workspace. You can add branches, doctors and staff
-                once you&apos;re in. You start on a 14-day Starter trial.
+                {t("setupDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>

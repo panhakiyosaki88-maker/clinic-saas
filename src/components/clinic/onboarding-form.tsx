@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createClinic } from "@/server/actions/clinic";
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +13,7 @@ import { Label } from "@/components/ui/label";
 type FieldErrors = Record<string, string[]>;
 
 export function OnboardingForm() {
+  const t = useTranslations("auth.onboarding");
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
   const [name, setName] = React.useState("");
@@ -53,7 +55,7 @@ export function OnboardingForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Clinic name</Label>
+        <Label htmlFor="name">{t("clinicName")}</Label>
         <Input
           id="name"
           name="name"
@@ -74,26 +76,26 @@ export function OnboardingForm() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="contactEmail">Contact email</Label>
+          <Label htmlFor="contactEmail">{t("contactEmail")}</Label>
           <Input id="contactEmail" name="contactEmail" type="email" placeholder="owner@clinic.com" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="contactPhone">Contact phone</Label>
+          <Label htmlFor="contactPhone">{t("contactPhone")}</Label>
           <Input id="contactPhone" name="contactPhone" placeholder="+855 ..." />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="country">Country</Label>
+          <Label htmlFor="country">{t("country")}</Label>
           <Input id="country" name="country" defaultValue="KH" maxLength={2} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="currency">Currency</Label>
+          <Label htmlFor="currency">{t("currency")}</Label>
           <Input id="currency" name="currency" defaultValue="USD" maxLength={3} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="timezone">Timezone</Label>
+          <Label htmlFor="timezone">{t("timezone")}</Label>
           <Input id="timezone" name="timezone" defaultValue="Asia/Phnom_Penh" />
         </div>
       </div>
@@ -105,7 +107,7 @@ export function OnboardingForm() {
       )}
 
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Creating your clinic…" : "Create clinic"}
+        {pending ? t("creating") : t("createClinic")}
       </Button>
     </form>
   );
