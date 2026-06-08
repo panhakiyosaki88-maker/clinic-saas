@@ -103,6 +103,23 @@
       "saving": "Saving…",
       "save": "Save changes"
     },
+    "staff": {
+      "title": "Staff",
+      "subtitle": "Manage who can access {clinic} and what they can do",
+      "addTitle": "Add a team member",
+      "addDescription": "Create their login with a password — they can sign in right away.",
+      "teamTitle": "Team ({count})",
+      "rolesTitle": "Roles & what they can do",
+      "rolesDescription": "Pick the role that matches a person's job. This list reflects the access each role currently grants.",
+      "empty": "No staff yet.",
+      "remove": "Remove",
+      "noAccess": "No access granted yet.",
+      "status": {
+        "active": "Active",
+        "invited": "Invited",
+        "disabled": "Disabled"
+      }
+    },
     "language": {
       "title": "Language",
       "description": "Choose the display language for the interface. Medical terms (medicine names, lab tests, diagnoses) always stay in English.",

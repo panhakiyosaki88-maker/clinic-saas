@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listMembers, listAssignableRoles, listRoleGuide } from "@/lib/db/queries/members";
 import { hasPermission } from "@/lib/auth/guard";
@@ -23,27 +24,26 @@ export default async function StaffPage() {
   if (!clinic) redirect("/onboarding");
 
   const canManage = await hasPermission(PERMISSIONS.STAFF_MANAGE);
-  const [members, roles, roleGuide] = await Promise.all([
+  const [members, roles, roleGuide, t] = await Promise.all([
     listMembers(),
     listAssignableRoles(),
     listRoleGuide(),
+    getTranslations("settings.staff"),
   ]);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={UserCog}
-        title="Staff"
-        subtitle={`Manage who can access ${clinic.name} and what they can do`}
+        title={t("title")}
+        subtitle={t("subtitle", { clinic: clinic.name })}
       />
 
       {canManage && (
         <Card>
           <CardHeader>
-            <CardTitle>Add a team member</CardTitle>
-            <CardDescription>
-              Create their login with a password — they can sign in right away.
-            </CardDescription>
+            <CardTitle>{t("addTitle")}</CardTitle>
+            <CardDescription>{t("addDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <AddUserForm roles={roles} />
@@ -53,7 +53,7 @@ export default async function StaffPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Team ({members.length})</CardTitle>
+          <CardTitle>{t("teamTitle", { count: members.length })}</CardTitle>
         </CardHeader>
         <CardContent>
           <MemberList members={members} roles={roles} canManage={canManage} />
@@ -62,11 +62,8 @@ export default async function StaffPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Roles &amp; what they can do</CardTitle>
-          <CardDescription>
-            Pick the role that matches a person&apos;s job. This list reflects the
-            access each role currently grants.
-          </CardDescription>
+          <CardTitle>{t("rolesTitle")}</CardTitle>
+          <CardDescription>{t("rolesDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <RolesGuide roles={roleGuide} />

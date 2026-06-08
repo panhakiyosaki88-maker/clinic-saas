@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { RoleGuideEntry } from "@/lib/db/queries/members";
 
 /**
@@ -5,7 +6,8 @@ import type { RoleGuideEntry } from "@/lib/db/queries/members";
  * straight from the database's role → permission mapping (see listRoleGuide),
  * so this stays in sync as the app's permissions evolve.
  */
-export function RolesGuide({ roles }: { roles: RoleGuideEntry[] }) {
+export async function RolesGuide({ roles }: { roles: RoleGuideEntry[] }) {
+  const t = await getTranslations("settings.staff");
   return (
     <div className="space-y-5">
       {roles.map((role) => (
@@ -22,7 +24,7 @@ export function RolesGuide({ roles }: { roles: RoleGuideEntry[] }) {
 
           {role.groups.length === 0 ? (
             <p className="mt-3 text-xs text-[var(--muted-foreground)]">
-              No access granted yet.
+              {t("noAccess")}
             </p>
           ) : (
             <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
