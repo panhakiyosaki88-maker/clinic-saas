@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { setDoctorAvatar } from "@/server/actions/doctors";
 
@@ -22,6 +23,7 @@ export function AvatarUploader({
   fallback: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("doctors.profile");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -70,9 +72,9 @@ export function AvatarUploader({
         onClick={() => inputRef.current?.click()}
         disabled={busy}
         className="absolute -bottom-1 -right-1 rounded-full border border-[var(--border)] bg-[var(--background)] px-1.5 py-0.5 text-[10px] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-        title="Change photo"
+        title={t("changePhoto")}
       >
-        {busy ? "…" : "Edit"}
+        {busy ? "…" : t("edit")}
       </button>
       {error && <p className="absolute left-0 top-16 w-40 text-xs text-[var(--destructive)]">{error}</p>}
     </div>

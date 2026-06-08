@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { addTimeOff, deleteTimeOff } from "@/server/actions/doctors";
 import type { DoctorTimeOff } from "@/lib/db/queries/doctors";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function TimeOffEditor({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("doctors.schedule");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -48,18 +50,18 @@ export function TimeOffEditor({
   return (
     <div className="space-y-4">
       {entries.length === 0 ? (
-        <p className="text-sm text-[var(--muted-foreground)]">No time off scheduled.</p>
+        <p className="text-sm text-[var(--muted-foreground)]">{t("noTimeOff")}</p>
       ) : (
         <ul className="divide-y divide-[var(--border)]">
-          {entries.map((t) => (
-            <li key={t.id} className="flex items-center justify-between py-2 text-sm">
+          {entries.map((entry) => (
+            <li key={entry.id} className="flex items-center justify-between py-2 text-sm">
               <span>
-                {t.start_date} → {t.end_date}
-                {t.reason ? <span className="text-[var(--muted-foreground)]"> · {t.reason}</span> : null}
+                {entry.start_date} → {entry.end_date}
+                {entry.reason ? <span className="text-[var(--muted-foreground)]"> · {entry.reason}</span> : null}
               </span>
               {canWrite && (
-                <Button variant="ghost" size="sm" disabled={pending} onClick={() => onRemove(t.id)}>
-                  Remove
+                <Button variant="ghost" size="sm" disabled={pending} onClick={() => onRemove(entry.id)}>
+                  {t("remove")}
                 </Button>
               )}
             </li>
@@ -69,10 +71,10 @@ export function TimeOffEditor({
 
       {canWrite && (
         <form onSubmit={onAdd} className="flex flex-wrap items-end gap-2">
-          <Input name="startDate" type="date" required aria-label="Start date" />
-          <Input name="endDate" type="date" required aria-label="End date" />
-          <Input name="reason" placeholder="Reason (optional)" className="flex-1" />
-          <Button type="submit" size="sm" disabled={pending}>Add</Button>
+          <Input name="startDate" type="date" required aria-label={t("ariaStartDate")} />
+          <Input name="endDate" type="date" required aria-label={t("ariaEndDate")} />
+          <Input name="reason" placeholder={t("reasonPlaceholder")} className="flex-1" />
+          <Button type="submit" size="sm" disabled={pending}>{t("add")}</Button>
           {error && <p className="w-full text-xs text-[var(--destructive)]">{error}</p>}
         </form>
       )}
