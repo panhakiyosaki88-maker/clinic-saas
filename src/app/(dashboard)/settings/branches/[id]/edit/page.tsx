@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { MapPin } from "lucide-react";
 import { getBranch } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
@@ -20,10 +21,11 @@ export default async function EditBranchPage({
 
   const branch = await getBranch(id);
   if (!branch) notFound();
+  const t = await getTranslations("settings.branches");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <PageHeader icon={MapPin} title="Edit branch" subtitle={branch.name} />
+      <PageHeader icon={MapPin} title={t("editBranch")} subtitle={branch.name} />
       <Card>
         <CardContent className="pt-6">
           <BranchForm

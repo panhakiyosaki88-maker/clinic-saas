@@ -109,6 +109,7 @@
       "actions": "Actions",
       "primary": "Primary",
       "edit": "Edit",
+      "editBranch": "Edit branch",
       "addBranch": "Add a branch",
       "form": {
         "name": "Branch name",
