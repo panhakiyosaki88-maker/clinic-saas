@@ -1682,6 +1682,70 @@
       "users": "Users",
       "subscriptionsByPlan": "Subscriptions by plan",
       "noSubscriptions": "No subscriptions yet."
+    },
+    "clinics": {
+      "title": "Clinics",
+      "subtitle": "{count, plural, one {# clinic} other {# clinics}} on the platform",
+      "empty": "No clinics.",
+      "thClinic": "Clinic",
+      "thPlan": "Plan",
+      "thSubscription": "Subscription",
+      "thStatus": "Status"
+    },
+    "clinicDetail": {
+      "backToList": "← Clinics",
+      "patients": "Patients",
+      "members": "Members",
+      "planLimits": "Plan limits",
+      "limitsFormat": "{patients} pt · {doctors} dr · {branches} br",
+      "manage": "Manage"
+    },
+    "clinicControls": {
+      "somethingWrong": "Something went wrong.",
+      "statusLabel": "Status:",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "planLabel": "Plan:",
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "subtitlePending": "{pending} awaiting approval · {total} total",
+      "subtitle": "{count, plural, one {# user} other {# users}} across all clinics",
+      "empty": "No users.",
+      "thName": "Name",
+      "thEmail": "Email",
+      "thStatus": "Status",
+      "thJoined": "Joined",
+      "thActions": "Actions",
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      }
+    },
+    "userControls": {
+      "somethingWrong": "Something went wrong.",
+      "you": "You",
+      "confirmPrompt": "Type <code>{email}</code> to permanently delete this account and its data.",
+      "confirmEmail": "Confirm email",
+      "deleting": "Deleting…",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "audit": {
+      "title": "Audit log",
+      "subtitle": "{count, plural, one {# recent entry} other {# recent entries}}",
+      "empty": "No audit entries.",
+      "thWhen": "When",
+      "thAction": "Action",
+      "thTable": "Table",
+      "thClinic": "Clinic"
     }
   },
   "errors": {

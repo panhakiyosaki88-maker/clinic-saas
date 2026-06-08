@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Building2 } from "lucide-react";
 import { listAllClinics } from "@/lib/db/queries/admin";
 import { PageHeader } from "@/components/page-header";
@@ -7,28 +8,28 @@ import { Card, CardContent } from "@/components/ui/card";
 export const metadata = { title: "Clinics · Super Admin" };
 
 export default async function AdminClinicsPage() {
-  const clinics = await listAllClinics();
+  const [clinics, t] = await Promise.all([listAllClinics(), getTranslations("superAdmin.clinics")]);
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Building2}
-        title="Clinics"
-        subtitle={`${clinics.length} ${clinics.length === 1 ? "clinic" : "clinics"} on the platform`}
+        title={t("title")}
+        subtitle={t("subtitle", { count: clinics.length })}
       />
       <Card>
         <CardContent className="p-0">
           {clinics.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">No clinics.</p>
+            <p className="p-6 text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                 <tr>
-                  <th className="p-3 font-medium">Clinic</th>
-                  <th className="p-3 font-medium">Plan</th>
-                  <th className="p-3 font-medium">Subscription</th>
-                  <th className="p-3 font-medium">Status</th>
+                  <th className="p-3 font-medium">{t("thClinic")}</th>
+                  <th className="p-3 font-medium">{t("thPlan")}</th>
+                  <th className="p-3 font-medium">{t("thSubscription")}</th>
+                  <th className="p-3 font-medium">{t("thStatus")}</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getClinicForAdmin } from "@/lib/db/queries/admin";
 import { ClinicControls } from "@/components/admin/clinic-controls";
@@ -15,23 +16,24 @@ export default async function AdminClinicDetailPage({
   const detail = await getClinicForAdmin(id);
   if (!detail) notFound();
   const { clinic, subscription, patientCount, memberCount } = detail;
+  const t = await getTranslations("superAdmin.clinicDetail");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <BackLink label="← Clinics" fallback="/admin/clinics" />
+        <BackLink label={t("backToList")} fallback="/admin/clinics" />
         <h1 className="mt-1 text-2xl font-bold">{clinic.name}</h1>
         <p className="font-mono text-xs text-[var(--muted-foreground)]">/{clinic.slug} · {clinic.contact_email ?? "—"}</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Patients</CardTitle></CardHeader><CardContent><p className="text-2xl font-semibold">{patientCount}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Members</CardTitle></CardHeader><CardContent><p className="text-2xl font-semibold">{memberCount}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Plan limits</CardTitle></CardHeader><CardContent><p className="text-xs text-[var(--muted-foreground)]">{subscription ? `${subscription.max_patients} pt · ${subscription.max_doctors} dr · ${subscription.max_branches} br` : "—"}</p></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("patients")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-semibold">{patientCount}</p></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("members")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-semibold">{memberCount}</p></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("planLimits")}</CardTitle></CardHeader><CardContent><p className="text-xs text-[var(--muted-foreground)]">{subscription ? t("limitsFormat", { patients: subscription.max_patients, doctors: subscription.max_doctors, branches: subscription.max_branches }) : "—"}</p></CardContent></Card>
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Manage</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("manage")}</CardTitle></CardHeader>
         <CardContent>
           <ClinicControls clinicId={clinic.id} status={clinic.status} plan={subscription?.plan ?? null} />
         </CardContent>

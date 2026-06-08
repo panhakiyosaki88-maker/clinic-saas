@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { setClinicStatus, setClinicPlan } from "@/server/actions/admin";
 import { PLAN_LIST } from "@/lib/plans";
 import type { ClinicStatus, SubscriptionPlan } from "@/types/database";
@@ -20,6 +21,7 @@ export function ClinicControls({
   plan: SubscriptionPlan | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("superAdmin.clinicControls");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -27,7 +29,7 @@ export function ClinicControls({
     setError(null);
     startTransition(async () => {
       const r = await fn();
-      if (!r.ok) setError(r.error ?? "Something went wrong.");
+      if (!r.ok) setError(r.error ?? t("somethingWrong"));
       else router.refresh();
     });
   }
@@ -35,21 +37,21 @@ export function ClinicControls({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-[var(--muted-foreground)]">Status: </span>
-        <span className="text-sm font-medium capitalize">{status}</span>
+        <span className="text-sm text-[var(--muted-foreground)]">{t("statusLabel")} </span>
+        <span className="text-sm font-medium">{t.has(`status.${status}`) ? t(`status.${status}`) : status}</span>
         {status !== "suspended" ? (
           <Button size="sm" variant="destructive" disabled={pending} onClick={() => run(() => setClinicStatus({ clinicId, status: "suspended" }))}>
-            Suspend
+            {t("suspend")}
           </Button>
         ) : (
           <Button size="sm" disabled={pending} onClick={() => run(() => setClinicStatus({ clinicId, status: "active" }))}>
-            Reactivate
+            {t("reactivate")}
           </Button>
         )}
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-sm text-[var(--muted-foreground)]">Plan: </span>
+        <span className="text-sm text-[var(--muted-foreground)]">{t("planLabel")} </span>
         <select
           className={selectClass}
           defaultValue={plan ?? "starter"}

@@ -1682,6 +1682,70 @@
       "users": "អ្នកប្រើ",
       "subscriptionsByPlan": "ការជាវតាមគម្រោង",
       "noSubscriptions": "មិនទាន់មានការជាវទេ។"
+    },
+    "clinics": {
+      "title": "គ្លីនិក",
+      "subtitle": "{count, plural, other {គ្លីនិក #}} នៅលើវេទិកា",
+      "empty": "មិនមានគ្លីនិកទេ។",
+      "thClinic": "គ្លីនិក",
+      "thPlan": "គម្រោង",
+      "thSubscription": "ការជាវ",
+      "thStatus": "ស្ថានភាព"
+    },
+    "clinicDetail": {
+      "backToList": "← គ្លីនិក",
+      "patients": "អ្នកជំងឺ",
+      "members": "សមាជិក",
+      "planLimits": "ដែនកំណត់គម្រោង",
+      "limitsFormat": "{patients} pt · {doctors} dr · {branches} br",
+      "manage": "គ្រប់គ្រង"
+    },
+    "clinicControls": {
+      "somethingWrong": "មានបញ្ហាអ្វីមួយ។",
+      "statusLabel": "ស្ថានភាព៖",
+      "suspend": "ផ្អាក",
+      "reactivate": "ធ្វើឱ្យសកម្មឡើងវិញ",
+      "planLabel": "គម្រោង៖",
+      "status": {
+        "active": "សកម្ម",
+        "suspended": "បានផ្អាក"
+      }
+    },
+    "users": {
+      "title": "អ្នកប្រើ",
+      "subtitlePending": "{pending} កំពុងរង់ចាំការអនុម័ត · សរុប {total}",
+      "subtitle": "{count, plural, other {អ្នកប្រើ #}} នៅគ្រប់គ្លីនិក",
+      "empty": "មិនមានអ្នកប្រើទេ។",
+      "thName": "ឈ្មោះ",
+      "thEmail": "អ៊ីមែល",
+      "thStatus": "ស្ថានភាព",
+      "thJoined": "បានចូលរួម",
+      "thActions": "សកម្មភាព",
+      "status": {
+        "pending": "កំពុងរង់ចាំ",
+        "approved": "បានអនុម័ត",
+        "rejected": "បានបដិសេធ"
+      }
+    },
+    "userControls": {
+      "somethingWrong": "មានបញ្ហាអ្វីមួយ។",
+      "you": "អ្នក",
+      "confirmPrompt": "វាយ <code>{email}</code> ដើម្បីលុបគណនីនេះ និងទិន្នន័យរបស់វាជាអចិន្ត្រៃយ៍។",
+      "confirmEmail": "បញ្ជាក់អ៊ីមែល",
+      "deleting": "កំពុងលុប…",
+      "delete": "លុប",
+      "cancel": "បោះបង់",
+      "approve": "អនុម័ត",
+      "reject": "បដិសេធ"
+    },
+    "audit": {
+      "title": "កំណត់ហេតុសវនកម្ម",
+      "subtitle": "{count, plural, other {ធាតុថ្មីៗ #}}",
+      "empty": "មិនមានធាតុសវនកម្មទេ។",
+      "thWhen": "ពេលណា",
+      "thAction": "សកម្មភាព",
+      "thTable": "តារាង",
+      "thClinic": "គ្លីនិក"
     }
   },
   "errors": {

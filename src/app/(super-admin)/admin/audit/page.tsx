@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { ScrollText } from "lucide-react";
 import { listRecentAuditLogs } from "@/lib/db/queries/admin";
 import { PageHeader } from "@/components/page-header";
@@ -6,28 +7,28 @@ import { Card, CardContent } from "@/components/ui/card";
 export const metadata = { title: "Audit log · Super Admin" };
 
 export default async function AdminAuditPage() {
-  const logs = await listRecentAuditLogs();
+  const [logs, t] = await Promise.all([listRecentAuditLogs(), getTranslations("superAdmin.audit")]);
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={ScrollText}
-        title="Audit log"
-        subtitle={`${logs.length} recent ${logs.length === 1 ? "entry" : "entries"}`}
+        title={t("title")}
+        subtitle={t("subtitle", { count: logs.length })}
       />
       <Card>
         <CardContent className="p-0">
           {logs.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">No audit entries.</p>
+            <p className="p-6 text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                 <tr>
-                  <th className="p-3 font-medium">When</th>
-                  <th className="p-3 font-medium">Action</th>
-                  <th className="p-3 font-medium">Table</th>
-                  <th className="p-3 font-medium">Clinic</th>
+                  <th className="p-3 font-medium">{t("thWhen")}</th>
+                  <th className="p-3 font-medium">{t("thAction")}</th>
+                  <th className="p-3 font-medium">{t("thTable")}</th>
+                  <th className="p-3 font-medium">{t("thClinic")}</th>
                 </tr>
               </thead>
               <tbody>

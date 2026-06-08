@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Users } from "lucide-react";
 import { listAllUsers } from "@/lib/db/queries/admin";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -15,34 +16,34 @@ const STATUS_STYLES: Record<AccountStatus, string> = {
 };
 
 export default async function AdminUsersPage() {
-  const [users, current] = await Promise.all([listAllUsers(), getCurrentUser()]);
+  const [users, current, t] = await Promise.all([listAllUsers(), getCurrentUser(), getTranslations("superAdmin.users")]);
   const pendingCount = users.filter((u) => u.status === "pending").length;
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       <PageHeader
         icon={Users}
-        title="Users"
+        title={t("title")}
         subtitle={
           pendingCount > 0
-            ? `${pendingCount} awaiting approval · ${users.length} total`
-            : `${users.length} ${users.length === 1 ? "user" : "users"} across all clinics`
+            ? t("subtitlePending", { pending: pendingCount, total: users.length })
+            : t("subtitle", { count: users.length })
         }
       />
       <Card>
         <CardContent className="p-0">
           {users.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--muted-foreground)]">No users.</p>
+            <p className="p-6 text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[44rem] text-sm">
                 <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                   <tr>
-                    <th className="p-3 font-medium">Name</th>
-                    <th className="p-3 font-medium">Email</th>
-                    <th className="p-3 font-medium">Status</th>
-                    <th className="p-3 font-medium">Joined</th>
-                    <th className="p-3 font-medium">Actions</th>
+                    <th className="p-3 font-medium">{t("thName")}</th>
+                    <th className="p-3 font-medium">{t("thEmail")}</th>
+                    <th className="p-3 font-medium">{t("thStatus")}</th>
+                    <th className="p-3 font-medium">{t("thJoined")}</th>
+                    <th className="p-3 font-medium">{t("thActions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -51,8 +52,8 @@ export default async function AdminUsersPage() {
                       <td className="p-3">{u.full_name ?? "—"}</td>
                       <td className="p-3 text-[var(--muted-foreground)]">{u.email ?? "—"}</td>
                       <td className="p-3">
-                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[u.status]}`}>
-                          {u.status}
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[u.status]}`}>
+                          {t(`status.${u.status}`)}
                         </span>
                       </td>
                       <td className="p-3 text-xs text-[var(--muted-foreground)]">{new Date(u.created_at).toLocaleDateString()}</td>
