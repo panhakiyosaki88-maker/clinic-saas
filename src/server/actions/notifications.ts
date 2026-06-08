@@ -7,6 +7,7 @@ import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { sendEmail, type SendResult } from "@/lib/notifications/send";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 import type { NotificationType } from "@/types/database";
 
 interface LogArgs {
@@ -48,8 +49,9 @@ export async function sendAppointmentReminder(
   appointmentId: string
 ): Promise<ActionResult<{ status: SendResult["status"] }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.NOTIFICATIONS_SEND);
+  const te = await getErrorT();
   const parsed = z.string().uuid().safeParse(appointmentId);
-  if (!parsed.success) return fail("Invalid appointment.");
+  if (!parsed.success) return fail(te("appointment.invalid"));
 
   const supabase = await createClient();
   const { data } = await supabase
@@ -57,7 +59,7 @@ export async function sendAppointmentReminder(
     .select("id, scheduled_at, patient_id, patients ( full_name, email )")
     .eq("id", appointmentId)
     .maybeSingle();
-  if (!data) return fail("Appointment not found.");
+  if (!data) return fail(te("appointment.notFound"));
 
   const patient = (data as unknown as { patients: { full_name: string; email: string | null } | null }).patients;
   const to = patient?.email ?? "";
@@ -83,8 +85,9 @@ export async function sendPaymentReminder(
   invoiceId: string
 ): Promise<ActionResult<{ status: SendResult["status"] }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.NOTIFICATIONS_SEND);
+  const te = await getErrorT();
   const parsed = z.string().uuid().safeParse(invoiceId);
-  if (!parsed.success) return fail("Invalid invoice.");
+  if (!parsed.success) return fail(te("invoice.invalid"));
 
   const supabase = await createClient();
   const { data } = await supabase
@@ -92,7 +95,7 @@ export async function sendPaymentReminder(
     .select("id, invoice_number, balance, patient_id, patients ( full_name, email )")
     .eq("id", invoiceId)
     .maybeSingle();
-  if (!data) return fail("Invoice not found.");
+  if (!data) return fail(te("invoice.notFound"));
 
   const patient = (data as unknown as { patients: { full_name: string; email: string | null } | null }).patients;
   const to = patient?.email ?? "";
@@ -115,13 +118,14 @@ export async function sendPaymentReminder(
 
 const followUpSchema = z.object({
   patientId: z.string().uuid(),
-  message: z.string().trim().min(1, "Enter a message").max(2000),
+  message: z.string().trim().min(1, "notification.enterMessage").max(2000),
 });
 
 export async function sendFollowUp(input: { patientId: string; message: string }): Promise<ActionResult<{ status: SendResult["status"] }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.NOTIFICATIONS_SEND);
+  const te = await getErrorT();
   const parsed = followUpSchema.safeParse(input);
-  if (!parsed.success) return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
 
   const supabase = await createClient();
   const { data: patient } = await supabase
@@ -129,7 +133,7 @@ export async function sendFollowUp(input: { patientId: string; message: string }
     .select("id, full_name, email")
     .eq("id", parsed.data.patientId)
     .maybeSingle();
-  if (!patient) return fail("Patient not found.");
+  if (!patient) return fail(te("patient.notFound"));
 
   const to = patient.email ?? "";
   const subject = "Follow-up from your clinic";

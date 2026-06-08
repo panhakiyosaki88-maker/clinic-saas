@@ -233,9 +233,10 @@ export async function purgePatient(patientId: string, confirmName: string): Prom
 
 export async function addTimelineNote(input: AddTimelineNoteInput): Promise<ActionResult> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PATIENTS_WRITE);
+  const te = await getErrorT();
   const parsed = addTimelineNoteSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const { patientId, title, description } = parsed.data;
 

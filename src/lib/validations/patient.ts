@@ -130,7 +130,7 @@ export type AssignTagInput = z.infer<typeof assignTagSchema>;
 
 export const addTimelineNoteSchema = z.object({
   patientId: z.string().uuid(),
-  title: z.string().trim().min(1, "A title is required").max(160),
+  title: z.string().trim().min(1, "patient.titleRequired").max(160),
   description: optionalText,
 });
 export type AddTimelineNoteInput = z.infer<typeof addTimelineNoteSchema>;

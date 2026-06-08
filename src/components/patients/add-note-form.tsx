@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { addTimelineNote } from "@/server/actions/patients";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 export function AddNoteForm({ patientId }: { patientId: string }) {
   const router = useRouter();
+  const t = useTranslations("patients.addNote");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -34,11 +36,11 @@ export function AddNoteForm({ patientId }: { patientId: string }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-2">
-      <Input name="title" placeholder="Add a note…" required />
-      <Textarea name="description" placeholder="Details (optional)" className="min-h-[56px]" />
+      <Input name="title" placeholder={t("placeholder")} required />
+      <Textarea name="description" placeholder={t("details")} className="min-h-[56px]" />
       {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
       <Button type="submit" size="sm" disabled={pending}>
-        {pending ? "Adding…" : "Add note"}
+        {pending ? t("adding") : t("add")}
       </Button>
     </form>
   );
