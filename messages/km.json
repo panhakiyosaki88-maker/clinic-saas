@@ -867,6 +867,11 @@
       "backToList": "← វិក្កយបត្រ",
       "backToOne": "← វិក្កយបត្រ"
     },
+    "medicinePicker": {
+      "medicine": "ឱសថ",
+      "outOfStock": "អស់ស្តុក",
+      "inStock": "{count} ក្នុងស្តុក"
+    },
     "paymentMethods": {
       "cash": "សាច់ប្រាក់",
       "khqr": "KHQR",
@@ -1486,7 +1491,13 @@
       "quantity": "បរិមាណ",
       "notes": "កំណត់សម្គាល់",
       "signature": "ហត្ថលេខា",
-      "viewPatient": "មើលប្រវត្តិរូបអ្នកជំងឺ →"
+      "viewPatient": "មើលប្រវត្តិរូបអ្នកជំងឺ →",
+      "print": "បោះពុម្ព / PDF",
+      "void": "លុបចោល",
+      "sure": "ប្រាកដទេ?",
+      "voiding": "កំពុងលុបចោល…",
+      "confirm": "បញ្ជាក់",
+      "cancel": "បោះបង់"
     }
   },
   "lab": {
@@ -1532,6 +1543,12 @@
       "summary": "{tests, plural, other {តេស្ត #}} ក្នុង {visits, plural, other {ការមកជួប #}}",
       "uncategorized": "មិនបានចាត់ថ្នាក់",
       "results": "លទ្ធផល"
+    },
+    "statusControl": {
+      "markCollected": "សម្គាល់ថាបានយក",
+      "cancel": "បោះបង់",
+      "startProcessing": "ចាប់ផ្តើមដំណើរការ",
+      "markCompleted": "សម្គាល់ថាបានបញ្ចប់"
     },
     "form": {
       "patient": "អ្នកជំងឺ",

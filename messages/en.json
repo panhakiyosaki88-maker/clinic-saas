@@ -867,6 +867,11 @@
       "backToList": "← Invoices",
       "backToOne": "← Invoice"
     },
+    "medicinePicker": {
+      "medicine": "Medicine",
+      "outOfStock": "Out of stock",
+      "inStock": "{count} in stock"
+    },
     "paymentMethods": {
       "cash": "Cash",
       "khqr": "KHQR",
@@ -1486,7 +1491,13 @@
       "quantity": "Quantity",
       "notes": "Notes",
       "signature": "Signature",
-      "viewPatient": "View patient profile →"
+      "viewPatient": "View patient profile →",
+      "print": "Print / PDF",
+      "void": "Void",
+      "sure": "Sure?",
+      "voiding": "Voiding…",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     }
   },
   "lab": {
@@ -1532,6 +1543,12 @@
       "summary": "{tests, plural, one {# test} other {# tests}} across {visits, plural, one {# visit} other {# visits}}",
       "uncategorized": "Uncategorized",
       "results": "Results"
+    },
+    "statusControl": {
+      "markCollected": "Mark collected",
+      "cancel": "Cancel",
+      "startProcessing": "Start processing",
+      "markCompleted": "Mark completed"
     },
     "form": {
       "patient": "Patient",

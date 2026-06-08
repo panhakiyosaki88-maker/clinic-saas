@@ -2,21 +2,23 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { changeLabStatus } from "@/server/actions/lab";
 import type { LabStatus } from "@/types/database";
 import { Button } from "@/components/ui/button";
 
-const NEXT: Partial<Record<LabStatus, { to: LabStatus; label: string }[]>> = {
+const NEXT: Partial<Record<LabStatus, { to: LabStatus; key: string }[]>> = {
   requested: [
-    { to: "collected", label: "Mark collected" },
-    { to: "cancelled", label: "Cancel" },
+    { to: "collected", key: "markCollected" },
+    { to: "cancelled", key: "cancel" },
   ],
-  collected: [{ to: "processing", label: "Start processing" }],
-  processing: [{ to: "completed", label: "Mark completed" }],
+  collected: [{ to: "processing", key: "startProcessing" }],
+  processing: [{ to: "completed", key: "markCompleted" }],
 };
 
 export function LabStatusControl({ requestId, status }: { requestId: string; status: LabStatus }) {
   const router = useRouter();
+  const t = useTranslations("lab.statusControl");
   const [pending, startTransition] = React.useTransition();
   const actions = NEXT[status] ?? [];
   if (actions.length === 0) return null;
@@ -36,7 +38,7 @@ export function LabStatusControl({ requestId, status }: { requestId: string; sta
             })
           }
         >
-          {a.label}
+          {t(a.key)}
         </Button>
       ))}
     </div>

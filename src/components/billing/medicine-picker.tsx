@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 
 export interface MedicinePickOption {
@@ -21,7 +22,7 @@ export function MedicinePicker({
   medicines,
   onType,
   onPick,
-  placeholder = "Medicine",
+  placeholder,
 }: {
   value: string;
   medicines: MedicinePickOption[];
@@ -29,6 +30,8 @@ export function MedicinePicker({
   onPick: (m: MedicinePickOption) => void;
   placeholder?: string;
 }) {
+  const t = useTranslations("billing.medicinePicker");
+  const ph = placeholder ?? t("medicine");
   const [open, setOpen] = React.useState(false);
   const [highlight, setHighlight] = React.useState(0);
   const boxRef = React.useRef<HTMLDivElement>(null);
@@ -56,7 +59,7 @@ export function MedicinePicker({
     <div ref={boxRef} className="relative">
       <Input
         value={value}
-        placeholder={placeholder}
+        placeholder={ph}
         autoComplete="off"
         onChange={(e) => {
           onType(e.target.value);
@@ -106,7 +109,7 @@ export function MedicinePicker({
                         : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                     }`}
                   >
-                    {out ? "Out of stock" : `${m.stock_quantity} in stock`}
+                    {out ? t("outOfStock") : t("inStock", { count: m.stock_quantity })}
                   </span>
                 </button>
               </li>
