@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -28,14 +29,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Doctor" };
-
-const EMPLOYMENT_LABELS: Record<string, string> = {
-  full_time: "Full time",
-  part_time: "Part time",
-  contract: "Contract",
-  visiting: "Visiting",
-  locum: "Locum",
-};
 
 function initials(name: string): string {
   return name
@@ -100,6 +93,9 @@ export default async function DoctorProfilePage({
       listDoctorLicenses(id),
     ]);
   const avatarUrl = doctorAvatarUrl(doctor.avatar_path);
+  const t = await getTranslations("doctors.profile");
+  const employmentLabel = (type: string | null | undefined) =>
+    type ? (t.has(`employment.${type}`) ? t(`employment.${type}`) : type) : null;
 
   const expiryDays = daysUntil(doctor.license_expiry);
 
@@ -108,42 +104,42 @@ export default async function DoctorProfilePage({
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Visits</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("visits")}</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-semibold">{performance.visits}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Patients seen</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("patientsSeen")}</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-semibold">{performance.patientsSeen}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">Consultation fee</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-[var(--muted-foreground)]">{t("consultationFee")}</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-semibold">{doctor.consultation_fee ?? "—"}</p></CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Profile</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("profile")}</CardTitle></CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <Detail label="Specialization" value={doctor.specialization} />
-            <Detail label="Sub-specialty" value={doctor.sub_specialty} />
-            <Detail label="Gender" value={doctor.gender} />
-            <Detail label="Languages" value={doctor.languages} />
-            <Detail label="Years of experience" value={doctor.years_experience} />
-            <Detail label="Employment" value={doctor.employment_type ? EMPLOYMENT_LABELS[doctor.employment_type] : null} />
-            <Detail label="Joined" value={doctor.joined_on} />
-            <Detail label="Room / office" value={doctor.room} />
-            <Detail label="Phone" value={doctor.phone} />
-            <Detail label="Email" value={doctor.email} />
-            <Detail label="License number" value={doctor.license_number} />
-            <Detail label="License expiry" value={doctor.license_expiry} />
+            <Detail label={t("fields.specialization")} value={doctor.specialization} />
+            <Detail label={t("fields.subSpecialty")} value={doctor.sub_specialty} />
+            <Detail label={t("fields.gender")} value={doctor.gender} />
+            <Detail label={t("fields.languages")} value={doctor.languages} />
+            <Detail label={t("fields.yearsExperience")} value={doctor.years_experience} />
+            <Detail label={t("fields.employment")} value={employmentLabel(doctor.employment_type)} />
+            <Detail label={t("fields.joined")} value={doctor.joined_on} />
+            <Detail label={t("fields.room")} value={doctor.room} />
+            <Detail label={t("fields.phone")} value={doctor.phone} />
+            <Detail label={t("fields.email")} value={doctor.email} />
+            <Detail label={t("fields.licenseNumber")} value={doctor.license_number} />
+            <Detail label={t("fields.licenseExpiry")} value={doctor.license_expiry} />
           </dl>
         </CardContent>
       </Card>
 
       {doctor.bio && (
         <Card>
-          <CardHeader><CardTitle>About</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("about")}</CardTitle></CardHeader>
           <CardContent><p className="whitespace-pre-wrap text-sm">{doctor.bio}</p></CardContent>
         </Card>
       )}
@@ -153,13 +149,13 @@ export default async function DoctorProfilePage({
   const schedulePanel = (
     <div className="space-y-6">
       <Card>
-        <CardHeader><CardTitle>Weekly availability</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("weeklyAvailability")}</CardTitle></CardHeader>
         <CardContent>
           <ScheduleEditor doctorId={doctor.id} schedules={schedules} canWrite={canWrite} />
         </CardContent>
       </Card>
       <Card>
-        <CardHeader><CardTitle>Time off / vacation</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("timeOff")}</CardTitle></CardHeader>
         <CardContent>
           <TimeOffEditor doctorId={doctor.id} entries={timeOff} canWrite={canWrite} />
         </CardContent>
@@ -180,26 +176,25 @@ export default async function DoctorProfilePage({
   const trendTotal = analytics.trend.reduce((s, p) => s + p.value, 0);
   const performancePanel = (
     <div className="space-y-6">
-      <p className="text-xs text-[var(--muted-foreground)]">Last 180 days · {analytics.total} appointments</p>
+      <p className="text-xs text-[var(--muted-foreground)]">{t("perfPeriod", { count: analytics.total })}</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Completion rate" value={`${analytics.completionRate}%`} sub={`${analytics.completed} completed`} />
-        <Stat label="No-show rate" value={`${analytics.noShowRate}%`} sub={`${analytics.noShow} no-shows`} />
-        <Stat label="Patients seen" value={analytics.patientsSeen} sub={`${analytics.upcoming} upcoming`} />
-        <Stat label="Est. revenue" value={analytics.estimatedRevenue} sub="completed × fee" />
+        <Stat label={t("completionRate")} value={`${analytics.completionRate}%`} sub={t("completedCount", { count: analytics.completed })} />
+        <Stat label={t("noShowRate")} value={`${analytics.noShowRate}%`} sub={t("noShowCount", { count: analytics.noShow })} />
+        <Stat label={t("patientsSeen")} value={analytics.patientsSeen} sub={t("upcomingCount", { count: analytics.upcoming })} />
+        <Stat label={t("estRevenue")} value={analytics.estimatedRevenue} sub={t("completedTimesFee")} />
       </div>
       <Card>
-        <CardHeader><CardTitle>Completed visits — last 6 months</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("completedVisits")}</CardTitle></CardHeader>
         <CardContent>
           {trendTotal === 0 ? (
-            <p className="text-sm text-[var(--muted-foreground)]">No completed appointments in this period.</p>
+            <p className="text-sm text-[var(--muted-foreground)]">{t("noCompleted")}</p>
           ) : (
             <BarSeriesChart data={analytics.trend} color="#0ea5e9" highlightMax />
           )}
         </CardContent>
       </Card>
       <p className="text-xs text-[var(--muted-foreground)]">
-        EMR visits attributed to this doctor: {performance.visits} · distinct patients: {performance.patientsSeen}.
-        Revenue is estimated (invoices are not yet attributed to a doctor).
+        {t("emrAttribution", { visits: performance.visits, patients: performance.patientsSeen })}
       </p>
     </div>
   );
@@ -214,7 +209,7 @@ export default async function DoctorProfilePage({
       />
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle>Documents ({documents.length})</CardTitle>
+          <CardTitle>{t("documents", { count: documents.length })}</CardTitle>
           {canWrite && <DoctorDocumentUploader clinicId={clinic.id} doctorId={doctor.id} />}
         </CardHeader>
         <CardContent>
@@ -225,10 +220,10 @@ export default async function DoctorProfilePage({
   );
 
   const tabs: ProfileTab[] = [
-    { id: "overview", label: "Overview", content: overviewPanel },
-    { id: "schedule", label: "Schedule", count: schedules.length + timeOff.length, content: schedulePanel },
-    { id: "performance", label: "Performance", content: performancePanel },
-    { id: "credentials", label: "Credentials", count: qualifications.length + licenses.length + documents.length, content: credentialsPanel },
+    { id: "overview", label: t("tabs.overview"), content: overviewPanel },
+    { id: "schedule", label: t("tabs.schedule"), count: schedules.length + timeOff.length, content: schedulePanel },
+    { id: "performance", label: t("tabs.performance"), content: performancePanel },
+    { id: "credentials", label: t("tabs.credentials"), count: qualifications.length + licenses.length + documents.length, content: credentialsPanel },
   ];
 
   return (
@@ -253,20 +248,20 @@ export default async function DoctorProfilePage({
             </div>
           )}
           <div>
-            <BackLink label="← Doctors" fallback="/doctors" />
+            <BackLink label={t("backToList")} fallback="/doctors" />
             <h1 className="mt-1 text-2xl font-bold">
               {doctor.title ? `${doctor.title} ` : ""}{doctor.full_name}
             </h1>
             <p className="text-sm text-[var(--muted-foreground)]">
-              {doctor.specialization ?? "General"}
-              {doctor.license_number ? ` · Lic. ${doctor.license_number}` : ""}
+              {doctor.specialization ?? t("general")}
+              {doctor.license_number ? ` · ${t("licPrefix")} ${doctor.license_number}` : ""}
             </p>
           </div>
         </div>
         {canWrite && (
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm">
-              <Link href={`/doctors/${doctor.id}/edit`}>Edit</Link>
+              <Link href={`/doctors/${doctor.id}/edit`}>{t("edit")}</Link>
             </Button>
             <DeleteDoctorButton doctorId={doctor.id} />
           </div>
@@ -274,14 +269,14 @@ export default async function DoctorProfilePage({
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
-        {doctor.is_active ? <Pill tone="ok">Active</Pill> : <Pill tone="muted">Inactive</Pill>}
-        {doctor.employment_type && <Pill>{EMPLOYMENT_LABELS[doctor.employment_type]}</Pill>}
-        {doctor.years_experience != null && <Pill tone="muted">{doctor.years_experience} yrs exp</Pill>}
+        {doctor.is_active ? <Pill tone="ok">{t("active")}</Pill> : <Pill tone="muted">{t("inactive")}</Pill>}
+        {doctor.employment_type && <Pill>{employmentLabel(doctor.employment_type)}</Pill>}
+        {doctor.years_experience != null && <Pill tone="muted">{t("yrsExp", { years: doctor.years_experience })}</Pill>}
         {doctor.languages && <Pill tone="muted">{doctor.languages}</Pill>}
-        {doctor.license_verified && <Pill tone="ok">License verified</Pill>}
-        {expiryDays !== null && expiryDays < 0 && <Pill tone="alert">License expired</Pill>}
+        {doctor.license_verified && <Pill tone="ok">{t("licenseVerified")}</Pill>}
+        {expiryDays !== null && expiryDays < 0 && <Pill tone="alert">{t("licenseExpired")}</Pill>}
         {expiryDays !== null && expiryDays >= 0 && expiryDays <= 60 && (
-          <Pill tone="alert">License expires in {expiryDays}d</Pill>
+          <Pill tone="alert">{t("licenseExpiresIn", { days: expiryDays })}</Pill>
         )}
       </div>
 
