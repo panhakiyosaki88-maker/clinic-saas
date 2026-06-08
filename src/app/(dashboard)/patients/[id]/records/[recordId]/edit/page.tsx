@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic, listBranches } from "@/lib/db/queries/clinic";
 import { getMedicalRecord } from "@/lib/db/queries/medical-records";
@@ -20,12 +21,13 @@ export default async function EditRecordPage({
 
   const [detail, branches] = await Promise.all([getMedicalRecord(recordId), listBranches()]);
   if (!detail) notFound();
+  const t = await getTranslations("records.recordForm");
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <BackLink label="← Visit" fallback={`/patients/${id}/records/${recordId}`} />
-        <h1 className="mt-1 text-2xl font-bold">Edit visit</h1>
+        <BackLink label={t("backToOne")} fallback={`/patients/${id}/records/${recordId}`} />
+        <h1 className="mt-1 text-2xl font-bold">{t("editTitle")}</h1>
       </header>
       <RecordForm patientId={id} record={detail.record} branches={branches.map((b) => ({ id: b.id, name: b.name }))} />
     </main>

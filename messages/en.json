@@ -1005,7 +1005,9 @@
       "notes": "Notes",
       "saving": "Saving…",
       "createRequests": "{count, plural, one {Create request} other {Create # requests}}",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "newTitle": "New lab request",
+      "backToList": "← Laboratory"
     },
     "category": {
       "namePlaceholder": "Group name *",
@@ -1056,7 +1058,10 @@
       "save": "Save changes",
       "add": "Add medicine",
       "cancel": "Cancel",
-      "openingStockHint": "Add opening stock from the medicine page after saving."
+      "openingStockHint": "Add opening stock from the medicine page after saving.",
+      "newTitle": "New medicine",
+      "editTitle": "Edit medicine",
+      "backToList": "← Pharmacy"
     },
     "transactionForm": {
       "reason": "Reason",
@@ -1090,7 +1095,10 @@
       "saving": "Saving…",
       "save": "Save changes",
       "saveVisit": "Save visit",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "newTitle": "New visit",
+      "editTitle": "Edit visit",
+      "backToOne": "← Visit"
     },
     "vitalsForm": {
       "saving": "Saving…",

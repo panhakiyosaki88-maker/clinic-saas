@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
@@ -12,11 +13,13 @@ export default async function NewMedicinePage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.PHARMACY_WRITE))) redirect("/pharmacy");
 
+  const t = await getTranslations("pharmacy.form");
+
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <header>
-        <BackLink label="← Pharmacy" fallback="/pharmacy" />
-        <h1 className="mt-1 text-2xl font-bold">New medicine</h1>
+        <BackLink label={t("backToList")} fallback="/pharmacy" />
+        <h1 className="mt-1 text-2xl font-bold">{t("newTitle")}</h1>
       </header>
       <MedicineForm />
     </main>
