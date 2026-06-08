@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -56,6 +57,7 @@ export default async function PatientLabPage({
 
   const canWrite = await hasPermission(PERMISSIONS.LAB_WRITE);
   const patientName = requests[0].patient_name;
+  const t = await getTranslations("lab.patientPage");
 
   // Resolve every category (group or subgroup) to its Main Category, and
   // capture the order Main Categories appear in Lab Categories.
@@ -74,7 +76,7 @@ export default async function PatientLabPage({
     (r.category_id ? mainByCategoryId.get(r.category_id) : undefined) ??
     PANEL_GROUP_BY_TEST.get(r.test_name) ??
     r.category_name ??
-    "Uncategorized";
+    t("uncategorized");
 
   // Group the patient's tests by the date they were requested — each date is a
   // lab session, building a chronological history. Requests already arrive
@@ -117,13 +119,12 @@ export default async function PatientLabPage({
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <header>
-        <BackLink label="← Laboratory" fallback="/lab" />
+        <BackLink label={t("backToList")} fallback="/lab" />
         <h1 className="mt-1 text-2xl font-bold">
           <Link href={`/patients/${patientId}`} className="hover:underline">{patientName}</Link>
         </h1>
         <p className="text-sm text-[var(--muted-foreground)]">
-          {requests.length} {requests.length === 1 ? "test" : "tests"} across{" "}
-          {sessionList.length} {sessionList.length === 1 ? "visit" : "visits"}
+          {t("summary", { tests: requests.length, visits: sessionList.length })}
         </p>
       </header>
 
@@ -176,7 +177,7 @@ export default async function PatientLabPage({
                 {session.reports.length > 0 && (
                   <div className="px-4">
                     <h3 className="pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                      Results
+                      {t("results")}
                     </h3>
                     <ul className="space-y-2 text-sm">
                       {session.reports.map((r) => (

@@ -1460,6 +1460,19 @@
       "tests": "{count, plural, one {# test} other {# tests}}",
       "viewRecord": "View record"
     },
+    "upload": {
+      "chooseFile": "Choose a file to upload.",
+      "noActiveTests": "No active tests to attach the result to.",
+      "uploaded": "Result uploaded.",
+      "uploading": "Uploading…",
+      "upload": "Upload result"
+    },
+    "patientPage": {
+      "backToList": "← Laboratory",
+      "summary": "{tests, plural, one {# test} other {# tests}} across {visits, plural, one {# visit} other {# visits}}",
+      "uncategorized": "Uncategorized",
+      "results": "Results"
+    },
     "form": {
       "patient": "Patient",
       "selectPatient": "Select a patient…",

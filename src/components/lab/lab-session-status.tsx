@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { setLabSessionStatus } from "@/server/actions/lab";
 import {
   PATIENT_LAB_STATES,
-  PATIENT_LAB_STATE_LABELS,
   type PatientLabState,
 } from "@/lib/validations/lab";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export function LabSessionStatus({
   disabled?: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("lab.state");
   const [pending, startTransition] = React.useTransition();
   const [optimistic, setOptimistic] = React.useOptimistic(status);
 
@@ -45,7 +46,7 @@ export function LabSessionStatus({
             })
           }
         >
-          {PATIENT_LAB_STATE_LABELS[s]}
+          {t(s)}
         </Button>
       ))}
     </div>
