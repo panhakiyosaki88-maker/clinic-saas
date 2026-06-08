@@ -80,6 +80,18 @@
     }
   },
   "settings": {
+    "addUser": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "At least 8 characters",
+      "role": "Role",
+      "phone": "Phone (optional)",
+      "adding": "Adding…",
+      "add": "Add User",
+      "cancel": "Cancel",
+      "created": "User created — they can sign in now."
+    },
     "language": {
       "title": "Language",
       "description": "Choose the display language for the interface. Medical terms (medicine names, lab tests, diagnoses) always stay in English.",
@@ -1086,6 +1098,15 @@
     "record": {
       "createFailed": "Could not create the visit.",
       "enterMeasurement": "Enter at least one measurement."
+    },
+    "staff": {
+      "nameRequired": "Name is required",
+      "passwordMin": "At least 8 characters",
+      "passwordMax": "Keep it under 72 characters",
+      "unknownRole": "Unknown role.",
+      "emailExists": "A user with that email already exists.",
+      "alreadyInUse": "Already in use",
+      "createFailed": "Could not create the user."
     },
     "doctor": {
       "nameRequired": "Doctor name is required",

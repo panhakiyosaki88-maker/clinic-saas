@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createStaffUser } from "@/server/actions/members";
 import type { AssignableRole } from "@/lib/db/queries/members";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ const selectClass =
 
 export function AddUserForm({ roles }: { roles: AssignableRole[] }) {
   const router = useRouter();
+  const t = useTranslations("settings.addUser");
   const formRef = React.useRef<HTMLFormElement>(null);
   const [pending, startTransition] = React.useTransition();
   const [message, setMessage] = React.useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -39,7 +41,7 @@ export function AddUserForm({ roles }: { roles: AssignableRole[] }) {
         setFieldErrors(result.fieldErrors ?? {});
         return;
       }
-      setMessage({ kind: "ok", text: "User created — they can sign in now." });
+      setMessage({ kind: "ok", text: t("created") });
       form.reset();
       router.refresh();
     });
@@ -55,29 +57,29 @@ export function AddUserForm({ roles }: { roles: AssignableRole[] }) {
     <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">{t("name")}</Label>
           <Input id="name" name="name" placeholder="John Doe" required />
           {fieldError("name")}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("email")}</Label>
           <Input id="email" name="email" type="email" placeholder="john@example.com" required />
           {fieldError("email")}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("password")}</Label>
           <Input
             id="password"
             name="password"
             type="password"
-            placeholder="At least 8 characters"
+            placeholder={t("passwordHint")}
             autoComplete="new-password"
             required
           />
           {fieldError("password")}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="roleKey">Role</Label>
+          <Label htmlFor="roleKey">{t("role")}</Label>
           <select id="roleKey" name="roleKey" className={selectClass} defaultValue="receptionist" required>
             {roles.map((r) => (
               <option key={r.id} value={r.key}>
@@ -88,7 +90,7 @@ export function AddUserForm({ roles }: { roles: AssignableRole[] }) {
           {fieldError("roleKey")}
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="phone">Phone (optional)</Label>
+          <Label htmlFor="phone">{t("phone")}</Label>
           <Input id="phone" name="phone" placeholder="012 000 000" />
           {fieldError("phone")}
         </div>
@@ -96,7 +98,7 @@ export function AddUserForm({ roles }: { roles: AssignableRole[] }) {
 
       <div className="flex items-center gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Adding…" : "Add User"}
+          {pending ? t("adding") : t("add")}
         </Button>
         <Button
           type="button"
@@ -108,7 +110,7 @@ export function AddUserForm({ roles }: { roles: AssignableRole[] }) {
             setFieldErrors({});
           }}
         >
-          Cancel
+          {t("cancel")}
         </Button>
 
         {message && (

@@ -16,6 +16,7 @@ import {
   type ChangeRoleInput,
 } from "@/lib/validations/member";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 /** Resolves a system role's id from its key (clinic_id IS NULL). */
 async function systemRoleId(
@@ -116,9 +117,10 @@ export async function createStaffUser(
   input: CreateStaffInput
 ): Promise<ActionResult<{ userId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.STAFF_MANAGE);
+  const te = await getErrorT();
   const parsed = createStaffSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
   const { name, password, roleKey } = parsed.data;
   const email = parsed.data.email.toLowerCase();
@@ -126,11 +128,11 @@ export async function createStaffUser(
   const admin = createAdminClient();
 
   const roleId = await systemRoleId(admin, roleKey);
-  if (!roleId) return fail("Unknown role.");
+  if (!roleId) return fail(te("staff.unknownRole"));
 
   // Reject duplicates up front for a clear message (createUser would also error).
   if (await lookupUserId(admin, email)) {
-    return fail("A user with that email already exists.", { email: ["Already in use"] });
+    return fail(te("staff.emailExists"), { email: [te("staff.alreadyInUse")] });
   }
 
   // Create the auth user, already confirmed (can log in) with the clinic claims
@@ -143,7 +145,7 @@ export async function createStaffUser(
     app_metadata: { clinic_id: clinicId, role: roleKey },
   });
   if (createErr || !created.user) {
-    return fail(createErr?.message ?? "Could not create the user.");
+    return fail(createErr?.message ?? te("staff.createFailed"));
   }
   const newUserId = created.user.id;
 

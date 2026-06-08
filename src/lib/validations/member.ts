@@ -14,19 +14,19 @@ export const roleKeySchema = z.enum(ASSIGNABLE_ROLE_KEYS);
 export type AssignableRoleKey = z.infer<typeof roleKeySchema>;
 
 export const inviteMemberSchema = z.object({
-  email: z.string().email("Enter a valid email"),
+  email: z.string().email("invalidEmail"),
   roleKey: roleKeySchema,
 });
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
 
 /** Clinic owner creates a ready-to-use staff login (email + password). */
 export const createStaffSchema = z.object({
-  name: z.string().min(2, "Name is required").max(120),
-  email: z.string().email("Enter a valid email"),
+  name: z.string().min(2, "staff.nameRequired").max(120),
+  email: z.string().email("invalidEmail"),
   password: z
     .string()
-    .min(8, "At least 8 characters")
-    .max(72, "Keep it under 72 characters"),
+    .min(8, "staff.passwordMin")
+    .max(72, "staff.passwordMax"),
   roleKey: roleKeySchema,
   phone: z.string().max(40).optional().or(z.literal("")),
 });
