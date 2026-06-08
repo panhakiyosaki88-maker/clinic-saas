@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   addAllergy,
   deleteAllergy,
@@ -45,6 +46,7 @@ function Row({
   onDelete: (id: string, patientId: string) => Promise<{ ok: boolean }>;
 }) {
   const router = useRouter();
+  const t = useTranslations("patients.clinical");
   const [pending, setPending] = React.useState(false);
   return (
     <li className="flex items-start justify-between gap-3 py-2">
@@ -79,7 +81,7 @@ function Row({
             });
           }}
         >
-          Remove
+          {t("remove")}
         </Button>
       )}
     </li>
@@ -100,6 +102,7 @@ function Section({
   form: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = React.useState(false);
+  const t = useTranslations("patients.clinical");
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
@@ -108,13 +111,13 @@ function Section({
         </CardTitle>
         {canWrite && !open && (
           <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-            Add
+            {t("add")}
           </Button>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
         {count === 0 && !open && (
-          <p className="text-sm text-[var(--muted-foreground)]">Nothing recorded.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">{t("nothingRecorded")}</p>
         )}
         {children}
         {open && form(() => setOpen(false))}
@@ -126,6 +129,7 @@ function Section({
 /** Shared submit wrapper: runs the action, shows errors, resets + closes on success. */
 function useEntryForm(action: (payload: Record<string, unknown>) => Promise<{ ok: boolean; error?: string }>) {
   const router = useRouter();
+  const t = useTranslations("patients.clinical");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   function submit(form: HTMLFormElement, build: (f: FormData) => Record<string, unknown>, close: () => void) {
@@ -134,7 +138,7 @@ function useEntryForm(action: (payload: Record<string, unknown>) => Promise<{ ok
     startTransition(async () => {
       const res = await action(payload);
       if (!res.ok) {
-        setError(res.error ?? "Could not save.");
+        setError(res.error ?? t("couldNotSave"));
         return;
       }
       form.reset();
@@ -162,15 +166,19 @@ export function ClinicalLists({
   immunizations: PatientImmunization[];
   conditions: PatientCondition[];
 }) {
+  const t = useTranslations("patients.clinical");
   const allergyForm = useEntryForm(addAllergy as never);
   const medForm = useEntryForm(addMedication as never);
   const immForm = useEntryForm(addImmunization as never);
   const condForm = useEntryForm(addCondition as never);
+  const condStatus = (s: string | null | undefined) => (s && t.has(`conditionStatus.${s}`) ? t(`conditionStatus.${s}`) : s ?? undefined);
+  const medStatus = (s: string | null | undefined) => (s && t.has(`medStatus.${s}`) ? t(`medStatus.${s}`) : s ?? undefined);
+  const severity = (s: string | null | undefined) => (s && t.has(`severity.${s}`) ? t(`severity.${s}`) : s ?? undefined);
 
   return (
     <div className="space-y-6">
       {/* Problem list */}
-      <Section title="Problem list" count={conditions.length} canWrite={canWrite}
+      <Section title={t("sections.problemList")} count={conditions.length} canWrite={canWrite}
         form={(close) => (
           <form
             onSubmit={(e) => {
@@ -185,20 +193,20 @@ export function ClinicalLists({
             }}
             className="space-y-2 rounded-md border border-[var(--border)] p-3"
           >
-            <Input name="condition" placeholder="Condition" required />
+            <Input name="condition" placeholder={t("conditionPlaceholder")} required />
             <div className="grid gap-2 sm:grid-cols-2">
               <select name="status" className={selectClass} defaultValue="active">
-                <option value="active">Active</option>
-                <option value="resolved">Resolved</option>
-                <option value="inactive">Inactive</option>
+                <option value="active">{t("conditionStatus.active")}</option>
+                <option value="resolved">{t("conditionStatus.resolved")}</option>
+                <option value="inactive">{t("conditionStatus.inactive")}</option>
               </select>
               <Input name="diagnosedOn" type="date" />
             </div>
-            <Input name="notes" placeholder="Notes (optional)" />
+            <Input name="notes" placeholder={t("notesPlaceholder")} />
             {condForm.error && <p className="text-xs text-[var(--destructive)]">{condForm.error}</p>}
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={condForm.pending}>Save</Button>
-              <Button type="button" variant="outline" size="sm" onClick={close}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={condForm.pending}>{t("save")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={close}>{t("cancel")}</Button>
             </div>
           </form>
         )}
@@ -207,16 +215,16 @@ export function ClinicalLists({
           {conditions.map((c) => (
             <Row key={c.id} id={c.id} patientId={patientId} canWrite={canWrite} onDelete={deleteCondition}
               primary={c.condition}
-              badge={c.status}
+              badge={condStatus(c.status)}
               badgeTone={c.status === "active" ? "alert" : "default"}
-              meta={[fmtDate(c.diagnosed_on) && `Dx ${fmtDate(c.diagnosed_on)}`, c.notes].filter(Boolean).join(" · ") || undefined}
+              meta={[fmtDate(c.diagnosed_on) && t("meta.dx", { date: fmtDate(c.diagnosed_on)! }), c.notes].filter(Boolean).join(" · ") || undefined}
             />
           ))}
         </ul>
       </Section>
 
       {/* Medications */}
-      <Section title="Medications" count={medications.length} canWrite={canWrite}
+      <Section title={t("sections.medications")} count={medications.length} canWrite={canWrite}
         form={(close) => (
           <form
             onSubmit={(e) => {
@@ -233,22 +241,22 @@ export function ClinicalLists({
             }}
             className="space-y-2 rounded-md border border-[var(--border)] p-3"
           >
-            <Input name="name" placeholder="Medication name" required />
+            <Input name="name" placeholder={t("medNamePlaceholder")} required />
             <div className="grid gap-2 sm:grid-cols-2">
-              <Input name="dose" placeholder="Dose (e.g. 500mg)" />
-              <Input name="frequency" placeholder="Frequency (e.g. BID)" />
-              <Input name="route" placeholder="Route (e.g. oral)" />
+              <Input name="dose" placeholder={t("dosePlaceholder")} />
+              <Input name="frequency" placeholder={t("frequencyPlaceholder")} />
+              <Input name="route" placeholder={t("routePlaceholder")} />
               <Input name="startedOn" type="date" />
             </div>
             <select name="status" className={selectClass} defaultValue="active">
-              <option value="active">Active</option>
-              <option value="stopped">Stopped</option>
-              <option value="completed">Completed</option>
+              <option value="active">{t("medStatus.active")}</option>
+              <option value="stopped">{t("medStatus.stopped")}</option>
+              <option value="completed">{t("medStatus.completed")}</option>
             </select>
             {medForm.error && <p className="text-xs text-[var(--destructive)]">{medForm.error}</p>}
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={medForm.pending}>Save</Button>
-              <Button type="button" variant="outline" size="sm" onClick={close}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={medForm.pending}>{t("save")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={close}>{t("cancel")}</Button>
             </div>
           </form>
         )}
@@ -257,16 +265,16 @@ export function ClinicalLists({
           {medications.map((m) => (
             <Row key={m.id} id={m.id} patientId={patientId} canWrite={canWrite} onDelete={deleteMedication}
               primary={m.name}
-              badge={m.status}
+              badge={medStatus(m.status)}
               badgeTone={m.status === "active" ? "default" : "default"}
-              meta={[m.dose, m.frequency, m.route, fmtDate(m.started_on) && `since ${fmtDate(m.started_on)}`].filter(Boolean).join(" · ") || undefined}
+              meta={[m.dose, m.frequency, m.route, fmtDate(m.started_on) && t("meta.since", { date: fmtDate(m.started_on)! })].filter(Boolean).join(" · ") || undefined}
             />
           ))}
         </ul>
       </Section>
 
       {/* Allergies */}
-      <Section title="Allergies" count={allergies.length} canWrite={canWrite}
+      <Section title={t("sections.allergies")} count={allergies.length} canWrite={canWrite}
         form={(close) => (
           <form
             onSubmit={(e) => {
@@ -281,21 +289,21 @@ export function ClinicalLists({
             }}
             className="space-y-2 rounded-md border border-[var(--border)] p-3"
           >
-            <Input name="substance" placeholder="Substance" required />
+            <Input name="substance" placeholder={t("substancePlaceholder")} required />
             <div className="grid gap-2 sm:grid-cols-2">
-              <Input name="reaction" placeholder="Reaction" />
+              <Input name="reaction" placeholder={t("reactionPlaceholder")} />
               <select name="severity" className={selectClass} defaultValue="">
-                <option value="">Severity —</option>
-                <option value="mild">Mild</option>
-                <option value="moderate">Moderate</option>
-                <option value="severe">Severe</option>
+                <option value="">{t("severityNone")}</option>
+                <option value="mild">{t("severity.mild")}</option>
+                <option value="moderate">{t("severity.moderate")}</option>
+                <option value="severe">{t("severity.severe")}</option>
               </select>
             </div>
             <Input name="notedAt" type="date" />
             {allergyForm.error && <p className="text-xs text-[var(--destructive)]">{allergyForm.error}</p>}
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={allergyForm.pending}>Save</Button>
-              <Button type="button" variant="outline" size="sm" onClick={close}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={allergyForm.pending}>{t("save")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={close}>{t("cancel")}</Button>
             </div>
           </form>
         )}
@@ -304,7 +312,7 @@ export function ClinicalLists({
           {allergies.map((a) => (
             <Row key={a.id} id={a.id} patientId={patientId} canWrite={canWrite} onDelete={deleteAllergy}
               primary={a.substance}
-              badge={a.severity ?? undefined}
+              badge={severity(a.severity)}
               badgeTone={a.severity === "severe" ? "alert" : "default"}
               meta={[a.reaction, fmtDate(a.noted_at)].filter(Boolean).join(" · ") || undefined}
             />
@@ -313,7 +321,7 @@ export function ClinicalLists({
       </Section>
 
       {/* Immunizations */}
-      <Section title="Immunizations" count={immunizations.length} canWrite={canWrite}
+      <Section title={t("sections.immunizations")} count={immunizations.length} canWrite={canWrite}
         form={(close) => (
           <form
             onSubmit={(e) => {
@@ -329,17 +337,17 @@ export function ClinicalLists({
             }}
             className="space-y-2 rounded-md border border-[var(--border)] p-3"
           >
-            <Input name="vaccine" placeholder="Vaccine" required />
+            <Input name="vaccine" placeholder={t("vaccinePlaceholder")} required />
             <div className="grid gap-2 sm:grid-cols-2">
-              <Input name="doseLabel" placeholder="Dose (e.g. 1st)" />
-              <Input name="provider" placeholder="Provider" />
+              <Input name="doseLabel" placeholder={t("doseLabelPlaceholder")} />
+              <Input name="provider" placeholder={t("providerPlaceholder")} />
               <Input name="givenOn" type="date" />
               <Input name="nextDueOn" type="date" />
             </div>
             {immForm.error && <p className="text-xs text-[var(--destructive)]">{immForm.error}</p>}
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={immForm.pending}>Save</Button>
-              <Button type="button" variant="outline" size="sm" onClick={close}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={immForm.pending}>{t("save")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={close}>{t("cancel")}</Button>
             </div>
           </form>
         )}
@@ -349,7 +357,7 @@ export function ClinicalLists({
             <Row key={i.id} id={i.id} patientId={patientId} canWrite={canWrite} onDelete={deleteImmunization}
               primary={i.vaccine}
               badge={i.dose_label ?? undefined}
-              meta={[fmtDate(i.given_on) && `given ${fmtDate(i.given_on)}`, fmtDate(i.next_due_on) && `next ${fmtDate(i.next_due_on)}`, i.provider].filter(Boolean).join(" · ") || undefined}
+              meta={[fmtDate(i.given_on) && t("meta.given", { date: fmtDate(i.given_on)! }), fmtDate(i.next_due_on) && t("meta.next", { date: fmtDate(i.next_due_on)! }), i.provider].filter(Boolean).join(" · ") || undefined}
             />
           ))}
         </ul>

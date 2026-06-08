@@ -410,6 +410,53 @@
       "noDocuments": "No documents yet.",
       "remove": "Remove"
     },
+    "clinical": {
+      "add": "Add",
+      "remove": "Remove",
+      "save": "Save",
+      "cancel": "Cancel",
+      "nothingRecorded": "Nothing recorded.",
+      "couldNotSave": "Could not save.",
+      "sections": {
+        "problemList": "Problem list",
+        "medications": "Medications",
+        "allergies": "Allergies",
+        "immunizations": "Immunizations"
+      },
+      "conditionPlaceholder": "Condition",
+      "notesPlaceholder": "Notes (optional)",
+      "conditionStatus": {
+        "active": "Active",
+        "resolved": "Resolved",
+        "inactive": "Inactive"
+      },
+      "medNamePlaceholder": "Medication name",
+      "dosePlaceholder": "Dose (e.g. 500mg)",
+      "frequencyPlaceholder": "Frequency (e.g. BID)",
+      "routePlaceholder": "Route (e.g. oral)",
+      "medStatus": {
+        "active": "Active",
+        "stopped": "Stopped",
+        "completed": "Completed"
+      },
+      "substancePlaceholder": "Substance",
+      "reactionPlaceholder": "Reaction",
+      "severityNone": "Severity —",
+      "severity": {
+        "mild": "Mild",
+        "moderate": "Moderate",
+        "severe": "Severe"
+      },
+      "vaccinePlaceholder": "Vaccine",
+      "doseLabelPlaceholder": "Dose (e.g. 1st)",
+      "providerPlaceholder": "Provider",
+      "meta": {
+        "dx": "Dx {date}",
+        "since": "since {date}",
+        "given": "given {date}",
+        "next": "next {date}"
+      }
+    },
     "title": "Patients",
     "registered": "{count, plural, one {# patient registered} other {# patients registered}}",
     "newPatient": "New patient",

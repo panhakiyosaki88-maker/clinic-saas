@@ -410,6 +410,53 @@
       "noDocuments": "មិនទាន់មានឯកសារទេ។",
       "remove": "លុបចេញ"
     },
+    "clinical": {
+      "add": "បន្ថែម",
+      "remove": "លុបចេញ",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់",
+      "nothingRecorded": "មិនមានកំណត់ត្រាទេ។",
+      "couldNotSave": "មិនអាចរក្សាទុកបានទេ។",
+      "sections": {
+        "problemList": "បញ្ជីបញ្ហា",
+        "medications": "ឱសថ",
+        "allergies": "ប្រតិកម្ម",
+        "immunizations": "ការចាក់ថ្នាំបង្ការ"
+      },
+      "conditionPlaceholder": "ស្ថានភាព",
+      "notesPlaceholder": "កំណត់សម្គាល់ (ស្រេចចិត្ត)",
+      "conditionStatus": {
+        "active": "សកម្ម",
+        "resolved": "បានដោះស្រាយ",
+        "inactive": "អសកម្ម"
+      },
+      "medNamePlaceholder": "ឈ្មោះឱសថ",
+      "dosePlaceholder": "កម្រិតថ្នាំ (ឧ. 500mg)",
+      "frequencyPlaceholder": "ភាពញឹកញាប់ (ឧ. BID)",
+      "routePlaceholder": "មធ្យោបាយ (ឧ. oral)",
+      "medStatus": {
+        "active": "សកម្ម",
+        "stopped": "បានបញ្ឈប់",
+        "completed": "បានបញ្ចប់"
+      },
+      "substancePlaceholder": "សារធាតុ",
+      "reactionPlaceholder": "ប្រតិកម្ម",
+      "severityNone": "កម្រិតធ្ងន់ធ្ងរ —",
+      "severity": {
+        "mild": "ស្រាល",
+        "moderate": "មធ្យម",
+        "severe": "ធ្ងន់ធ្ងរ"
+      },
+      "vaccinePlaceholder": "វ៉ាក់សាំង",
+      "doseLabelPlaceholder": "កម្រិត (ឧ. 1st)",
+      "providerPlaceholder": "អ្នកផ្តល់សេវា",
+      "meta": {
+        "dx": "Dx {date}",
+        "since": "តាំងពី {date}",
+        "given": "បានផ្តល់ {date}",
+        "next": "បន្ទាប់ {date}"
+      }
+    },
     "title": "អ្នកជំងឺ",
     "registered": "{count, plural, other {អ្នកជំងឺ # នាក់បានចុះឈ្មោះ}}",
     "newPatient": "អ្នកជំងឺថ្មី",
