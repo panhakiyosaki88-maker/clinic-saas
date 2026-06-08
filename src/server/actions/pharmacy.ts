@@ -14,6 +14,7 @@ import {
   type RecordTransactionInput,
 } from "@/lib/validations/medicine";
 import { ok, fail, type ActionResult } from "./types";
+import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 import { skuBase, skuSequence } from "@/lib/pharmacy/sku";
 import type { Database } from "@/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -80,9 +81,10 @@ export async function createMedicine(
   input: CreateMedicineInput
 ): Promise<ActionResult<{ medicineId: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PHARMACY_WRITE);
+  const te = await getErrorT();
   const parsed = createMedicineSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
 
   const v = parsed.data;
@@ -93,7 +95,7 @@ export async function createMedicine(
   if (manual) {
     const sku = (v.sku ?? "").trim();
     if (!sku) {
-      return fail("Please fix the highlighted fields.", { sku: ["Enter a SKU or turn on auto-generate."] });
+      return fail(te("fixFields"), { sku: [te("medicine.skuOrAuto")] });
     }
     const { data, error } = await supabase
       .from("medicines")
@@ -101,9 +103,9 @@ export async function createMedicine(
       .select("id")
       .single();
     if (error?.code === "23505") {
-      return fail("Please fix the highlighted fields.", { sku: ["That SKU is already in use."] });
+      return fail(te("fixFields"), { sku: [te("medicine.skuInUse")] });
     }
-    if (error || !data) return fail(error?.message ?? "Could not create medicine.");
+    if (error || !data) return fail(error?.message ?? te("medicine.createFailed"));
     revalidatePath("/pharmacy");
     return ok({ medicineId: data.id });
   }
@@ -117,11 +119,11 @@ export async function createMedicine(
       .select("id")
       .single();
     if (error?.code === "23505") continue;
-    if (error || !data) return fail(error?.message ?? "Could not create medicine.");
+    if (error || !data) return fail(error?.message ?? te("medicine.createFailed"));
     revalidatePath("/pharmacy");
     return ok({ medicineId: data.id });
   }
-  return fail("Could not generate a unique SKU. Please try again.");
+  return fail(te("medicine.skuGenFailed"));
 }
 
 export async function updateMedicine(
@@ -129,9 +131,10 @@ export async function updateMedicine(
   input: UpdateMedicineInput
 ): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.PHARMACY_WRITE);
+  const te = await getErrorT();
   const parsed = updateMedicineSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
   }
 
   const v = parsed.data;
@@ -143,7 +146,7 @@ export async function updateMedicine(
   if (v.autoSku === false) {
     const sku = (v.sku ?? "").trim();
     if (!sku) {
-      return fail("Please fix the highlighted fields.", { sku: ["Enter a SKU or turn on auto-generate."] });
+      return fail(te("fixFields"), { sku: [te("medicine.skuOrAuto")] });
     }
     cols.sku = sku;
   } else {
@@ -164,7 +167,7 @@ export async function updateMedicine(
     .eq("id", medicineId)
     .eq("clinic_id", clinicId);
   if (error?.code === "23505") {
-    return fail("Please fix the highlighted fields.", { sku: ["That SKU is already in use."] });
+    return fail(te("fixFields"), { sku: [te("medicine.skuInUse")] });
   }
   if (error) return fail(error.message);
 

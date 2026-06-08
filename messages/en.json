@@ -698,6 +698,30 @@
       "category": "Category",
       "stock": "Stock",
       "price": "Price"
+    },
+    "form": {
+      "name": "Name",
+      "genericName": "Generic name",
+      "strength": "Strength",
+      "category": "Category",
+      "unit": "Unit",
+      "reorderLevel": "Reorder level",
+      "purchasePrice": "Purchase price",
+      "sellingPrice": "Selling price",
+      "sku": "SKU",
+      "autoGenerate": "Auto-generate",
+      "generatedPlaceholder": "Generated from name + strength",
+      "enterSku": "Enter SKU",
+      "skuHintFormat": "Format {base}-#### — assigned on save.",
+      "skuHintFormatEdit": "Format {base}-#### — assigned on save (existing SKU is kept).",
+      "skuHintEmpty": "Enter a name (and optional strength) to generate a SKU.",
+      "skuHintManual": "Manual override — must be unique.",
+      "active": "Active",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "add": "Add medicine",
+      "cancel": "Cancel",
+      "openingStockHint": "Add opening stock from the medicine page after saving."
     }
   },
   "errors": {
@@ -715,6 +739,13 @@
       "codeTaken": "A branch with that code already exists.",
       "alreadyInUse": "Already in use",
       "createFailed": "Could not create branch."
+    },
+    "medicine": {
+      "nameRequired": "Medicine name is required",
+      "skuOrAuto": "Enter a SKU or turn on auto-generate.",
+      "skuInUse": "That SKU is already in use.",
+      "createFailed": "Could not create medicine.",
+      "skuGenFailed": "Could not generate a unique SKU. Please try again."
     }
   }
 }

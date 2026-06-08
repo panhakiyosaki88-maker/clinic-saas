@@ -5,7 +5,8 @@ const emptyToUndef = (v: unknown) => (v === "" || v === null ? undefined : v);
 const optMoney = z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).optional());
 
 export const createMedicineSchema = z.object({
-  name: z.string().trim().min(2, "Medicine name is required").max(255),
+  // i18n key under the `errors` namespace (localized in the server action).
+  name: z.string().trim().min(2, "medicine.nameRequired").max(255),
   genericName: optionalShort,
   // When autoSku is true (default) the server generates the SKU and ignores
   // any sku value; when false (manual override) sku is used and must be unique.
