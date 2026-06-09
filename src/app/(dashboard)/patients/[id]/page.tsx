@@ -397,10 +397,10 @@ export default async function PatientProfilePage({
       )}
       {canBillRead && (
         <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardHeader className="flex-col items-start gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>{t("invoices", { count: invoices.length })}</CardTitle>
             {canBillWrite && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button asChild size="sm" variant="outline">
                   <Link href={`/billing/workspace?patientId=${patient.id}`}>{t("billingWorkspace")}</Link>
                 </Button>
@@ -584,7 +584,7 @@ export default async function PatientProfilePage({
           <h1 className="mt-1 text-2xl font-bold">{patient.full_name}</h1>
           <p className="font-mono text-xs text-[var(--muted-foreground)]">{patient.patient_number}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {canBookAppt && (
             <Button asChild size="sm">
               <Link href={`/appointments/new?patientId=${patient.id}`}>{t("bookAppointment")}</Link>
