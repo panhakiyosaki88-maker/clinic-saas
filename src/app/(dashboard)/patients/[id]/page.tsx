@@ -270,62 +270,62 @@ export default async function PatientProfilePage({
         </Card>
       )}
 
-      {canRxRead && (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>{t("prescriptions", { count: prescriptions.length })}</CardTitle>
-            {canRxWrite && (
-              <Button asChild size="sm">
-                <Link href={`/prescriptions/new?patientId=${patient.id}`}>{t("newPrescription")}</Link>
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {prescriptions.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">{t("noPrescriptions")}</p>
-            ) : (
-              <ul className="divide-y divide-[var(--border)]">
-                {prescriptions.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between py-2">
-                    <Link href={`/prescriptions/${p.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
-                      {new Date(p.prescribed_at).toLocaleDateString()}
-                    </Link>
-                    <span className="text-sm text-[var(--muted-foreground)]">
-                      {t("items", { count: p.item_count })}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {canLabRead && (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>{t("labRequests", { count: labRequests.length })}</CardTitle>
-            {canLabWrite && (
-              <Button asChild size="sm">
-                <Link href={`/lab/new?patientId=${patient.id}`}>{t("newRequest")}</Link>
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            <PatientLabByDate
-              patientId={patient.id}
-              requests={labRequests.map((r) => ({
-                id: r.id,
-                test_name: r.test_name,
-                status: r.status,
-                requested_at: r.requested_at,
-              }))}
-            />
-          </CardContent>
-        </Card>
-      )}
-
     </div>
+  );
+
+  const prescriptionsPanel = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardTitle>{t("prescriptions", { count: prescriptions.length })}</CardTitle>
+        {canRxWrite && (
+          <Button asChild size="sm">
+            <Link href={`/prescriptions/new?patientId=${patient.id}`}>{t("newPrescription")}</Link>
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>
+        {prescriptions.length === 0 ? (
+          <p className="text-sm text-[var(--muted-foreground)]">{t("noPrescriptions")}</p>
+        ) : (
+          <ul className="divide-y divide-[var(--border)]">
+            {prescriptions.map((p) => (
+              <li key={p.id} className="flex items-center justify-between py-2">
+                <Link href={`/prescriptions/${p.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                  {new Date(p.prescribed_at).toLocaleDateString()}
+                </Link>
+                <span className="text-sm text-[var(--muted-foreground)]">
+                  {t("items", { count: p.item_count })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const labPanel = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardTitle>{t("labRequests", { count: labRequests.length })}</CardTitle>
+        {canLabWrite && (
+          <Button asChild size="sm">
+            <Link href={`/lab/new?patientId=${patient.id}`}>{t("newRequest")}</Link>
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>
+        <PatientLabByDate
+          patientId={patient.id}
+          requests={labRequests.map((r) => ({
+            id: r.id,
+            test_name: r.test_name,
+            status: r.status,
+            requested_at: r.requested_at,
+          }))}
+        />
+      </CardContent>
+    </Card>
   );
 
   const activeMembership = memberships.find((m) => m.status === "active");
@@ -565,7 +565,9 @@ export default async function PatientProfilePage({
 
   const tabs: ProfileTab[] = [
     { id: "overview", label: t("tabs.overview"), content: overviewPanel },
-    { id: "clinical", label: t("tabs.clinical"), count: conditions.length + medications.length + allergies.length + immunizations.length + visits.length + prescriptions.length + labRequests.length, content: clinicalPanel },
+    { id: "clinical", label: t("tabs.clinical"), count: conditions.length + medications.length + allergies.length + immunizations.length + visits.length, content: clinicalPanel },
+    ...(canRxRead ? [{ id: "prescriptions", label: t("tabs.prescriptions"), count: prescriptions.length, content: prescriptionsPanel }] : []),
+    ...(canLabRead ? [{ id: "lab", label: t("tabs.lab"), count: labRequests.length, content: labPanel }] : []),
     ...(canImagingRead ? [{ id: "imaging", label: t("tabs.imaging"), count: imagingRequests.length, content: imagingPanel }] : []),
     ...(canProceduresRead ? [{ id: "procedures", label: t("tabs.procedures"), count: procedureOrders.length, content: proceduresPanel }] : []),
     { id: "financial", label: t("tabs.financial"), count: invoices.length + insurance.length, content: financialPanel },

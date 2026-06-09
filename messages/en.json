@@ -389,6 +389,8 @@
       "tabs": {
         "overview": "Overview",
         "clinical": "Clinical",
+        "prescriptions": "Prescriptions",
+        "lab": "Lab",
         "imaging": "Imaging",
         "procedures": "Procedures",
         "financial": "Financial",

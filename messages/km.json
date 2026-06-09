@@ -389,6 +389,8 @@
       "tabs": {
         "overview": "ទិដ្ឋភាពទូទៅ",
         "clinical": "គ្លីនិក",
+        "prescriptions": "វេជ្ជបញ្ជា",
+        "lab": "មន្ទីរពិសោធន៍",
         "imaging": "រូបភាពវេជ្ជសាស្ត្រ",
         "procedures": "នីតិវិធី",
         "financial": "ហិរញ្ញវត្ថុ",
