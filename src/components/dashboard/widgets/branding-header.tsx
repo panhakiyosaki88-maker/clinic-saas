@@ -1,13 +1,7 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import { HeartPulse, CalendarDays, Clock, DollarSign, type LucideIcon } from "lucide-react";
 import { LiveClock } from "./live-clock";
-
-function greetingKey(): "morning" | "afternoon" | "evening" {
-  const h = new Date().getHours();
-  if (h < 12) return "morning";
-  if (h < 18) return "afternoon";
-  return "evening";
-}
+import { Greeting, periodForHour } from "./greeting";
 
 export interface HeroKpis {
   appointmentsToday: number | null;
@@ -82,7 +76,8 @@ export async function BrandingHeader({
           </div>
           <div>
             <p className="text-sm font-medium text-brand-100">{clinicName}</p>
-            <h1 className="text-xl font-bold leading-tight">{t(`hero.${greetingKey()}`)}, {name}</h1>
+            <Greeting name={name} initialPeriod={periodForHour(new Date().getHours())} />
+
           </div>
         </div>
         <div className="text-right text-sm">

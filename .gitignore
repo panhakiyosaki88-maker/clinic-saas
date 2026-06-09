@@ -44,3 +44,4 @@ yarn-error.log*
 
 # testing
 /coverage
+apply_imaging_procedures.sql
