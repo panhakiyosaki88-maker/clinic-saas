@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { setClinicLogo } from "@/server/actions/clinic";
@@ -22,6 +23,7 @@ export function ClinicLogoUploader({
   logoPath: string | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("settings.logoUploader");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -34,11 +36,11 @@ export function ClinicLogoUploader({
     setError(null);
 
     if (!file.type.startsWith("image/")) {
-      setError("Please choose an image file.");
+      setError(t("chooseImage"));
       return;
     }
     if (file.size > MAX_BYTES) {
-      setError("Image must be 2 MB or smaller.");
+      setError(t("maxSize"));
       return;
     }
 
@@ -86,7 +88,7 @@ export function ClinicLogoUploader({
       <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt="Clinic logo" className="size-full object-contain" />
+          <img src={url} alt={t("alt")} className="size-full object-contain" />
         ) : (
           <Building2 className="size-7 text-slate-400" />
         )}
@@ -103,16 +105,16 @@ export function ClinicLogoUploader({
             disabled={busy}
           />
           <Button size="sm" variant="outline" disabled={busy} onClick={() => inputRef.current?.click()}>
-            {busy ? "Uploading…" : url ? "Change logo" : "Upload logo"}
+            {busy ? t("uploading") : url ? t("changeLogo") : t("uploadLogo")}
           </Button>
           {url && (
             <Button size="sm" variant="ghost" disabled={busy} onClick={onRemove}>
-              Remove
+              {t("remove")}
             </Button>
           )}
         </div>
         <p className="text-xs text-[var(--muted-foreground)]">
-          PNG, JPG or SVG up to 2 MB. Appears in the side menu.
+          {t("hint")}
         </p>
         {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
       </div>

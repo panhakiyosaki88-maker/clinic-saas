@@ -24,7 +24,8 @@
     "subscription": "Subscription",
     "account": "Account",
     "notifications": "Notifications",
-    "searchPlaceholder": "Search patients, doctors, invoices…"
+    "searchPlaceholder": "Search patients, doctors, invoices…",
+    "allBranches": "All branches"
   },
   "auth": {
     "login": {
@@ -91,6 +92,37 @@
       "add": "Add User",
       "cancel": "Cancel",
       "created": "User created — they can sign in now."
+    },
+    "logoUploader": {
+      "chooseImage": "Please choose an image file.",
+      "maxSize": "Image must be 2 MB or smaller.",
+      "uploading": "Uploading…",
+      "changeLogo": "Change logo",
+      "uploadLogo": "Upload logo",
+      "remove": "Remove",
+      "hint": "PNG, JPG or SVG up to 2 MB. Appears in the side menu.",
+      "alt": "Clinic logo"
+    },
+    "qrUploader": {
+      "chooseImage": "Please choose an image file.",
+      "maxSize": "Image must be 2 MB or smaller.",
+      "dragSelect": "Drag on the image to select the area to keep.",
+      "couldNotUpload": "Could not upload image.",
+      "alt": "Payment QR",
+      "changeQr": "Change QR",
+      "uploadQr": "Upload QR",
+      "remove": "Remove",
+      "hint": "PNG, JPG or SVG up to 2 MB. You can crop it before uploading. Shown on invoices for this branch.",
+      "dragHint": "Drag on the image to select the area to keep, then upload.",
+      "cropAlt": "Crop preview",
+      "uploading": "Uploading…",
+      "uploadCropped": "Upload cropped image",
+      "cancel": "Cancel",
+      "captionLabel": "Caption under the QR (optional)",
+      "captionPlaceholder": "e.g. Pay with ABA",
+      "saving": "Saving…",
+      "saveCaption": "Save caption",
+      "saved": "Saved."
     },
     "profileForm": {
       "name": "Clinic name",
@@ -184,6 +216,7 @@
     }
   },
   "dashboard": {
+    "weeklyTrendsSummary": "{count, plural, one {# appointment} other {# appointments}} in the last {days} days",
     "stat": {
       "todayAppointments": "Today's Appointments",
       "waitingRoom": "Waiting Room",

@@ -1,17 +1,19 @@
+import { getTranslations } from "next-intl/server";
 import type { DayCount } from "@/lib/db/queries/appointments";
 
 /**
  * Lightweight "Weekly Appointment Trends" bar chart — pure CSS, no chart lib.
  * Drop-in target for a Recharts <BarChart> later if richer interaction is needed.
  */
-export function WeeklyTrends({ data }: { data: DayCount[] }) {
+export async function WeeklyTrends({ data }: { data: DayCount[] }) {
   const max = Math.max(1, ...data.map((d) => d.count));
   const total = data.reduce((s, d) => s + d.count, 0);
+  const t = await getTranslations("dashboard");
 
   return (
     <div>
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-        {total} appointment{total === 1 ? "" : "s"} in the last {data.length} days
+        {t("weeklyTrendsSummary", { count: total, days: data.length })}
       </p>
       <div className="flex h-44 items-end justify-between gap-2">
         {data.map((d) => (

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Building2, Check, ChevronDown } from "lucide-react";
 import { setActiveBranch } from "@/server/actions/branch";
 
@@ -22,11 +23,12 @@ export function BranchSwitcher({
   activeId: string | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("shell");
   const [open, setOpen] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
 
   const active = branches.find((b) => b.id === activeId);
-  const label = active?.name ?? "All branches";
+  const label = active?.name ?? t("allBranches");
 
   function choose(id: string | null) {
     setOpen(false);
@@ -54,7 +56,7 @@ export function BranchSwitcher({
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
           <div className="absolute left-0 z-40 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-800 dark:bg-slate-900">
             <BranchRow
-              label="All branches"
+              label={t("allBranches")}
               selected={activeId === null}
               onClick={() => choose(null)}
             />
