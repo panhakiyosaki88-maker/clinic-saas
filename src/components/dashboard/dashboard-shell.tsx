@@ -157,7 +157,7 @@ export function DashboardShell({
       {/* Main column */}
       <div className={collapsed ? "lg:pl-16" : "lg:pl-64"}>
         {/* Header */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-slate-200 bg-white/80 px-4 backdrop-blur sm:gap-3 dark:border-slate-800 dark:bg-slate-900/80">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-slate-200 bg-white/80 px-2 backdrop-blur sm:gap-3 sm:px-4 dark:border-slate-800 dark:bg-slate-900/80">
           <button className="shrink-0 lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
             <Menu className="size-6" />
           </button>
@@ -175,7 +175,7 @@ export function DashboardShell({
             />
           </form>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1">
+          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
             <Link
               href="/notifications"
               className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"

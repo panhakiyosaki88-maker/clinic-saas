@@ -45,7 +45,7 @@ export function BranchSwitcher({
         type="button"
         onClick={() => setOpen((o) => !o)}
         disabled={pending}
-        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60 sm:px-3 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
       >
         <Building2 className="size-4 shrink-0 text-slate-400" />
         {/* Hide the name on phones to avoid header overflow; the dropdown still
