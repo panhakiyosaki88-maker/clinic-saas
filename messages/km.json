@@ -1588,6 +1588,10 @@
       "modality": "ប្រភេទម៉ាស៊ីន",
       "price": "តម្លៃ",
       "addStudy": "បន្ថែមការថត",
+      "editStudy": "កែការថត",
+      "deleteStudy": "លុបការថត",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់",
       "deleteStudyConfirm": "លុបការថត \"{name}\"?",
       "noStudies": "មិនទាន់មានការថតទេ។"
     }
@@ -1670,6 +1674,10 @@
       "uncategorized": "មិនបានចាត់ថ្នាក់",
       "price": "តម្លៃ",
       "addService": "បន្ថែមនីតិវិធី",
+      "editService": "កែនីតិវិធី",
+      "deleteService": "លុបនីតិវិធី",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់",
       "deleteServiceConfirm": "លុបនីតិវិធី \"{name}\"?",
       "noServices": "មិនទាន់មាននីតិវិធីទេ។"
     }

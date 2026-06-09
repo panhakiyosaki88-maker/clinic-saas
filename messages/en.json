@@ -1588,6 +1588,10 @@
       "modality": "Modality",
       "price": "Price",
       "addStudy": "Add study",
+      "editStudy": "Edit study",
+      "deleteStudy": "Delete study",
+      "save": "Save",
+      "cancel": "Cancel",
       "deleteStudyConfirm": "Delete study \"{name}\"?",
       "noStudies": "No studies yet."
     }
@@ -1670,6 +1674,10 @@
       "uncategorized": "Uncategorized",
       "price": "Price",
       "addService": "Add procedure",
+      "editService": "Edit procedure",
+      "deleteService": "Delete procedure",
+      "save": "Save",
+      "cancel": "Cancel",
       "deleteServiceConfirm": "Delete procedure \"{name}\"?",
       "noServices": "No procedures yet."
     }
