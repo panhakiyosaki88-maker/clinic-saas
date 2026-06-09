@@ -26,7 +26,9 @@ export function StatCard({
       <div className="flex items-start justify-between">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
-          <p className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
+          {/* Long amounts (e.g. large KHR totals) wrap and tighten instead of
+              overflowing the card. tabular-nums keeps digits aligned. */}
+          <p className="mt-1 text-2xl font-bold leading-tight tabular-nums text-slate-900 [overflow-wrap:anywhere] sm:text-3xl dark:text-white">{value}</p>
         </div>
         <div className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${tints[tint]}`}>
           <Icon className="size-5" />

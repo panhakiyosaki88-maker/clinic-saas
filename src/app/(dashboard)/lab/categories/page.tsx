@@ -6,7 +6,7 @@ import { listLabCategoryTree } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { CategoryForm } from "@/components/lab/category-form";
-import { AddSubgroupForm, DeleteCategoryButton, ImportPanelButton } from "@/components/lab/lab-category-controls";
+import { AddSubgroupForm, DeleteCategoryButton, ImportPanelButton, LabTestRow } from "@/components/lab/lab-category-controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Lab categories" };
@@ -63,10 +63,11 @@ export default async function LabCategoriesPage() {
                 ) : (
                   <ul className="divide-y divide-[var(--border)] border-b border-[var(--border)]">
                     {g.children.map((c) => (
-                      <li key={c.id} className="flex items-center justify-between px-4 py-2 text-sm">
-                        <span>{c.name}</span>
-                        {canWrite && <DeleteCategoryButton id={c.id} name={c.name} />}
-                      </li>
+                      <LabTestRow
+                        key={c.id}
+                        test={{ id: c.id, name: c.name, default_price: c.default_price }}
+                        canWrite={canWrite}
+                      />
                     ))}
                   </ul>
                 )}

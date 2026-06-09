@@ -79,7 +79,7 @@ export async function getVisitChargeSet(
   const scopeVisit = visitId || (await resolveOpenVisitId(supabase, patientId));
   if (!scopeVisit) return empty(patientId, null);
 
-  const [apptRes, labRes, imgReqRes, imgPriceRes, dispRes, procRes, memberRes, rxRes, medRes, linkRes, priceRes] =
+  const [apptRes, labRes, imgReqRes, imgPriceRes, dispRes, procRes, memberRes, rxRes, medRes, linkRes, priceRes, labCatRes] =
     await Promise.all([
       supabase
         .from("appointments")
@@ -151,6 +151,11 @@ export async function getVisitChargeSet(
         .select("name, unit_price")
         .eq("category", "lab")
         .is("archived_at", null),
+      // Lab catalog prices (set on the Lab Categories page) — the primary lab
+      // price source, mirroring imaging_services for imaging.
+      supabase
+        .from("lab_categories")
+        .select("name, default_price"),
     ]);
 
   // Billed-state per source: which live invoice holds it, and whether it can be
@@ -176,6 +181,14 @@ export async function getVisitChargeSet(
   };
 
   const labPrice = new Map((priceRes.data ?? []).map((p) => [p.name.toLowerCase(), Number(p.unit_price)]));
+  // Lab catalog price (Lab Categories page) takes precedence; the billing
+  // service-price catalog remains a fallback so existing setups keep working.
+  const labCatPrice = new Map(
+    ((labCatRes.data ?? []) as { name: string; default_price: number }[]).map((c) => [
+      c.name.toLowerCase(),
+      Number(c.default_price),
+    ])
+  );
   const charges: VisitCharge[] = [];
 
   // Consultations — fee from the attending doctor.
@@ -197,10 +210,13 @@ export async function getVisitChargeSet(
     });
   }
 
-  // Lab tests — priced from the service catalog by name when available.
+  // Lab tests — priced from the Lab Categories catalog by name, falling back to
+  // the billing service-price catalog. A catalog price of 0 counts as "unset".
   let unbilledLabs = 0;
   for (const l of (labRes.data ?? []) as { id: string; test_name: string; requested_at: string }[]) {
-    const price = labPrice.get(l.test_name.toLowerCase());
+    const key = l.test_name.toLowerCase();
+    const catPrice = labCatPrice.get(key);
+    const price = catPrice && catPrice > 0 ? catPrice : labPrice.get(key);
     const t = tag("lab", l.id);
     if (!t.billed) unbilledLabs += 1;
     charges.push({

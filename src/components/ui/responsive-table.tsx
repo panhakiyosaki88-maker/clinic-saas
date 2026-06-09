@@ -83,7 +83,8 @@ export function DataCardRow({
   return (
     <div className={cn("min-w-0", wide && "col-span-2", className)}>
       <dt className="text-xs text-[var(--muted-foreground)]">{label}</dt>
-      <dd className="truncate text-[var(--foreground)]">{value}</dd>
+      {/* Wrap long values (e.g. large KHR amounts) instead of clipping them. */}
+      <dd className="text-[var(--foreground)] [overflow-wrap:anywhere]">{value}</dd>
     </div>
   );
 }

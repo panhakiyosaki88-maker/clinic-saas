@@ -1830,6 +1830,11 @@
       "noSubgroups": "គ្មានក្រុមរង។",
       "addSubgroup": "បន្ថែមក្រុមរង…",
       "addSub": "បន្ថែម",
+      "price": "តម្លៃ",
+      "testName": "ឈ្មោះតេស្ត",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់",
+      "editAria": "កែ {name}",
       "import": "នាំចូលផ្ទាំងស្តង់ដារ",
       "importing": "កំពុងនាំចូល…",
       "imported": "បាននាំចូលប្រភេទ {count}។",
@@ -2165,7 +2170,8 @@
     "lab": {
       "patientRequired": "សូមជ្រើសរើសអ្នកជំងឺ",
       "selectTest": "សូមជ្រើសរើសការធ្វើតេស្តយ៉ាងហោចណាស់មួយ",
-      "categoryNameRequired": "ត្រូវការឈ្មោះប្រភេទ"
+      "categoryNameRequired": "ត្រូវការឈ្មោះប្រភេទ",
+      "priceInvalid": "បញ្ចូលតម្លៃត្រឹមត្រូវ"
     },
     "prescription": {
       "medicineRequired": "ត្រូវការឱសថ",

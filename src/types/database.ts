@@ -1371,6 +1371,7 @@ export interface Database {
           name: string;
           description: string | null;
           parent_id: string | null;
+          default_price: number;
           is_active: boolean;
           created_at: string;
           updated_at: string;
@@ -1382,6 +1383,7 @@ export interface Database {
           name: string;
           description?: string | null;
           parent_id?: string | null;
+          default_price?: number;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;

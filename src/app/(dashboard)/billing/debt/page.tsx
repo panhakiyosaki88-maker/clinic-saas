@@ -48,9 +48,9 @@ export default async function DebtPage() {
         <CardContent>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {buckets.map((bk) => (
-              <div key={bk.label} className="rounded-lg border border-[var(--border)] p-3">
+              <div key={bk.label} className="min-w-0 rounded-lg border border-[var(--border)] p-3">
                 <p className="text-xs text-[var(--muted-foreground)]">{bk.label}</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums">{money(bk.value)}</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums [overflow-wrap:anywhere]">{money(bk.value)}</p>
               </div>
             ))}
           </div>

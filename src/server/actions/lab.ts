@@ -7,11 +7,13 @@ import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   createCategorySchema,
+  updateLabCategorySchema,
   createLabRequestSchema,
   changeLabStatusSchema,
   setLabSessionStatusSchema,
   addLabResultSchema,
   type CreateCategoryInput,
+  type UpdateLabCategoryInput,
   type CreateLabRequestInput,
   type ChangeLabStatusInput,
   type SetLabSessionStatusInput,
@@ -40,8 +42,31 @@ export async function createLabCategory(input: CreateCategoryInput): Promise<Act
     name: parsed.data.name,
     description: parsed.data.description || null,
     parent_id: parsed.data.parentId || null,
+    default_price: parsed.data.defaultPrice ?? 0,
     created_by: user.id,
   });
+  if (error) {
+    if (error.code === "23505") return fail("A category with that name already exists.");
+    return fail(error.message);
+  }
+  revalidatePath("/lab/categories");
+  return ok(undefined);
+}
+
+/** Inline edit of a lab test (subgroup): rename and/or set its price. */
+export async function updateLabCategory(id: string, input: UpdateLabCategoryInput): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.LAB_WRITE);
+  const te = await getErrorT();
+  const parsed = updateLabCategorySchema.safeParse(input);
+  if (!parsed.success) {
+    return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("lab_categories")
+    .update({ name: parsed.data.name, default_price: parsed.data.defaultPrice })
+    .eq("id", id)
+    .eq("clinic_id", clinicId);
   if (error) {
     if (error.code === "23505") return fail("A category with that name already exists.");
     return fail(error.message);

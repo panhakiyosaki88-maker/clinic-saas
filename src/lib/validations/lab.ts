@@ -11,12 +11,23 @@ export const LAB_STATUS_LABELS: Record<(typeof LAB_STATUSES)[number], string> = 
 
 const optionalShort = z.string().trim().max(255).optional().or(z.literal(""));
 
+/** Per-test price (USD). Groups stay at 0; subgroups (tests) can be priced. */
+const price = z.coerce.number().min(0, "lab.priceInvalid").max(1_000_000).optional();
+
 export const createCategorySchema = z.object({
   name: z.string().trim().min(2, "lab.categoryNameRequired").max(120),
   description: optionalShort,
   parentId: z.string().uuid().optional().or(z.literal("")),
+  defaultPrice: price,
 });
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
+
+/** Inline edit of a lab test (subgroup): rename and/or reprice. */
+export const updateLabCategorySchema = z.object({
+  name: z.string().trim().min(2, "lab.categoryNameRequired").max(120),
+  defaultPrice: z.coerce.number().min(0, "lab.priceInvalid").max(1_000_000),
+});
+export type UpdateLabCategoryInput = z.infer<typeof updateLabCategorySchema>;
 
 export const createLabRequestSchema = z.object({
   // i18n keys under the `errors` namespace (localized in the server action).

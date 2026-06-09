@@ -1830,6 +1830,11 @@
       "noSubgroups": "No subgroups.",
       "addSubgroup": "Add subgroup…",
       "addSub": "Add",
+      "price": "Price",
+      "testName": "Test name",
+      "save": "Save",
+      "cancel": "Cancel",
+      "editAria": "Edit {name}",
       "import": "Import standard panel",
       "importing": "Importing…",
       "imported": "Imported {count} categories.",
@@ -2165,7 +2170,8 @@
     "lab": {
       "patientRequired": "Choose a patient",
       "selectTest": "Select at least one test",
-      "categoryNameRequired": "Category name is required"
+      "categoryNameRequired": "Category name is required",
+      "priceInvalid": "Enter a valid price"
     },
     "prescription": {
       "medicineRequired": "Medicine is required",

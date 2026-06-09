@@ -70,7 +70,11 @@ export function PatientsTable({
   const t = useTranslations("patients");
   const locale = useLocale();
   const [filter, setFilter] = React.useState("");
-  const [sort, setSort] = React.useState<{ key: SortKey; dir: 1 | -1 } | null>(null);
+  // Default to newest registrations first; users can re-sort any column.
+  const [sort, setSort] = React.useState<{ key: SortKey; dir: 1 | -1 } | null>({
+    key: "created_at",
+    dir: -1,
+  });
 
   const view = React.useMemo(() => {
     const q = filter.trim().toLowerCase();
