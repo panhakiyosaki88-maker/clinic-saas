@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import { setUserLocale } from "@/i18n/locale";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { LocaleFlag } from "@/components/settings/flags";
@@ -14,7 +13,6 @@ import { Button } from "@/components/ui/button";
  */
 export function LanguageToggle() {
   const current = useLocale() as Locale;
-  const router = useRouter();
   const [pending, startTransition] = React.useTransition();
 
   const next = locales[(locales.indexOf(current) + 1) % locales.length];
@@ -22,7 +20,9 @@ export function LanguageToggle() {
   function toggle() {
     startTransition(async () => {
       await setUserLocale(next);
-      router.refresh();
+      // Full reload (not router.refresh) so the theme + accent that client JS
+      // set on <html> survive — a partial RSC refresh strips them.
+      window.location.reload();
     });
   }
 

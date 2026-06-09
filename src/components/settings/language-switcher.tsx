@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import { setUserLocale } from "@/i18n/locale";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { Label } from "@/components/ui/label";
@@ -12,14 +11,17 @@ const selectClass =
 
 export function LanguageSwitcher() {
   const current = useLocale() as Locale;
-  const router = useRouter();
   const [pending, startTransition] = React.useTransition();
 
   function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value as Locale;
     startTransition(async () => {
       await setUserLocale(next);
-      router.refresh();
+      // Full reload (not router.refresh) so the <head> accent script and
+      // next-themes re-init from localStorage. A partial RSC refresh would
+      // reconcile <html> back to its rendered output and strip the theme +
+      // accent attributes that client JS set on it.
+      window.location.reload();
     });
   }
 
