@@ -8,6 +8,7 @@ import type { Procedure } from "@/lib/db/queries/procedures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 import { formatUSD } from "@/lib/billing/currency";
 
 const money = (n: number) => formatUSD(n);
@@ -71,6 +72,25 @@ export function ProcedureCatalog({ procedures }: { procedures: Procedure[] }) {
       {procedures.length === 0 ? (
         <p className="text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
       ) : (
+        <ResponsiveTable
+          cards={procedures.map((p) => (
+            <DataCard
+              key={p.id}
+              title={
+                <>
+                  {p.name}
+                  {!p.is_active && <span className="ml-2 text-xs font-normal text-[var(--muted-foreground)]">{t("inactive")}</span>}
+                </>
+              }
+              actions={
+                <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(p.id)} disabled={pending}>{t("delete")}</Button>
+              }
+            >
+              <DataCardRow label={t("thPrice")} value={<span className="tabular-nums">{money(Number(p.default_price))}</span>} />
+              <DataCardRow label={t("thCode")} value={p.code ?? "—"} />
+            </DataCard>
+          ))}
+        >
         <table className="w-full text-sm">
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
             <tr><th className="pb-2">{t("thName")}</th><th className="pb-2">{t("thCode")}</th><th className="pb-2 text-right">{t("thPrice")}</th><th /></tr>
@@ -88,6 +108,7 @@ export function ProcedureCatalog({ procedures }: { procedures: Procedure[] }) {
             ))}
           </tbody>
         </table>
+        </ResponsiveTable>
       )}
     </div>
   );

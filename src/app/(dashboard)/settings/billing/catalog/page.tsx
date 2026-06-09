@@ -13,6 +13,7 @@ import { ServicePriceForm } from "@/components/billing/service-price-form";
 import { CatalogRowActions } from "@/components/billing/catalog-row-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Price catalog" };
 
@@ -67,6 +68,25 @@ export default async function CatalogPage({
           <Card key={cat} className="overflow-hidden">
             <CardHeader><CardTitle className="text-base">{tc(cat)}</CardTitle></CardHeader>
             <CardContent className="p-0">
+              <ResponsiveTable
+                cards={rows.map((p) => (
+                  <DataCard
+                    key={p.id}
+                    className={p.archived_at ? "opacity-50" : ""}
+                    title={
+                      <>
+                        {p.name}
+                        {p.archived_at && <span className="ml-2 text-xs font-normal text-[var(--muted-foreground)]">{t("archived")}</span>}
+                      </>
+                    }
+                    actions={canWrite ? <CatalogRowActions id={p.id} archived={!!p.archived_at} /> : undefined}
+                  >
+                    <DataCardRow label={t("price")} value={<span className="tabular-nums">{formatUSD(Number(p.unit_price))}</span>} />
+                    <DataCardRow label={t("code")} value={<span className="font-mono text-xs">{p.code ?? "—"}</span>} />
+                    <DataCardRow label={t("branch")} value={p.branch_name ?? t("all")} />
+                  </DataCard>
+                ))}
+              >
               <Table>
                 <THead>
                   <tr>
@@ -93,6 +113,7 @@ export default async function CatalogPage({
                   ))}
                 </TBody>
               </Table>
+              </ResponsiveTable>
             </CardContent>
           </Card>
         );

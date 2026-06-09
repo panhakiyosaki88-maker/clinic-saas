@@ -27,7 +27,7 @@ export function ViewSwitcher({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => go(view, prevDate)}>←</Button>
         <Button variant="outline" size="sm" onClick={() => go(view, todayDate)}>{t("today")}</Button>
         <Button variant="outline" size="sm" onClick={() => go(view, nextDate)}>→</Button>

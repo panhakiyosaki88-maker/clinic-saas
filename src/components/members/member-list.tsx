@@ -56,7 +56,7 @@ export function MemberList({
   return (
     <div className="divide-y divide-[var(--border)]">
       {members.map((m) => (
-        <div key={m.id} className="flex items-center justify-between gap-3 py-3">
+        <div key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{m.full_name ?? m.email ?? "—"}</p>
             <p className="truncate text-xs text-[var(--muted-foreground)]">{m.email}</p>

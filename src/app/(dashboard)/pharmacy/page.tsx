@@ -10,6 +10,7 @@ import { PatientSearch } from "@/components/patients/patient-search";
 import { PageHeader, HeaderAction } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Pharmacy" };
 
@@ -103,6 +104,38 @@ export default async function PharmacyPage({
               {q ? t("empty.noMatch") : t("empty.none")}
             </p>
           ) : (
+            <ResponsiveTable
+              cards={medicines.map((m) => {
+                const low = m.is_active && m.stock_quantity <= m.reorder_level;
+                return (
+                  <DataCard
+                    key={m.id}
+                    title={
+                      <Link href={`/pharmacy/${m.id}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                        {m.name}
+                        {(m.strength || m.generic_name) && (
+                          <span className="block text-xs font-normal text-slate-400">
+                            {[m.strength, m.generic_name].filter(Boolean).join(" · ")}
+                          </span>
+                        )}
+                      </Link>
+                    }
+                  >
+                    <DataCardRow label={t("table.sku")} value={<span className="font-mono text-xs">{m.sku ?? "—"}</span>} />
+                    <DataCardRow label={t("table.category")} value={m.category ?? "—"} />
+                    <DataCardRow
+                      label={t("table.stock")}
+                      value={
+                        <span className={low ? "font-semibold text-rose-600 dark:text-rose-400" : ""}>
+                          {m.stock_quantity} {m.unit}
+                        </span>
+                      }
+                    />
+                    <DataCardRow label={t("table.price")} value={m.selling_price ?? "—"} />
+                  </DataCard>
+                );
+              })}
+            >
             <Table>
               <THead>
                 <tr>
@@ -137,6 +170,7 @@ export default async function PharmacyPage({
                 })}
               </TBody>
             </Table>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

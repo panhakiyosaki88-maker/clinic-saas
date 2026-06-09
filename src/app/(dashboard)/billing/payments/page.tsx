@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/page-header";
 import { BillingTabs } from "@/components/billing/billing-tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Payments" };
 
@@ -44,6 +45,42 @@ export default async function PaymentsPage() {
           {payments.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">{t("noPayments")}</p>
           ) : (
+            <ResponsiveTable
+              cards={payments.map((p) => {
+                const refund = p.kind === "refund";
+                return (
+                  <DataCard
+                    key={p.id}
+                    title={<span className="font-mono text-xs">{p.receipt_number}</span>}
+                    actions={
+                      <span className={`tabular-nums font-medium ${refund ? "text-[var(--destructive)]" : ""}`}>
+                        {refund ? "−" : ""}{money(p.amount)}
+                      </span>
+                    }
+                  >
+                    <DataCardRow
+                      label={t("thInvoice")}
+                      value={
+                        <Link href={`/billing/${p.invoice_id}`} className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400">
+                          {p.invoice_number}
+                        </Link>
+                      }
+                    />
+                    <DataCardRow label={t("thPatient")} value={p.patient_name ?? "—"} />
+                    <DataCardRow
+                      label={t("thMethod")}
+                      value={
+                        <>
+                          {tm(p.method)}
+                          {refund && <span className="ml-1 text-xs font-medium text-[var(--destructive)]">{t("refund")}</span>}
+                        </>
+                      }
+                    />
+                    <DataCardRow label={t("thDate")} value={new Date(p.paid_at).toLocaleDateString()} />
+                  </DataCard>
+                );
+              })}
+            >
             <Table>
               <THead>
                 <tr>
@@ -80,6 +117,7 @@ export default async function PaymentsPage() {
                 })}
               </TBody>
             </Table>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

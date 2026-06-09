@@ -11,6 +11,7 @@ import { PageHeader, HeaderAction } from "@/components/page-header";
 import { ImagingStatusBadge } from "@/components/imaging/imaging-status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Imaging" };
 
@@ -57,6 +58,31 @@ export default async function ImagingPage() {
           {requests.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">{t("empty")}</p>
           ) : (
+            <ResponsiveTable
+              cards={requests.map((r) => (
+                <DataCard
+                  key={r.id}
+                  title={
+                    <Link href={`/imaging/patient/${r.patient_id}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                      {r.patient_name}
+                      {r.patient_number && <span className="ml-2 text-xs font-normal text-slate-400">{r.patient_number}</span>}
+                    </Link>
+                  }
+                >
+                  <DataCardRow
+                    label={t("table.study")}
+                    value={
+                      <>
+                        {r.service_name}
+                        {r.modality && <span className="ml-2 text-xs text-slate-400">{r.modality}</span>}
+                      </>
+                    }
+                  />
+                  <DataCardRow label={t("table.status")} value={<ImagingStatusBadge status={r.status} />} />
+                  <DataCardRow label={t("table.requested")} value={fmt(r.requested_at)} />
+                </DataCard>
+              ))}
+            >
             <Table>
               <THead>
                 <tr>
@@ -85,6 +111,7 @@ export default async function ImagingPage() {
                 ))}
               </TBody>
             </Table>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

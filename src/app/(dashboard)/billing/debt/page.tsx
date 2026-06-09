@@ -13,6 +13,7 @@ import { BillingTabs } from "@/components/billing/billing-tabs";
 import { StatCard } from "@/components/dashboard/widgets/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Patient debt" };
 
@@ -62,6 +63,25 @@ export default async function DebtPage() {
           {d.byPatient.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">{t("noOutstanding")}</p>
           ) : (
+            <ResponsiveTable
+              cards={d.byPatient.map((p) => (
+                <DataCard
+                  key={p.patientId ?? "none"}
+                  title={
+                    <>
+                      {p.patientId ? (
+                        <Link href={`/patients/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">{p.patient}</Link>
+                      ) : p.patient}
+                      {p.overdue && <span className="ml-2 text-xs font-medium text-[var(--destructive)]">{t("overdue")}</span>}
+                    </>
+                  }
+                >
+                  <DataCardRow label={t("thBalance")} value={<span className="font-medium tabular-nums">{money(p.balance)}</span>} />
+                  <DataCardRow label={t("thInvoices")} value={<span className="tabular-nums">{p.invoiceCount}</span>} />
+                  <DataCardRow label={t("thOldest")} value={<span className="tabular-nums">{p.oldestDays}</span>} />
+                </DataCard>
+              ))}
+            >
             <Table>
               <THead>
                 <tr>
@@ -87,6 +107,7 @@ export default async function DebtPage() {
                 ))}
               </TBody>
             </Table>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

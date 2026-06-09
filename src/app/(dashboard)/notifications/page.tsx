@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Bell } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Notifications" };
 
@@ -49,6 +50,25 @@ export default async function NotificationsPage() {
               {t("empty")}
             </p>
           ) : (
+            <ResponsiveTable
+              cards={items.map((n) => (
+                <DataCard
+                  key={n.id}
+                  title={t.has(`type.${n.type}`) ? t(`type.${n.type}`) : n.type.replace("_", " ")}
+                  actions={
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE[n.status]}`}>
+                      {t.has(`status.${n.status}`) ? t(`status.${n.status}`) : n.status}
+                    </span>
+                  }
+                >
+                  <DataCardRow label={t("table.recipient")} value={n.recipient} wide />
+                  <DataCardRow label={t("table.when")} value={new Date(n.created_at).toLocaleString(locale)} wide />
+                  {n.error && n.status === "failed" && (
+                    <DataCardRow label={t("table.status")} value={<span className="text-[var(--destructive)]">{n.error}</span>} wide />
+                  )}
+                </DataCard>
+              ))}
+            >
             <div className="overflow-x-auto">
             <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
@@ -76,6 +96,7 @@ export default async function NotificationsPage() {
               </tbody>
             </table>
             </div>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

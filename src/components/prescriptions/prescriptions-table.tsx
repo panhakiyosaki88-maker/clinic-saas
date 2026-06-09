@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 
 export interface PrescriptionRow {
@@ -119,6 +120,35 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
       {view.length === 0 ? (
         <p className="p-6 text-sm text-slate-400">{t("noMatch")}</p>
       ) : (
+        <ResponsiveTable
+          cards={view.map((p) => (
+            <DataCard
+              key={p.id}
+              title={
+                <Link href={`/prescriptions/${p.id}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                  {p.patient_name}
+                </Link>
+              }
+            >
+              <DataCardRow label={t("number")} value={<span className="font-mono text-xs">{p.patient_number}</span>} />
+              <DataCardRow label={t("items")} value={p.item_count} />
+              <DataCardRow
+                label={t("doctor")}
+                value={
+                  p.doctor_name ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <DoctorAvatar name={p.doctor_name} avatarPath={p.doctor_avatar_path} size={24} />
+                      {p.doctor_name}
+                    </span>
+                  ) : (
+                    "—"
+                  )
+                }
+              />
+              <DataCardRow label={t("prescribed")} value={fmtDate(p.prescribed_at, locale)} />
+            </DataCard>
+          ))}
+        >
         <Table>
           <THead>
             <tr>
@@ -168,6 +198,7 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
             ))}
           </TBody>
         </Table>
+        </ResponsiveTable>
       )}
     </div>
   );

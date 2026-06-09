@@ -11,6 +11,7 @@ import { PageHeader, HeaderAction } from "@/components/page-header";
 import { ProcedureStatusBadge } from "@/components/procedures/procedure-status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Procedures" };
 
@@ -57,6 +58,31 @@ export default async function ProceduresPage() {
           {orders.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">{t("empty")}</p>
           ) : (
+            <ResponsiveTable
+              cards={orders.map((o) => (
+                <DataCard
+                  key={o.id}
+                  title={
+                    <Link href={`/procedures/patient/${o.patient_id}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                      {o.patient_name}
+                      {o.patient_number && <span className="ml-2 text-xs font-normal text-slate-400">{o.patient_number}</span>}
+                    </Link>
+                  }
+                >
+                  <DataCardRow
+                    label={t("table.procedure")}
+                    value={
+                      <>
+                        {o.procedure_name}
+                        {o.category_name && <span className="ml-2 text-xs text-slate-400">{o.category_name}</span>}
+                      </>
+                    }
+                  />
+                  <DataCardRow label={t("table.status")} value={<ProcedureStatusBadge status={o.status} />} />
+                  <DataCardRow label={t("table.ordered")} value={fmt(o.ordered_at)} />
+                </DataCard>
+              ))}
+            >
             <Table>
               <THead>
                 <tr>
@@ -85,6 +111,7 @@ export default async function ProceduresPage() {
                 ))}
               </TBody>
             </Table>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

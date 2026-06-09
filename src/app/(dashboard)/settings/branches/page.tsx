@@ -8,6 +8,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { BranchForm } from "@/components/settings/branch-form";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Branches · Settings" };
 
@@ -36,6 +37,34 @@ export default async function BranchesSettingsPage() {
           {branches.length === 0 ? (
             <p className="p-6 text-sm text-[var(--muted-foreground)]">{t("branches.empty")}</p>
           ) : (
+            <ResponsiveTable
+              cards={branches.map((b) => (
+                <DataCard
+                  key={b.id}
+                  title={
+                    <>
+                      {b.name}
+                      {b.is_primary && (
+                        <span className="ml-2 inline-flex rounded-full bg-brand-500/10 px-2 py-0.5 text-xs font-medium text-brand-600 dark:text-brand-400">
+                          {t("branches.primary")}
+                        </span>
+                      )}
+                    </>
+                  }
+                  actions={
+                    canManage ? (
+                      <Link href={`/settings/branches/${b.id}/edit`} className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
+                        {t("branches.edit")}
+                      </Link>
+                    ) : undefined
+                  }
+                >
+                  <DataCardRow label={t("branches.code")} value={b.code ?? "—"} />
+                  <DataCardRow label={t("branches.phone")} value={b.phone ?? "—"} />
+                  <DataCardRow label={t("branches.address")} value={b.address ?? "—"} wide />
+                </DataCard>
+              ))}
+            >
             <div className="overflow-x-auto">
               <table className="w-full min-w-[32rem] text-sm">
                 <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
@@ -76,6 +105,7 @@ export default async function BranchesSettingsPage() {
                 </tbody>
               </table>
             </div>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

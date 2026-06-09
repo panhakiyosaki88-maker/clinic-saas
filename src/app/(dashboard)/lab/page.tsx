@@ -12,6 +12,7 @@ import { LabStateBadge } from "@/components/lab/lab-state-badge";
 import type { PatientLabState } from "@/lib/validations/lab";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export const metadata = { title: "Laboratory" };
 
@@ -112,6 +113,24 @@ export default async function LabPage() {
           {patients.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">{t("empty")}</p>
           ) : (
+            <ResponsiveTable
+              cards={patients.map((p) => (
+                <DataCard
+                  key={p.patientId}
+                  title={
+                    <Link href={`/lab/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                      {p.name}
+                      {p.number && <span className="ml-2 text-xs font-normal text-slate-400">{p.number}</span>}
+                    </Link>
+                  }
+                >
+                  <DataCardRow label={t("table.status")} value={<LabStateBadge status={p.status} />} />
+                  <DataCardRow label={t("table.tests")} value={p.count} />
+                  <DataCardRow label={t("table.startDate")} value={fmt(p.start)} />
+                  <DataCardRow label={t("table.finishDate")} value={fmt(p.finish)} />
+                </DataCard>
+              ))}
+            >
             <Table>
               <THead>
                 <tr>
@@ -139,6 +158,7 @@ export default async function LabPage() {
                 ))}
               </TBody>
             </Table>
+            </ResponsiveTable>
           )}
         </CardContent>
       </Card>

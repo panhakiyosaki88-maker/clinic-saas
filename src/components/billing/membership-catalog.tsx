@@ -9,6 +9,7 @@ import type { MembershipPlan } from "@/lib/db/queries/memberships";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 import { formatUSD } from "@/lib/billing/currency";
 
 const selectClass =
@@ -87,6 +88,26 @@ export function MembershipCatalog({ plans }: { plans: MembershipPlan[] }) {
       {plans.length === 0 ? (
         <p className="text-sm text-[var(--muted-foreground)]">{t("empty")}</p>
       ) : (
+        <ResponsiveTable
+          cards={plans.map((p) => (
+            <DataCard
+              key={p.id}
+              title={
+                <>
+                  {p.name}
+                  {!p.is_active && <span className="ml-2 text-xs font-normal text-[var(--muted-foreground)]">{t("inactive")}</span>}
+                </>
+              }
+              actions={
+                <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(p.id)} disabled={pending}>{t("delete")}</Button>
+              }
+            >
+              <DataCardRow label={t("thFee")} value={<span className="tabular-nums">{money(Number(p.price))}</span>} />
+              <DataCardRow label={t("thBenefit")} value={p.benefit_type === "percent" ? `${Number(p.benefit_value)}%` : money(Number(p.benefit_value))} />
+              <DataCardRow label={t("thValid")} value={p.duration_days ? t("days", { count: p.duration_days }) : t("noExpiry")} />
+            </DataCard>
+          ))}
+        >
         <table className="w-full text-sm">
           <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
             <tr><th className="pb-2">{t("thPlan")}</th><th className="pb-2 text-right">{t("thFee")}</th><th className="pb-2">{t("thBenefit")}</th><th className="pb-2">{t("thValid")}</th><th /></tr>
@@ -105,6 +126,7 @@ export function MembershipCatalog({ plans }: { plans: MembershipPlan[] }) {
             ))}
           </tbody>
         </table>
+        </ResponsiveTable>
       )}
     </div>
   );

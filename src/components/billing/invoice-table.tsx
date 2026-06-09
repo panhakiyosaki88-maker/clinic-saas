@@ -21,6 +21,7 @@ import { formatIn, type CurrencyCode } from "@/lib/billing/currency";
 import { INVOICE_STATUSES } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 
 export interface InvoiceTableRow {
   id: string;
@@ -174,6 +175,45 @@ export function InvoiceTable({
         </span>
       </div>
 
+      <ResponsiveTable
+        cards={
+          table.getRowModel().rows.length === 0 ? (
+            <p className="p-6 text-center text-sm text-slate-400">{t("table.noMatch")}</p>
+          ) : (
+            table.getRowModel().rows.map((row) => {
+              const r = row.original;
+              return (
+                <DataCard
+                  key={row.id}
+                  title={
+                    <Link href={`/billing/${r.id}`} className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400">
+                      {r.invoice_number}
+                    </Link>
+                  }
+                  actions={
+                    canWrite ? (
+                      <input type="checkbox" checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} />
+                    ) : undefined
+                  }
+                >
+                  <DataCardRow label={t("table.patient")} value={r.patient || "—"} />
+                  <DataCardRow label={t("table.issued")} value={new Date(r.issued_at).toLocaleDateString(locale)} />
+                  <DataCardRow label={t("table.total")} value={<span className="tabular-nums">{money(r.total)}</span>} />
+                  <DataCardRow label={t("table.balance")} value={<span className="tabular-nums">{money(r.balance)}</span>} />
+                  <DataCardRow
+                    label={t("table.status")}
+                    value={
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_TONE[r.status] ?? ""}`}>
+                        {t.has(`status.${r.status}`) ? t(`status.${r.status}`) : r.status}
+                      </span>
+                    }
+                  />
+                </DataCard>
+              );
+            })
+          )
+        }
+      >
       <div className="w-full overflow-x-auto rounded-lg border border-[var(--border)]">
         <table className="w-full min-w-[40rem] text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
@@ -214,6 +254,7 @@ export function InvoiceTable({
           </tbody>
         </table>
       </div>
+      </ResponsiveTable>
 
       <div className="flex items-center justify-between text-sm">
         <span className="text-[var(--muted-foreground)]">

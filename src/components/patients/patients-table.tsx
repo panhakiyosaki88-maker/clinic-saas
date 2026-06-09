@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 import { PatientPurgeButton } from "@/components/patients/patient-purge-button";
 
 export interface PatientRow {
@@ -110,6 +111,31 @@ export function PatientsTable({
       {view.length === 0 ? (
         <p className="p-6 text-sm text-slate-400">{t("table.noMatch")}</p>
       ) : (
+        <ResponsiveTable
+          cards={view.map((p) => (
+            <DataCard
+              key={p.id}
+              title={
+                <Link href={`/patients/${p.id}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                  {p.full_name}
+                </Link>
+              }
+              actions={canWrite ? <PatientPurgeButton patientId={p.id} patientName={p.full_name} /> : undefined}
+            >
+              <DataCardRow label={t("table.number")} value={<span className="font-mono text-xs">{p.patient_number}</span>} />
+              <DataCardRow
+                label={t("table.gender")}
+                value={p.gender ? (t.has(`gender.${p.gender}`) ? t(`gender.${p.gender}`) : p.gender) : "—"}
+              />
+              <DataCardRow label={t("table.age")} value={p.age !== null ? p.age : "—"} />
+              <DataCardRow label={t("table.blood")} value={p.blood_type && p.blood_type !== "unknown" ? p.blood_type : "—"} />
+              <DataCardRow label={t("table.phone")} value={p.phone ?? "—"} />
+              <DataCardRow label={t("table.visits")} value={p.visit_count} />
+              <DataCardRow label={t("table.registered")} value={fmtDate(p.created_at, locale)} />
+              <DataCardRow label={t("table.lastVisit")} value={fmtDate(p.last_visit_date, locale)} />
+            </DataCard>
+          ))}
+        >
         <Table>
           <THead>
             <tr>
@@ -161,6 +187,7 @@ export function PatientsTable({
             ))}
           </TBody>
         </Table>
+        </ResponsiveTable>
       )}
     </div>
   );

@@ -41,7 +41,7 @@ export async function MonthView({
             <Link
               key={ymd(d)}
               href={`/appointments?view=day&date=${ymd(d)}`}
-              className={`min-h-16 rounded-lg border border-[var(--border)] p-1.5 text-left hover:bg-[var(--accent)] ${
+              className={`min-h-16 rounded-lg border border-[var(--border)] p-1 text-left hover:bg-[var(--accent)] sm:p-1.5 ${
                 inMonth ? "" : "opacity-40"
               }`}
             >
@@ -49,8 +49,9 @@ export async function MonthView({
                 {d.getDate()}
               </span>
               {count > 0 && (
-                <span className="mt-1 block rounded bg-[var(--primary)]/15 px-1 text-xs text-[var(--primary)]">
-                  {t("month.appts", { count })}
+                <span className="mt-1 block truncate rounded bg-[var(--primary)]/15 px-1 text-xs text-[var(--primary)]">
+                  <span className="sm:hidden">{count}</span>
+                  <span className="hidden sm:inline">{t("month.appts", { count })}</span>
                 </span>
               )}
             </Link>
