@@ -3,6 +3,31 @@
 import * as React from "react";
 import { Palette, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  ACCENT_COOKIE,
+  ACCENT_CUSTOM_COOKIE,
+  ACCENT_SHADES,
+  customBrandVars,
+} from "@/lib/accent";
+
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+/** Persist (or clear) an accent value in a cookie so the server can render it
+ *  on <html> on the next load — this is what kills the first-paint color flash. */
+function writeAccentCookie(name: string, value: string) {
+  try {
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
+  } catch {
+    /* ignore */
+  }
+}
+function clearAccentCookie(name: string) {
+  try {
+    document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
+  } catch {
+    /* ignore */
+  }
+}
 
 /** UI "tone" presets. `blue` is the default (no data-accent attribute). */
 const ACCENTS = [
@@ -20,38 +45,29 @@ export const ACCENT_STORAGE_KEY = "ui-accent";
 export const ACCENT_CUSTOM_KEY = "ui-accent-custom";
 const DEFAULT_CUSTOM = "#2563eb";
 
-/**
- * Per-shade lightness + chroma factor used to derive a full scale from one
- * picked color via CSS relative-color syntax. Mirrors Tailwind's blue ramp.
- */
-const SHADES: [string, number, number][] = [
-  ["50", 0.97, 0.18],
-  ["100", 0.93, 0.35],
-  ["300", 0.81, 0.7],
-  ["400", 0.71, 0.9],
-  ["500", 0.62, 1],
-  ["600", 0.55, 1.05],
-  ["700", 0.49, 1],
-];
-
 function setCustomVars(hex: string) {
   const el = document.documentElement;
-  for (const [k, l, cf] of SHADES) {
-    el.style.setProperty(`--brand-${k}`, `oklch(from ${hex} ${l} calc(c * ${cf}) h)`);
-  }
+  const vars = customBrandVars(hex);
+  for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v);
   el.setAttribute("data-accent", "custom");
 }
 
 function clearCustomVars() {
   const el = document.documentElement;
-  for (const [k] of SHADES) el.style.removeProperty(`--brand-${k}`);
+  for (const [k] of ACCENT_SHADES) el.style.removeProperty(`--brand-${k}`);
 }
 
-/** Applies a preset accent to <html> and persists it. */
+/** Applies a preset accent to <html> and persists it (cookie + localStorage). */
 export function applyAccent(id: Exclude<AccentId, "custom">) {
   clearCustomVars();
-  if (id === "blue") document.documentElement.removeAttribute("data-accent");
-  else document.documentElement.setAttribute("data-accent", id);
+  clearAccentCookie(ACCENT_CUSTOM_COOKIE);
+  if (id === "blue") {
+    document.documentElement.removeAttribute("data-accent");
+    clearAccentCookie(ACCENT_COOKIE);
+  } else {
+    document.documentElement.setAttribute("data-accent", id);
+    writeAccentCookie(ACCENT_COOKIE, id);
+  }
   try {
     localStorage.setItem(ACCENT_STORAGE_KEY, id);
   } catch {
@@ -59,9 +75,11 @@ export function applyAccent(id: Exclude<AccentId, "custom">) {
   }
 }
 
-/** Applies a freely-chosen color and persists it. */
+/** Applies a freely-chosen color and persists it (cookie + localStorage). */
 export function applyCustom(hex: string) {
   setCustomVars(hex);
+  writeAccentCookie(ACCENT_COOKIE, "custom");
+  writeAccentCookie(ACCENT_CUSTOM_COOKIE, hex);
   try {
     localStorage.setItem(ACCENT_STORAGE_KEY, "custom");
     localStorage.setItem(ACCENT_CUSTOM_KEY, hex);
@@ -88,6 +106,14 @@ export function AccentToggle() {
       if (savedHex) setCustomHex(savedHex);
       if (saved === "custom" || ACCENTS.some((a) => a.id === saved)) {
         setAccent(saved as AccentId);
+      }
+      // Mirror an existing localStorage accent into the cookie so the server can
+      // render it on the next load (migrates users who set it before cookies).
+      if (saved === "custom" && savedHex) {
+        writeAccentCookie(ACCENT_COOKIE, "custom");
+        writeAccentCookie(ACCENT_CUSTOM_COOKIE, savedHex);
+      } else if (saved && saved !== "blue") {
+        writeAccentCookie(ACCENT_COOKIE, saved);
       }
     } catch {
       /* ignore */

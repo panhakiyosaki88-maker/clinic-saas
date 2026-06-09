@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
+import { cookies } from "next/headers";
 import { Inter, Noto_Sans_Khmer } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
+import { accentHtmlProps, ACCENT_COOKIE, ACCENT_CUSTOM_COOKIE } from "@/lib/accent";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -24,8 +27,25 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+
+  // Render the saved accent ("UI tone") directly on <html> from a cookie so the
+  // very first paint already has it — no color flash on load/refresh. The head
+  // script below stays as a localStorage fallback (e.g. before the cookie is
+  // set on a returning user's first post-update load).
+  const cookieStore = await cookies();
+  const dec = (v?: string) => (v ? decodeURIComponent(v) : undefined);
+  const accentProps = accentHtmlProps(
+    dec(cookieStore.get(ACCENT_COOKIE)?.value),
+    dec(cookieStore.get(ACCENT_CUSTOM_COOKIE)?.value)
+  );
+
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      data-accent={accentProps["data-accent"]}
+      style={accentProps.style as CSSProperties | undefined}
+    >
       <head>
         {/* Apply the saved UI tone before paint to avoid a color flash. */}
         <script
