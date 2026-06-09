@@ -102,12 +102,14 @@ export async function listPatients(opts: {
   if (error) throw error;
 
   // Enrich each patient with their visit count and most recent visit date.
+  // These reflect actual attendance — operational encounters from
+  // patient_visits (the profile's "Visit records"), not EMR/SOAP notes.
   const patients = data ?? [];
   const lastVisit = new Map<string, string>();
   const visitCount = new Map<string, number>();
   if (patients.length > 0) {
     const { data: visits } = await supabase
-      .from("medical_records")
+      .from("patient_visits")
       .select("patient_id, visit_date")
       .in("patient_id", patients.map((p) => p.id))
       .is("deleted_at", null)
