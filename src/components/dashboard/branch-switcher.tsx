@@ -47,9 +47,11 @@ export function BranchSwitcher({
         disabled={pending}
         className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
       >
-        <Building2 className="size-4 text-slate-400" />
-        <span className="max-w-[8rem] truncate">{label}</span>
-        <ChevronDown className="size-4 text-slate-400" />
+        <Building2 className="size-4 shrink-0 text-slate-400" />
+        {/* Hide the name on phones to avoid header overflow; the dropdown still
+            lists full branch names. */}
+        <span className="hidden max-w-[8rem] truncate sm:inline">{label}</span>
+        <ChevronDown className="size-4 shrink-0 text-slate-400" />
       </button>
       {open && (
         <>
