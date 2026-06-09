@@ -3,10 +3,10 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 
-export type GreetingPeriod = "morning" | "afternoon" | "evening" | "night";
+type GreetingPeriod = "morning" | "afternoon" | "evening" | "night";
 
-/** Time-of-day greeting based on the *browser's* local hour. */
-export function periodForHour(h: number): GreetingPeriod {
+/** Time-of-day greeting bucket from a 24h hour. */
+function periodForHour(h: number): GreetingPeriod {
   if (h < 12) return "morning";
   if (h < 17) return "afternoon";
   if (h < 21) return "evening";
@@ -14,13 +14,15 @@ export function periodForHour(h: number): GreetingPeriod {
 }
 
 /**
- * Role-aware greeting line. Renders the server-computed period for the initial
- * paint (no flash), then corrects to the viewer's local time of day on mount so
- * it always matches their actual clock rather than the server's timezone.
+ * Role-aware greeting line, computed from the *browser's* local hour so it always
+ * matches the viewer's actual time of day rather than the server timezone. The
+ * useState initializer renders a value for SSR (no flash); useEffect re-syncs to
+ * the real client clock on mount. suppressHydrationWarning silences the expected
+ * server/client text difference (same approach as LiveClock).
  */
-export function Greeting({ name, initialPeriod }: { name: string; initialPeriod: GreetingPeriod }) {
+export function Greeting({ name }: { name: string }) {
   const t = useTranslations("dashboard.hero");
-  const [period, setPeriod] = React.useState<GreetingPeriod>(initialPeriod);
+  const [period, setPeriod] = React.useState<GreetingPeriod>(() => periodForHour(new Date().getHours()));
 
   React.useEffect(() => {
     setPeriod(periodForHour(new Date().getHours()));

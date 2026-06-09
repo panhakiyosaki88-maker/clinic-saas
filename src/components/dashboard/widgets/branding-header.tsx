@@ -1,7 +1,7 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import { HeartPulse, CalendarDays, Clock, DollarSign, type LucideIcon } from "lucide-react";
 import { LiveClock } from "./live-clock";
-import { Greeting, periodForHour } from "./greeting";
+import { Greeting } from "./greeting";
 
 export interface HeroKpis {
   appointmentsToday: number | null;
@@ -76,7 +76,7 @@ export async function BrandingHeader({
           </div>
           <div>
             <p className="text-sm font-medium text-brand-100">{clinicName}</p>
-            <Greeting name={name} initialPeriod={periodForHour(new Date().getHours())} />
+            <Greeting name={name} />
 
           </div>
         </div>
