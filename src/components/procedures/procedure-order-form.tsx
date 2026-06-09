@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PatientOptions } from "@/components/patients/patient-options";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20";
@@ -25,6 +26,7 @@ export function ProcedureOrderForm({
   defaultPatientId,
   defaultBranchId,
   catalog,
+  queuePatientIds = [],
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
@@ -33,6 +35,8 @@ export function ProcedureOrderForm({
   defaultPatientId?: string;
   defaultBranchId?: string | null;
   catalog: CatalogGroup[];
+  /** Patient ids on today's Live Queue Board, surfaced first in the picker. */
+  queuePatientIds?: string[];
 }) {
   const t = useTranslations("procedures.form");
   const router = useRouter();
@@ -102,7 +106,7 @@ export function ProcedureOrderForm({
           required
         >
           <option value="" disabled>{t("selectPatient")}</option>
-          {patients.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+          <PatientOptions patients={patients} queueIds={queuePatientIds} />
         </select>
         {fieldErrors.patientId?.map((m) => <p key={m} className="text-xs text-[var(--destructive)]">{m}</p>)}
       </div>

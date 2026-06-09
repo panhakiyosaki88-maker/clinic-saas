@@ -4,7 +4,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
-import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
+import { getPatientConsultingDoctorMap, listTodayQueuePatientIds } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { listProcedureCatalogTree } from "@/lib/db/queries/procedures";
 import { hasPermission } from "@/lib/auth/guard";
@@ -24,12 +24,13 @@ export default async function NewProcedureOrderPage({
   if (!(await hasPermission(PERMISSIONS.PROCEDURES_WRITE))) redirect("/procedures");
 
   const sp = await searchParams;
-  const [patients, doctors, consultingByPatient, tree, { branches, activeId, primaryId }] = await Promise.all([
+  const [patients, doctors, consultingByPatient, tree, { branches, activeId, primaryId }, queuePatientIds] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     getPatientConsultingDoctorMap(),
     listProcedureCatalogTree(),
     getActiveBranchContext(),
+    listTodayQueuePatientIds(),
   ]);
 
   const catalog =
@@ -52,6 +53,7 @@ export default async function NewProcedureOrderPage({
         defaultPatientId={sp.patientId}
         defaultBranchId={activeId ?? primaryId}
         catalog={catalog}
+        queuePatientIds={queuePatientIds}
       />
     </main>
   );

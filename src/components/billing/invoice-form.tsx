@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PatientOptions } from "@/components/patients/patient-options";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20";
@@ -51,6 +52,7 @@ export function InvoiceForm({
   invoice,
   rate = 4100,
   medicines = [],
+  queuePatientIds = [],
 }: {
   patients: PatientOption[];
   doctors: DoctorOption[];
@@ -60,6 +62,8 @@ export function InvoiceForm({
   defaultPatientId?: string;
   defaultBranchId?: string | null;
   invoice?: InvoiceFormData;
+  /** Patient ids on today's Live Queue Board, surfaced first in the picker. */
+  queuePatientIds?: string[];
   /** USD→KHR rate for the live equivalent shown under the total. */
   rate?: number;
   /** Pharmacy catalog for the Pharmacy line's medicine typeahead. */
@@ -148,7 +152,7 @@ export function InvoiceForm({
           <Label htmlFor="patientId">{t("patient")}</Label>
           <select id="patientId" name="patientId" className={selectClass} value={patientId} onChange={(e) => onPatientChange(e.target.value)}>
             <option value="">{t("walkIn")}</option>
-            {patients.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+            <PatientOptions patients={patients} queueIds={queuePatientIds} />
           </select>
         </div>
         <div className="space-y-2">

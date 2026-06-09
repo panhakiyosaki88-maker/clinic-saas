@@ -4,6 +4,10 @@
     "cancel": "បោះបង់",
     "language": "ភាសា"
   },
+  "patientPicker": {
+    "queueToday": "ក្នុងជួរថ្ងៃនេះ ({count})",
+    "otherPatients": "អ្នកជំងឺទាំងអស់"
+  },
   "nav": {
     "dashboard": "ផ្ទាំងគ្រប់គ្រង",
     "appointments": "ការណាត់ជួប",

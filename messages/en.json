@@ -4,6 +4,10 @@
     "cancel": "Cancel",
     "language": "Language"
   },
+  "patientPicker": {
+    "queueToday": "In queue today ({count})",
+    "otherPatients": "All patients"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "appointments": "Appointments",

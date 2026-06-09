@@ -4,7 +4,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
-import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
+import { getPatientConsultingDoctorMap, listTodayQueuePatientIds } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { listImagingCatalogTree } from "@/lib/db/queries/imaging";
 import { hasPermission } from "@/lib/auth/guard";
@@ -24,12 +24,13 @@ export default async function NewImagingRequestPage({
   if (!(await hasPermission(PERMISSIONS.IMAGING_WRITE))) redirect("/imaging");
 
   const sp = await searchParams;
-  const [patients, doctors, consultingByPatient, tree, { branches, activeId, primaryId }] = await Promise.all([
+  const [patients, doctors, consultingByPatient, tree, { branches, activeId, primaryId }, queuePatientIds] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     getPatientConsultingDoctorMap(),
     listImagingCatalogTree(),
     getActiveBranchContext(),
+    listTodayQueuePatientIds(),
   ]);
 
   // Drive the picker from the clinic's own catalog; fall back to the standard
@@ -54,6 +55,7 @@ export default async function NewImagingRequestPage({
         defaultPatientId={sp.patientId}
         defaultBranchId={activeId ?? primaryId}
         catalog={catalog}
+        queuePatientIds={queuePatientIds}
       />
     </main>
   );

@@ -4,7 +4,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
-import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
+import { getPatientConsultingDoctorMap, listTodayQueuePatientIds } from "@/lib/db/queries/appointments";
 import { listMedicineSuggestions } from "@/lib/db/queries/pharmacy";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { hasPermission } from "@/lib/auth/guard";
@@ -23,13 +23,14 @@ export default async function NewPrescriptionPage({
   if (!(await hasPermission(PERMISSIONS.PRESCRIPTIONS_WRITE))) redirect("/prescriptions");
 
   const sp = await searchParams;
-  const [patients, doctors, consultingByPatient, medicineSuggestions, { branches, activeId, primaryId }] =
+  const [patients, doctors, consultingByPatient, medicineSuggestions, { branches, activeId, primaryId }, queuePatientIds] =
     await Promise.all([
       listPatientOptions(),
       listDoctors(),
       getPatientConsultingDoctorMap(),
       listMedicineSuggestions(),
       getActiveBranchContext(),
+      listTodayQueuePatientIds(),
     ]);
   const t = await getTranslations("prescriptions.form");
 
@@ -47,6 +48,7 @@ export default async function NewPrescriptionPage({
         medicineSuggestions={medicineSuggestions}
         defaultPatientId={sp.patientId}
         defaultBranchId={activeId ?? primaryId}
+        queuePatientIds={queuePatientIds}
       />
     </main>
   );

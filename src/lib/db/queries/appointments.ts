@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
+import { startOfDay, addDays } from "@/lib/date";
 import type { Database } from "@/types/database";
 
 export type Appointment = Database["public"]["Tables"]["appointments"]["Row"];
@@ -70,6 +71,40 @@ export async function listQueue(scope?: BranchScope): Promise<QueueEntry[]> {
   const { data, error } = await query;
   if (error) throw error;
   return map((data ?? []) as unknown as Joined[]).map((a, i) => ({ ...a, position: i + 1 }));
+}
+
+/** Status priority for ordering today's Live Queue Board patients: those still
+ *  waiting first, then in consultation, then already completed. */
+const QUEUE_BOARD_ORDER: Record<string, number> = {
+  waiting: 0,
+  in_consultation: 1,
+  completed: 2,
+};
+
+/** Patient ids appearing on today's Live Queue Board (waiting → in
+ *  consultation → completed), deduped and ordered as the board reads. Powers
+ *  surfacing the queue's patients first in the new-record patient pickers. */
+export async function listTodayQueuePatientIds(scope?: BranchScope): Promise<string[]> {
+  const start = startOfDay(new Date());
+  const end = addDays(start, 1);
+  const items = await listAppointmentsInRange(start.toISOString(), end.toISOString(), scope);
+  const board = items
+    .filter((a) => a.patient_id && a.status in QUEUE_BOARD_ORDER)
+    .sort((a, b) => {
+      const byStatus = QUEUE_BOARD_ORDER[a.status] - QUEUE_BOARD_ORDER[b.status];
+      if (byStatus !== 0) return byStatus;
+      // Within a column, longest-waiting first (matches the board's ordering).
+      return (a.checked_in_at ?? a.scheduled_at).localeCompare(b.checked_in_at ?? b.scheduled_at);
+    });
+  const seen = new Set<string>();
+  const ids: string[] = [];
+  for (const a of board) {
+    if (a.patient_id && !seen.has(a.patient_id)) {
+      seen.add(a.patient_id);
+      ids.push(a.patient_id);
+    }
+  }
+  return ids;
 }
 
 export async function getAppointment(id: string): Promise<AppointmentWithNames | null> {

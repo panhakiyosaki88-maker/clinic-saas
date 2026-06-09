@@ -4,7 +4,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
-import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
+import { getPatientConsultingDoctorMap, listTodayQueuePatientIds } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { listLabCategoryTree } from "@/lib/db/queries/lab";
 import { hasPermission } from "@/lib/auth/guard";
@@ -24,13 +24,14 @@ export default async function NewLabRequestPage({
   if (!(await hasPermission(PERMISSIONS.LAB_WRITE))) redirect("/lab");
 
   const sp = await searchParams;
-  const [patients, doctors, consultingByPatient, tree, { branches, activeId, primaryId }] =
+  const [patients, doctors, consultingByPatient, tree, { branches, activeId, primaryId }, queuePatientIds] =
     await Promise.all([
       listPatientOptions(),
       listDoctors(),
       getPatientConsultingDoctorMap(),
       listLabCategoryTree(),
       getActiveBranchContext(),
+      listTodayQueuePatientIds(),
     ]);
 
   // Drive the test picker from the clinic's own Lab Categories so the two stay
@@ -60,6 +61,7 @@ export default async function NewLabRequestPage({
         defaultPatientId={sp.patientId}
         defaultBranchId={activeId ?? primaryId}
         panel={panel}
+        queuePatientIds={queuePatientIds}
       />
     </main>
   );

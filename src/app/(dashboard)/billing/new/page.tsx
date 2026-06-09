@@ -4,7 +4,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPatientOptions } from "@/lib/db/queries/patients";
-import { getPatientConsultingDoctorMap } from "@/lib/db/queries/appointments";
+import { getPatientConsultingDoctorMap, listTodayQueuePatientIds } from "@/lib/db/queries/appointments";
 import { listDoctors } from "@/lib/db/queries/doctors";
 import { listMedicineOptions } from "@/lib/db/queries/pharmacy";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
@@ -25,13 +25,14 @@ export default async function NewInvoicePage({
   if (!(await hasPermission(PERMISSIONS.BILLING_WRITE))) redirect("/billing");
 
   const sp = await searchParams;
-  const [patients, doctors, consultingByPatient, { branches, activeId, primaryId }, settings, medicines] = await Promise.all([
+  const [patients, doctors, consultingByPatient, { branches, activeId, primaryId }, settings, medicines, queuePatientIds] = await Promise.all([
     listPatientOptions(),
     listDoctors(),
     getPatientConsultingDoctorMap(),
     getActiveBranchContext(),
     getBillingSettings(),
     listMedicineOptions(),
+    listTodayQueuePatientIds(),
   ]);
   const ctx = currencyContext(settings);
   const t = await getTranslations("billing.invoiceForm");
@@ -51,6 +52,7 @@ export default async function NewInvoicePage({
         defaultBranchId={activeId ?? primaryId}
         rate={ctx.rate}
         medicines={medicines}
+        queuePatientIds={queuePatientIds}
       />
     </main>
   );
