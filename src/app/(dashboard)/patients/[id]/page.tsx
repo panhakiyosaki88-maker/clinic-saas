@@ -566,10 +566,10 @@ export default async function PatientProfilePage({
   const tabs: ProfileTab[] = [
     { id: "overview", label: t("tabs.overview"), content: overviewPanel },
     { id: "clinical", label: t("tabs.clinical"), count: conditions.length + medications.length + allergies.length + immunizations.length + visits.length, content: clinicalPanel },
-    ...(canRxRead ? [{ id: "prescriptions", label: t("tabs.prescriptions"), count: prescriptions.length, content: prescriptionsPanel }] : []),
     ...(canLabRead ? [{ id: "lab", label: t("tabs.lab"), count: labRequests.length, content: labPanel }] : []),
     ...(canImagingRead ? [{ id: "imaging", label: t("tabs.imaging"), count: imagingRequests.length, content: imagingPanel }] : []),
     ...(canProceduresRead ? [{ id: "procedures", label: t("tabs.procedures"), count: procedureOrders.length, content: proceduresPanel }] : []),
+    ...(canRxRead ? [{ id: "prescriptions", label: t("tabs.prescriptions"), count: prescriptions.length, content: prescriptionsPanel }] : []),
     { id: "financial", label: t("tabs.financial"), count: invoices.length + insurance.length, content: financialPanel },
     { id: "communication", label: t("tabs.communication"), count: consents.length + communications.length, content: communicationPanel },
     { id: "documents", label: t("tabs.documents"), count: documents.length, content: documentsPanel },
