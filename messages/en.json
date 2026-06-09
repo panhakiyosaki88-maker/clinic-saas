@@ -8,6 +8,13 @@
     "queueToday": "In queue today ({count})",
     "otherPatients": "All patients"
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "This page hit a temporary problem. Please try again — it usually works on a second attempt.",
+    "tryAgain": "Try again",
+    "reload": "Reload page",
+    "ref": "Ref"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "appointments": "Appointments",
@@ -816,7 +823,7 @@
     "dashboardSubtitle": "Revenue, collections and outstanding balances",
     "tabs": {
       "dashboard": "Dashboard",
-      "workspace": "Workspace",
+      "workspace": "Billing Workspace",
       "invoices": "Invoices",
       "payments": "Payments",
       "debt": "Debt",
