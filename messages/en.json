@@ -11,6 +11,8 @@
     "doctors": "Doctors",
     "prescriptions": "Prescriptions",
     "lab": "Laboratory",
+    "imaging": "Imaging",
+    "procedures": "Procedures",
     "pharmacy": "Pharmacy",
     "billing": "Billing",
     "reports": "Reports",
@@ -382,11 +384,19 @@
       "tabs": {
         "overview": "Overview",
         "clinical": "Clinical",
+        "imaging": "Imaging",
+        "procedures": "Procedures",
         "financial": "Financial",
         "communication": "Communication",
         "documents": "Documents",
         "timeline": "Timeline"
       },
+      "imaging": "Imaging ({count})",
+      "newImaging": "New imaging",
+      "noImaging": "No imaging requests yet.",
+      "procedures_": "Procedures ({count})",
+      "newProcedure": "New procedure",
+      "noProcedures": "No procedures yet.",
       "demographics": "Demographics",
       "contact": "Contact",
       "medicalProfile": "Medical profile",
@@ -1458,12 +1468,196 @@
     "noMedicines": "No medicines.",
     "outstandingTitle": "Outstanding invoices ({count})",
     "nothingOutstanding": "Nothing outstanding.",
+    "imaging": {
+      "title": "Imaging — {volume} studies · {revenue} revenue",
+      "byType": "By type",
+      "byDoctor": "By doctor",
+      "empty": "No imaging in range."
+    },
+    "procedures": {
+      "title": "Procedures — {volume} performed · {revenue} revenue",
+      "byType": "By type",
+      "byDoctor": "By doctor",
+      "empty": "No procedures in range."
+    },
     "table": {
       "sku": "SKU",
       "name": "Name",
       "stock": "Stock",
       "stockValue": "Stock value",
       "low": "low"
+    }
+  },
+  "imaging": {
+    "title": "Imaging",
+    "noPermission": "You don't have permission to view imaging.",
+    "summary": "{count, plural, one {# request} other {# requests}}",
+    "catalogLink": "Catalog",
+    "newRequest": "New request",
+    "empty": "No imaging requests yet.",
+    "table": {
+      "patient": "Patient",
+      "study": "Study",
+      "status": "Status",
+      "requested": "Requested"
+    },
+    "status": {
+      "requested": "Requested",
+      "scheduled": "Scheduled",
+      "performed": "Performed",
+      "reported": "Reported",
+      "cancelled": "Cancelled"
+    },
+    "statusControl": {
+      "schedule": "Schedule",
+      "markPerformed": "Mark performed",
+      "markReported": "Mark reported",
+      "cancel": "Cancel"
+    },
+    "form": {
+      "backToList": "← Imaging",
+      "newTitle": "New imaging request",
+      "patient": "Patient",
+      "selectPatient": "Select a patient",
+      "doctor": "Requesting doctor",
+      "unassigned": "Unassigned",
+      "branch": "Branch",
+      "noBranch": "No branch",
+      "studies": "Studies",
+      "selectedCount": "{count} selected",
+      "filterStudies": "Filter studies…",
+      "noCatalog": "No studies match.",
+      "notes": "Clinical indication",
+      "notesHint": "Reason for the study (optional)",
+      "saving": "Saving…",
+      "createRequests": "{count, plural, one {Create request} other {Create # requests}}",
+      "cancel": "Cancel"
+    },
+    "result": {
+      "findings": "Findings",
+      "impression": "Impression",
+      "report": "Report",
+      "attachFile": "Attach scan / report file",
+      "saved": "Saved.",
+      "saving": "Saving…",
+      "save": "Save result"
+    },
+    "patientPage": {
+      "backToList": "← Imaging",
+      "summary": "{count, plural, one {# study} other {# studies}}",
+      "findings": "Findings",
+      "impression": "Impression",
+      "report": "Report",
+      "attachment": "Attachment",
+      "enterResult": "Enter result",
+      "resultsRestricted": "You don't have permission to view clinical results."
+    },
+    "catalog": {
+      "backToList": "← Imaging",
+      "title": "Imaging catalog",
+      "subtitle": "Studies and categories used for imaging requests and billing.",
+      "seed": "Load standard catalog",
+      "seeding": "Loading…",
+      "seeded": "Added {count} items.",
+      "upToDate": "Catalog is up to date.",
+      "categories": "Categories",
+      "categoryName": "Category name",
+      "categoryPlaceholder": "e.g. Radiology",
+      "add": "Add",
+      "deleteCategoryConfirm": "Delete category \"{name}\"?",
+      "noCategories": "No categories yet.",
+      "studies": "Studies",
+      "studyName": "Study name",
+      "studyPlaceholder": "e.g. Chest X-Ray",
+      "category": "Category",
+      "uncategorized": "Uncategorized",
+      "modality": "Modality",
+      "price": "Price",
+      "addStudy": "Add study",
+      "deleteStudyConfirm": "Delete study \"{name}\"?",
+      "noStudies": "No studies yet."
+    }
+  },
+  "procedures": {
+    "title": "Procedures",
+    "noPermission": "You don't have permission to view procedures.",
+    "summary": "{count, plural, one {# order} other {# orders}}",
+    "catalogLink": "Catalog",
+    "newOrder": "New order",
+    "empty": "No procedure orders yet.",
+    "table": {
+      "patient": "Patient",
+      "procedure": "Procedure",
+      "status": "Status",
+      "ordered": "Ordered"
+    },
+    "status": {
+      "ordered": "Ordered",
+      "performed": "Performed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "statusControl": {
+      "markPerformed": "Mark performed",
+      "markCompleted": "Mark completed",
+      "cancel": "Cancel"
+    },
+    "form": {
+      "backToList": "← Procedures",
+      "newTitle": "New procedure order",
+      "patient": "Patient",
+      "selectPatient": "Select a patient",
+      "doctor": "Ordering doctor",
+      "unassigned": "Unassigned",
+      "branch": "Branch",
+      "noBranch": "No branch",
+      "procedures": "Procedures",
+      "selectedCount": "{count} selected",
+      "filterProcedures": "Filter procedures…",
+      "noCatalog": "No procedures match.",
+      "notes": "Order notes",
+      "notesHint": "Indication / instructions (optional)",
+      "saving": "Saving…",
+      "createOrders": "{count, plural, one {Create order} other {Create # orders}}",
+      "cancel": "Cancel"
+    },
+    "record": {
+      "clinicalNotes": "Clinical notes",
+      "outcome": "Outcome",
+      "saved": "Saved.",
+      "saving": "Saving…",
+      "save": "Save record"
+    },
+    "patientPage": {
+      "backToList": "← Procedures",
+      "summary": "{count, plural, one {# order} other {# orders}}",
+      "clinicalNotes": "Clinical notes",
+      "outcome": "Outcome",
+      "documentRecord": "Document record"
+    },
+    "catalog": {
+      "backToList": "← Procedures",
+      "title": "Procedure catalog",
+      "subtitle": "Procedures and categories used for orders and billing.",
+      "seed": "Load standard catalog",
+      "seeding": "Loading…",
+      "seeded": "Added {count} items.",
+      "upToDate": "Catalog is up to date.",
+      "categories": "Categories",
+      "categoryName": "Category name",
+      "categoryPlaceholder": "e.g. Nursing Procedures",
+      "add": "Add",
+      "deleteCategoryConfirm": "Delete category \"{name}\"?",
+      "noCategories": "No categories yet.",
+      "services": "Procedures",
+      "serviceName": "Procedure name",
+      "servicePlaceholder": "e.g. Wound Dressing",
+      "category": "Category",
+      "uncategorized": "Uncategorized",
+      "price": "Price",
+      "addService": "Add procedure",
+      "deleteServiceConfirm": "Delete procedure \"{name}\"?",
+      "noServices": "No procedures yet."
     }
   },
   "prescriptions": {
@@ -1875,7 +2069,19 @@
     },
     "procedure": {
       "nameRequired": "Name is required",
+      "categoryNameRequired": "Category name is required",
+      "patientRequired": "Choose a patient",
+      "selectProcedure": "Select at least one procedure",
+      "isImaging": "That is an imaging study — add it under Imaging, not Procedures.",
       "createFailed": "Could not create procedure."
+    },
+    "imaging": {
+      "nameRequired": "Name is required",
+      "categoryNameRequired": "Category name is required",
+      "patientRequired": "Choose a patient",
+      "selectStudy": "Select at least one study",
+      "isProcedure": "That is a procedure — add it under Procedures, not Imaging.",
+      "createFailed": "Could not create imaging request."
     },
     "membership": {
       "nameRequired": "Name is required",

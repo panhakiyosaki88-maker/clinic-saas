@@ -32,6 +32,10 @@ import { StartVisitButton } from "@/components/billing/start-visit-button";
 import { VisitStatusButton } from "@/components/billing/visit-status-button";
 import { SuggestedCharges } from "@/components/billing/suggested-charges";
 import { listPatientLabRequests } from "@/lib/db/queries/lab";
+import { listPatientImagingRequests } from "@/lib/db/queries/imaging";
+import { listPatientProcedureOrders } from "@/lib/db/queries/procedures";
+import { ImagingStatusBadge } from "@/components/imaging/imaging-status-badge";
+import { ProcedureStatusBadge } from "@/components/procedures/procedure-status-badge";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { DocumentUploader } from "@/components/patients/document-uploader";
@@ -92,6 +96,7 @@ export default async function PatientProfilePage({
   const [
     canWrite, canEmrRead, canEmrWrite, canBookAppt,
     canRxRead, canRxWrite, canBillRead, canBillWrite, canLabRead, canLabWrite, canNotify,
+    canImagingRead, canImagingWrite, canProceduresRead, canProceduresWrite,
   ] = await Promise.all([
     hasPermission(PERMISSIONS.PATIENTS_WRITE),
     hasPermission(PERMISSIONS.EMR_READ),
@@ -104,13 +109,17 @@ export default async function PatientProfilePage({
     hasPermission(PERMISSIONS.LAB_READ),
     hasPermission(PERMISSIONS.LAB_WRITE),
     hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
+    hasPermission(PERMISSIONS.IMAGING_READ),
+    hasPermission(PERMISSIONS.IMAGING_WRITE),
+    hasPermission(PERMISSIONS.PROCEDURES_READ),
+    hasPermission(PERMISSIONS.PROCEDURES_WRITE),
   ]);
   const [
     documents, timeline, insurance,
     allergies, medications, immunizations, conditions,
     consents, communications, patientTags, clinicTags,
     visits, prescriptions, invoices, labRequests, patientVisits,
-    memberships, membershipPlans,
+    memberships, membershipPlans, imagingRequests, procedureOrders,
   ] = await Promise.all([
     listPatientDocuments(id),
     listPatientTimeline(id),
@@ -130,6 +139,8 @@ export default async function PatientProfilePage({
     listPatientVisits(id),
     listPatientMemberships(id),
     canWrite ? listMembershipPlanOptions() : Promise.resolve([]),
+    canImagingRead ? listPatientImagingRequests(id) : Promise.resolve([]),
+    canProceduresRead ? listPatientProcedureOrders(id) : Promise.resolve([]),
   ]);
   const billingSettings = await getBillingSettings();
   const currencyCtx = currencyContext(billingSettings);
@@ -488,9 +499,75 @@ export default async function PatientProfilePage({
     </div>
   );
 
+  const imagingPanel = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardTitle>{t("imaging", { count: imagingRequests.length })}</CardTitle>
+        {canImagingWrite && (
+          <Button asChild size="sm">
+            <Link href={`/imaging/new?patientId=${patient.id}`}>{t("newImaging")}</Link>
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>
+        {imagingRequests.length === 0 ? (
+          <p className="text-sm text-[var(--muted-foreground)]">{t("noImaging")}</p>
+        ) : (
+          <ul className="divide-y divide-[var(--border)]">
+            {imagingRequests.map((r) => (
+              <li key={r.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                <Link href={`/imaging/patient/${patient.id}`} className="font-medium text-[var(--primary)] hover:underline">
+                  {r.service_name}
+                </Link>
+                <span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+                  {new Date(r.requested_at).toLocaleDateString()}
+                  <ImagingStatusBadge status={r.status} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const proceduresPanel = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardTitle>{t("procedures_", { count: procedureOrders.length })}</CardTitle>
+        {canProceduresWrite && (
+          <Button asChild size="sm">
+            <Link href={`/procedures/new?patientId=${patient.id}`}>{t("newProcedure")}</Link>
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>
+        {procedureOrders.length === 0 ? (
+          <p className="text-sm text-[var(--muted-foreground)]">{t("noProcedures")}</p>
+        ) : (
+          <ul className="divide-y divide-[var(--border)]">
+            {procedureOrders.map((o) => (
+              <li key={o.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                <Link href={`/procedures/patient/${patient.id}`} className="font-medium text-[var(--primary)] hover:underline">
+                  {o.procedure_name}
+                </Link>
+                <span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+                  {new Date(o.ordered_at).toLocaleDateString()}
+                  <ProcedureStatusBadge status={o.status} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   const tabs: ProfileTab[] = [
     { id: "overview", label: t("tabs.overview"), content: overviewPanel },
     { id: "clinical", label: t("tabs.clinical"), count: conditions.length + medications.length + allergies.length + immunizations.length + visits.length + prescriptions.length + labRequests.length, content: clinicalPanel },
+    ...(canImagingRead ? [{ id: "imaging", label: t("tabs.imaging"), count: imagingRequests.length, content: imagingPanel }] : []),
+    ...(canProceduresRead ? [{ id: "procedures", label: t("tabs.procedures"), count: procedureOrders.length, content: proceduresPanel }] : []),
     { id: "financial", label: t("tabs.financial"), count: invoices.length + insurance.length, content: financialPanel },
     { id: "communication", label: t("tabs.communication"), count: consents.length + communications.length, content: communicationPanel },
     { id: "documents", label: t("tabs.documents"), count: documents.length, content: documentsPanel },

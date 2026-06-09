@@ -6,7 +6,7 @@ import { type MembershipBenefit, type BillingAlerts } from "./visit-billing";
 
 /** A billable charge a visit incurred — the same source set drives Suggested
  *  charges, the Billing Workspace and the resulting invoice. */
-export type ChargeSource = "appointment" | "lab" | "pharmacy" | "procedure" | "membership";
+export type ChargeSource = "appointment" | "lab" | "imaging" | "pharmacy" | "procedure" | "membership";
 
 export interface VisitCharge {
   source: ChargeSource;
@@ -79,7 +79,7 @@ export async function getVisitChargeSet(
   const scopeVisit = visitId || (await resolveOpenVisitId(supabase, patientId));
   if (!scopeVisit) return empty(patientId, null);
 
-  const [apptRes, labRes, dispRes, procRes, memberRes, rxRes, medRes, linkRes, priceRes] =
+  const [apptRes, labRes, imgReqRes, imgPriceRes, dispRes, procRes, memberRes, rxRes, medRes, linkRes, priceRes] =
     await Promise.all([
       supabase
         .from("appointments")
@@ -98,6 +98,18 @@ export async function getVisitChargeSet(
         .neq("status", "cancelled")
         .is("deleted_at", null)
         .order("requested_at", { ascending: false }),
+      supabase
+        .from("imaging_requests")
+        .select("id, service_name, requested_at")
+        .eq("patient_id", patientId)
+        .eq("visit_id", scopeVisit)
+        .neq("status", "cancelled")
+        .is("deleted_at", null)
+        .order("requested_at", { ascending: false }),
+      supabase
+        .from("imaging_services")
+        .select("name, default_price")
+        .is("deleted_at", null),
       supabase
         .from("inventory_transactions")
         .select("id, medicine_id, change, unit_price, created_at, medicines ( name, selling_price )")
@@ -133,7 +145,7 @@ export async function getVisitChargeSet(
       supabase
         .from("invoice_source_links")
         .select("source, source_id, invoice_id, invoices ( status, amount_paid )")
-        .in("source", ["appointment", "lab", "pharmacy", "procedure", "membership"]),
+        .in("source", ["appointment", "lab", "imaging", "pharmacy", "procedure", "membership"]),
       supabase
         .from("service_prices")
         .select("name, unit_price")
@@ -201,6 +213,28 @@ export async function getVisitChargeSet(
       date: l.requested_at,
       needsPrice: price === undefined,
       ...t,
+    });
+  }
+
+  // Imaging studies — priced from the imaging catalog by name when available.
+  const imgPrice = new Map(
+    ((imgPriceRes.data ?? []) as { name: string; default_price: number }[]).map((p) => [
+      p.name.toLowerCase(),
+      Number(p.default_price),
+    ])
+  );
+  for (const im of (imgReqRes.data ?? []) as { id: string; service_name: string; requested_at: string }[]) {
+    const price = imgPrice.get(im.service_name.toLowerCase());
+    charges.push({
+      source: "imaging",
+      sourceId: im.id,
+      category: "imaging",
+      description: im.service_name,
+      quantity: 1,
+      unitPrice: price ?? 0,
+      date: im.requested_at,
+      needsPrice: price === undefined,
+      ...tag("imaging", im.id),
     });
   }
 

@@ -53,7 +53,7 @@ export const invoiceItemSchema = z.object({
   unitPrice: z.preprocess(emptyToUndef, z.coerce.number().min(0).max(10_000_000).default(0)),
   // Same categories as the Billing Workspace; defaults to "other".
   category: z
-    .enum(["consultation", "lab", "pharmacy", "procedure", "membership", "other"])
+    .enum(["consultation", "lab", "imaging", "pharmacy", "procedure", "membership", "other"])
     .default("other"),
 });
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;
@@ -91,7 +91,7 @@ export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
 /** Removes a single detected charge from the draft invoice it was billed into,
  *  so it becomes selectable again in Suggested charges. */
 export const unbillChargeSchema = z.object({
-  source: z.enum(["appointment", "lab", "pharmacy", "procedure", "membership"]),
+  source: z.enum(["appointment", "lab", "imaging", "pharmacy", "procedure", "membership"]),
   sourceId: z.string().uuid(),
   description: z.string().trim().min(1).max(255),
 });
@@ -100,6 +100,7 @@ export type UnbillChargeInput = z.infer<typeof unbillChargeSchema>;
 export const SERVICE_CATEGORIES = [
   "consultation",
   "lab",
+  "imaging",
   "pharmacy",
   "procedure",
   "membership",
@@ -109,6 +110,7 @@ export type ServiceCategoryValue = (typeof SERVICE_CATEGORIES)[number];
 export const SERVICE_CATEGORY_LABELS: Record<ServiceCategoryValue, string> = {
   consultation: "Consultation",
   lab: "Laboratory",
+  imaging: "Imaging",
   pharmacy: "Pharmacy",
   procedure: "Procedures",
   membership: "Membership",
@@ -119,6 +121,7 @@ export const BILL_SOURCES = [
   "manual",
   "appointment",
   "lab",
+  "imaging",
   "pharmacy",
   "prescription",
   "procedure",

@@ -70,6 +70,7 @@ export type InvoiceSource =
   | "manual"
   | "appointment"
   | "lab"
+  | "imaging"
   | "pharmacy"
   | "prescription"
   | "procedure"
@@ -78,11 +79,14 @@ export type InvoiceSource =
 export type ServiceCategory =
   | "consultation"
   | "lab"
+  | "imaging"
   | "pharmacy"
   | "procedure"
   | "membership"
   | "other";
 export type LabStatus = "requested" | "collected" | "processing" | "completed" | "cancelled";
+export type ImagingStatus = "requested" | "scheduled" | "performed" | "reported" | "cancelled";
+export type ProcedureStatus = "ordered" | "performed" | "completed" | "cancelled";
 export type VisitStatus = "open" | "closed" | "cancelled";
 export type BenefitType = "percent" | "fixed";
 export type PatientMembershipStatus = "active" | "expired" | "cancelled";
@@ -97,6 +101,8 @@ export type TimelineEvent =
   | "document"
   | "prescription"
   | "lab"
+  | "imaging"
+  | "procedure"
   | "invoice"
   | "medication"
   | "immunization";
@@ -1458,6 +1464,166 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["lab_results"]["Insert"]>;
         Relationships: [];
       };
+      imaging_categories: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          parent_id: string | null;
+          name: string;
+          description: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          parent_id?: string | null;
+          name: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["imaging_categories"]["Insert"]>;
+        Relationships: [];
+      };
+      imaging_services: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          category_id: string | null;
+          name: string;
+          code: string | null;
+          modality: string | null;
+          default_price: number;
+          description: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          category_id?: string | null;
+          name: string;
+          code?: string | null;
+          modality?: string | null;
+          default_price?: number;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["imaging_services"]["Insert"]>;
+        Relationships: [];
+      };
+      imaging_requests: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id: string | null;
+          branch_id: string | null;
+          visit_id: string | null;
+          category_id: string | null;
+          service_id: string | null;
+          service_name: string;
+          modality: string | null;
+          status: ImagingStatus;
+          notes: string | null;
+          requested_at: string;
+          scheduled_at: string | null;
+          performed_at: string | null;
+          reported_at: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id?: string | null;
+          branch_id?: string | null;
+          visit_id?: string | null;
+          category_id?: string | null;
+          service_id?: string | null;
+          service_name: string;
+          modality?: string | null;
+          status?: ImagingStatus;
+          notes?: string | null;
+          requested_at?: string;
+          scheduled_at?: string | null;
+          performed_at?: string | null;
+          reported_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["imaging_requests"]["Insert"]>;
+        Relationships: [];
+      };
+      imaging_results: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          imaging_request_id: string;
+          findings: string | null;
+          impression: string | null;
+          report_text: string | null;
+          reported_by: string | null;
+          result_at: string;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          imaging_request_id: string;
+          findings?: string | null;
+          impression?: string | null;
+          report_text?: string | null;
+          reported_by?: string | null;
+          result_at?: string;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["imaging_results"]["Insert"]>;
+        Relationships: [];
+      };
+      imaging_files: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          imaging_request_id: string;
+          file_path: string;
+          file_name: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          imaging_request_id: string;
+          file_path: string;
+          file_name?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["imaging_files"]["Insert"]>;
+        Relationships: [];
+      };
       notifications: {
         Row: {
           id: string;
@@ -1642,6 +1808,7 @@ export interface Database {
         Row: {
           id: string;
           clinic_id: string;
+          category_id: string | null;
           name: string;
           code: string | null;
           default_price: number;
@@ -1655,6 +1822,7 @@ export interface Database {
         Insert: {
           id?: string;
           clinic_id: string;
+          category_id?: string | null;
           name: string;
           code?: string | null;
           default_price?: number;
@@ -1668,6 +1836,108 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["procedures"]["Insert"]>;
         Relationships: [];
       };
+      procedure_categories: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          parent_id: string | null;
+          name: string;
+          description: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          parent_id?: string | null;
+          name: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["procedure_categories"]["Insert"]>;
+        Relationships: [];
+      };
+      procedure_orders: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id: string | null;
+          branch_id: string | null;
+          visit_id: string | null;
+          category_id: string | null;
+          procedure_id: string | null;
+          procedure_name: string;
+          status: ProcedureStatus;
+          quantity: number;
+          price: number;
+          notes: string | null;
+          ordered_at: string;
+          performed_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          patient_id: string;
+          doctor_id?: string | null;
+          branch_id?: string | null;
+          visit_id?: string | null;
+          category_id?: string | null;
+          procedure_id?: string | null;
+          procedure_name: string;
+          status?: ProcedureStatus;
+          quantity?: number;
+          price?: number;
+          notes?: string | null;
+          ordered_at?: string;
+          performed_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["procedure_orders"]["Insert"]>;
+        Relationships: [];
+      };
+      procedure_records: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          procedure_order_id: string;
+          clinical_notes: string | null;
+          outcome: string | null;
+          performed_by: string | null;
+          recorded_at: string;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          procedure_order_id: string;
+          clinical_notes?: string | null;
+          outcome?: string | null;
+          performed_by?: string | null;
+          recorded_at?: string;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["procedure_records"]["Insert"]>;
+        Relationships: [];
+      };
       visit_procedures: {
         Row: {
           id: string;
@@ -1675,6 +1945,7 @@ export interface Database {
           visit_id: string | null;
           patient_id: string;
           procedure_id: string | null;
+          procedure_order_id: string | null;
           doctor_id: string | null;
           name: string;
           price: number;
@@ -1692,6 +1963,7 @@ export interface Database {
           visit_id?: string | null;
           patient_id: string;
           procedure_id?: string | null;
+          procedure_order_id?: string | null;
           doctor_id?: string | null;
           name: string;
           price?: number;
@@ -1799,6 +2071,8 @@ export interface Database {
       invoice_source: InvoiceSource;
       service_category: ServiceCategory;
       lab_status: LabStatus;
+      imaging_status: ImagingStatus;
+      procedure_status: ProcedureStatus;
       notification_channel: NotificationChannel;
       notification_status: NotificationStatus;
       notification_type: NotificationType;

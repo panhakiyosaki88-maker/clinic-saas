@@ -9,6 +9,8 @@ import {
   getInventoryReport,
   getOutstandingReport,
 } from "@/lib/db/queries/reports";
+import { getImagingReport } from "@/lib/db/queries/imaging-reports";
+import { getProcedureReport } from "@/lib/db/queries/procedure-reports";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ymd, parseYmd, startOfMonth, addDays } from "@/lib/date";
@@ -45,20 +47,24 @@ export default async function ReportsPage({
   const fromISO = fromDate.toISOString();
   const toISO = toDate.toISOString();
 
-  const [canBilling, canAppts, canEmr, canPharmacy] = await Promise.all([
+  const [canBilling, canAppts, canEmr, canPharmacy, canImaging, canProcedures] = await Promise.all([
     hasPermission(PERMISSIONS.BILLING_READ),
     hasPermission(PERMISSIONS.APPOINTMENTS_READ),
     hasPermission(PERMISSIONS.EMR_READ),
     hasPermission(PERMISSIONS.PHARMACY_READ),
+    hasPermission(PERMISSIONS.IMAGING_READ),
+    hasPermission(PERMISSIONS.PROCEDURES_READ),
   ]);
 
-  const [revenue, newPatients, byStatus, doctorActivity, inventory, outstanding] = await Promise.all([
+  const [revenue, newPatients, byStatus, doctorActivity, inventory, outstanding, imaging, procedures] = await Promise.all([
     canBilling ? getRevenueReport(fromISO, toISO) : Promise.resolve(null),
     getNewPatientsCount(fromISO, toISO),
     canAppts ? getAppointmentsByStatus(fromISO, toISO) : Promise.resolve(null),
     canEmr ? getDoctorActivity(fromISO, toISO) : Promise.resolve(null),
     canPharmacy ? getInventoryReport() : Promise.resolve(null),
     canBilling ? getOutstandingReport() : Promise.resolve(null),
+    canImaging ? getImagingReport(fromISO, toISO) : Promise.resolve(null),
+    canProcedures ? getProcedureReport(fromISO, toISO) : Promise.resolve(null),
   ]);
 
   const money = (n: number) => Number(n).toFixed(2);
@@ -233,6 +239,68 @@ export default async function ReportsPage({
                 </table>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {imaging && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>{t("imaging.title", { volume: imaging.volume, revenue: money(imaging.revenue) })}</CardTitle>
+            <ReportExport name="imaging-by-type" columns={[{ key: "label", label: "Study" }, { key: "count", label: "Volume" }]} rows={imaging.byType} />
+          </CardHeader>
+          <CardContent className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <h3 className="pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("imaging.byType")}</h3>
+              {imaging.byType.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">{t("imaging.empty")}</p> : (
+                <table className="w-full text-sm"><tbody>
+                  {imaging.byType.map((r) => (
+                    <tr key={r.label} className="border-b border-[var(--border)] last:border-0"><td className="py-1">{r.label}</td><td className="py-1 text-right tabular-nums">{r.count}</td></tr>
+                  ))}
+                </tbody></table>
+              )}
+            </div>
+            <div>
+              <h3 className="pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("imaging.byDoctor")}</h3>
+              {imaging.byDoctor.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">{t("imaging.empty")}</p> : (
+                <table className="w-full text-sm"><tbody>
+                  {imaging.byDoctor.map((r) => (
+                    <tr key={r.label} className="border-b border-[var(--border)] last:border-0"><td className="py-1">{r.label}</td><td className="py-1 text-right tabular-nums">{r.count}</td></tr>
+                  ))}
+                </tbody></table>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {procedures && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle>{t("procedures.title", { volume: procedures.volume, revenue: money(procedures.revenue) })}</CardTitle>
+            <ReportExport name="procedures-by-type" columns={[{ key: "label", label: "Procedure" }, { key: "count", label: "Volume" }]} rows={procedures.byType} />
+          </CardHeader>
+          <CardContent className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <h3 className="pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("procedures.byType")}</h3>
+              {procedures.byType.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">{t("procedures.empty")}</p> : (
+                <table className="w-full text-sm"><tbody>
+                  {procedures.byType.map((r) => (
+                    <tr key={r.label} className="border-b border-[var(--border)] last:border-0"><td className="py-1">{r.label}</td><td className="py-1 text-right tabular-nums">{r.count}</td></tr>
+                  ))}
+                </tbody></table>
+              )}
+            </div>
+            <div>
+              <h3 className="pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("procedures.byDoctor")}</h3>
+              {procedures.byDoctor.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">{t("procedures.empty")}</p> : (
+                <table className="w-full text-sm"><tbody>
+                  {procedures.byDoctor.map((r) => (
+                    <tr key={r.label} className="border-b border-[var(--border)] last:border-0"><td className="py-1">{r.label}</td><td className="py-1 text-right tabular-nums">{r.count}</td></tr>
+                  ))}
+                </tbody></table>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

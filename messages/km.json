@@ -11,6 +11,8 @@
     "doctors": "វេជ្ជបណ្ឌិត",
     "prescriptions": "វេជ្ជបញ្ជា",
     "lab": "មន្ទីរពិសោធន៍",
+    "imaging": "រូបភាពវេជ្ជសាស្ត្រ",
+    "procedures": "នីតិវិធី",
     "pharmacy": "ឱសថស្ថាន",
     "billing": "វិក្កយបត្រ",
     "reports": "របាយការណ៍",
@@ -382,11 +384,19 @@
       "tabs": {
         "overview": "ទិដ្ឋភាពទូទៅ",
         "clinical": "គ្លីនិក",
+        "imaging": "រូបភាពវេជ្ជសាស្ត្រ",
+        "procedures": "នីតិវិធី",
         "financial": "ហិរញ្ញវត្ថុ",
         "communication": "ការទំនាក់ទំនង",
         "documents": "ឯកសារ",
         "timeline": "កាលប្បវត្តិ"
       },
+      "imaging": "រូបភាពវេជ្ជសាស្ត្រ ({count})",
+      "newImaging": "ស្នើរូបភាពថ្មី",
+      "noImaging": "មិនទាន់មានសំណើរូបភាពទេ។",
+      "procedures_": "នីតិវិធី ({count})",
+      "newProcedure": "នីតិវិធីថ្មី",
+      "noProcedures": "មិនទាន់មាននីតិវិធីទេ។",
       "demographics": "ប្រជាសាស្ត្រ",
       "contact": "ទំនាក់ទំនង",
       "medicalProfile": "ប្រវត្តិវេជ្ជសាស្ត្រ",
@@ -1458,12 +1468,196 @@
     "noMedicines": "គ្មានឱសថ។",
     "outstandingTitle": "វិក្កយបត្រនៅជំពាក់ ({count})",
     "nothingOutstanding": "គ្មានអ្វីនៅជំពាក់។",
+    "imaging": {
+      "title": "រូបភាពវេជ្ជសាស្ត្រ — {volume} ការថត · ចំណូល {revenue}",
+      "byType": "តាមប្រភេទ",
+      "byDoctor": "តាមវេជ្ជបណ្ឌិត",
+      "empty": "គ្មានរូបភាពក្នុងចន្លោះពេលនេះ។"
+    },
+    "procedures": {
+      "title": "នីតិវិធី — {volume} បានធ្វើ · ចំណូល {revenue}",
+      "byType": "តាមប្រភេទ",
+      "byDoctor": "តាមវេជ្ជបណ្ឌិត",
+      "empty": "គ្មាននីតិវិធីក្នុងចន្លោះពេលនេះ។"
+    },
     "table": {
       "sku": "SKU",
       "name": "ឈ្មោះ",
       "stock": "ស្តុក",
       "stockValue": "តម្លៃស្តុក",
       "low": "ខ្វះ"
+    }
+  },
+  "imaging": {
+    "title": "រូបភាពវេជ្ជសាស្ត្រ",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលរូបភាពវេជ្ជសាស្ត្រទេ។",
+    "summary": "{count, plural, other {# សំណើ}}",
+    "catalogLink": "បញ្ជីសេវា",
+    "newRequest": "សំណើថ្មី",
+    "empty": "មិនទាន់មានសំណើរូបភាពទេ។",
+    "table": {
+      "patient": "អ្នកជំងឺ",
+      "study": "ការថត",
+      "status": "ស្ថានភាព",
+      "requested": "បានស្នើ"
+    },
+    "status": {
+      "requested": "បានស្នើ",
+      "scheduled": "បានកំណត់ពេល",
+      "performed": "បានធ្វើ",
+      "reported": "បានរាយការណ៍",
+      "cancelled": "បានបោះបង់"
+    },
+    "statusControl": {
+      "schedule": "កំណត់ពេល",
+      "markPerformed": "សម្គាល់ថាបានធ្វើ",
+      "markReported": "សម្គាល់ថាបានរាយការណ៍",
+      "cancel": "បោះបង់"
+    },
+    "form": {
+      "backToList": "← រូបភាពវេជ្ជសាស្ត្រ",
+      "newTitle": "សំណើរូបភាពថ្មី",
+      "patient": "អ្នកជំងឺ",
+      "selectPatient": "ជ្រើសរើសអ្នកជំងឺ",
+      "doctor": "វេជ្ជបណ្ឌិតស្នើ",
+      "unassigned": "មិនបានកំណត់",
+      "branch": "សាខា",
+      "noBranch": "គ្មានសាខា",
+      "studies": "ការថត",
+      "selectedCount": "បានជ្រើស {count}",
+      "filterStudies": "ច្រោះការថត…",
+      "noCatalog": "គ្មានការថតត្រូវគ្នាទេ។",
+      "notes": "ការចង្អុលបង្ហាញគ្លីនិក",
+      "notesHint": "មូលហេតុនៃការថត (ស្រេចចិត្ត)",
+      "saving": "កំពុងរក្សាទុក…",
+      "createRequests": "{count, plural, other {បង្កើតសំណើ #}}",
+      "cancel": "បោះបង់"
+    },
+    "result": {
+      "findings": "លទ្ធផលរកឃើញ",
+      "impression": "ការវាយតម្លៃ",
+      "report": "របាយការណ៍",
+      "attachFile": "ភ្ជាប់ឯកសារថត / របាយការណ៍",
+      "saved": "បានរក្សាទុក។",
+      "saving": "កំពុងរក្សាទុក…",
+      "save": "រក្សាទុកលទ្ធផល"
+    },
+    "patientPage": {
+      "backToList": "← រូបភាពវេជ្ជសាស្ត្រ",
+      "summary": "{count, plural, other {# ការថត}}",
+      "findings": "លទ្ធផលរកឃើញ",
+      "impression": "ការវាយតម្លៃ",
+      "report": "របាយការណ៍",
+      "attachment": "ឯកសារភ្ជាប់",
+      "enterResult": "បញ្ចូលលទ្ធផល",
+      "resultsRestricted": "អ្នកគ្មានសិទ្ធិមើលលទ្ធផលគ្លីនិកទេ។"
+    },
+    "catalog": {
+      "backToList": "← រូបភាពវេជ្ជសាស្ត្រ",
+      "title": "បញ្ជីសេវារូបភាព",
+      "subtitle": "ការថត និងប្រភេទ ដែលប្រើសម្រាប់សំណើ និងវិក្កយបត្រ។",
+      "seed": "ផ្ទុកបញ្ជីស្តង់ដារ",
+      "seeding": "កំពុងផ្ទុក…",
+      "seeded": "បានបន្ថែម {count} ធាតុ។",
+      "upToDate": "បញ្ជីទាន់សម័យហើយ។",
+      "categories": "ប្រភេទ",
+      "categoryName": "ឈ្មោះប្រភេទ",
+      "categoryPlaceholder": "ឧ. Radiology",
+      "add": "បន្ថែម",
+      "deleteCategoryConfirm": "លុបប្រភេទ \"{name}\"?",
+      "noCategories": "មិនទាន់មានប្រភេទទេ។",
+      "studies": "ការថត",
+      "studyName": "ឈ្មោះការថត",
+      "studyPlaceholder": "ឧ. Chest X-Ray",
+      "category": "ប្រភេទ",
+      "uncategorized": "មិនបានចាត់ថ្នាក់",
+      "modality": "ប្រភេទម៉ាស៊ីន",
+      "price": "តម្លៃ",
+      "addStudy": "បន្ថែមការថត",
+      "deleteStudyConfirm": "លុបការថត \"{name}\"?",
+      "noStudies": "មិនទាន់មានការថតទេ។"
+    }
+  },
+  "procedures": {
+    "title": "នីតិវិធី",
+    "noPermission": "អ្នកគ្មានសិទ្ធិមើលនីតិវិធីទេ។",
+    "summary": "{count, plural, other {# ការបញ្ជា}}",
+    "catalogLink": "បញ្ជីសេវា",
+    "newOrder": "ការបញ្ជាថ្មី",
+    "empty": "មិនទាន់មានការបញ្ជានីតិវិធីទេ។",
+    "table": {
+      "patient": "អ្នកជំងឺ",
+      "procedure": "នីតិវិធី",
+      "status": "ស្ថានភាព",
+      "ordered": "បានបញ្ជា"
+    },
+    "status": {
+      "ordered": "បានបញ្ជា",
+      "performed": "បានធ្វើ",
+      "completed": "បានបញ្ចប់",
+      "cancelled": "បានបោះបង់"
+    },
+    "statusControl": {
+      "markPerformed": "សម្គាល់ថាបានធ្វើ",
+      "markCompleted": "សម្គាល់ថាបានបញ្ចប់",
+      "cancel": "បោះបង់"
+    },
+    "form": {
+      "backToList": "← នីតិវិធី",
+      "newTitle": "ការបញ្ជានីតិវិធីថ្មី",
+      "patient": "អ្នកជំងឺ",
+      "selectPatient": "ជ្រើសរើសអ្នកជំងឺ",
+      "doctor": "វេជ្ជបណ្ឌិតបញ្ជា",
+      "unassigned": "មិនបានកំណត់",
+      "branch": "សាខា",
+      "noBranch": "គ្មានសាខា",
+      "procedures": "នីតិវិធី",
+      "selectedCount": "បានជ្រើស {count}",
+      "filterProcedures": "ច្រោះនីតិវិធី…",
+      "noCatalog": "គ្មាននីតិវិធីត្រូវគ្នាទេ។",
+      "notes": "កំណត់ចំណាំការបញ្ជា",
+      "notesHint": "ការចង្អុលបង្ហាញ / ការណែនាំ (ស្រេចចិត្ត)",
+      "saving": "កំពុងរក្សាទុក…",
+      "createOrders": "{count, plural, other {បង្កើតការបញ្ជា #}}",
+      "cancel": "បោះបង់"
+    },
+    "record": {
+      "clinicalNotes": "កំណត់ចំណាំគ្លីនិក",
+      "outcome": "លទ្ធផល",
+      "saved": "បានរក្សាទុក។",
+      "saving": "កំពុងរក្សាទុក…",
+      "save": "រក្សាទុកកំណត់ត្រា"
+    },
+    "patientPage": {
+      "backToList": "← នីតិវិធី",
+      "summary": "{count, plural, other {# ការបញ្ជា}}",
+      "clinicalNotes": "កំណត់ចំណាំគ្លីនិក",
+      "outcome": "លទ្ធផល",
+      "documentRecord": "កត់ត្រាកំណត់ត្រា"
+    },
+    "catalog": {
+      "backToList": "← នីតិវិធី",
+      "title": "បញ្ជីសេវានីតិវិធី",
+      "subtitle": "នីតិវិធី និងប្រភេទ ដែលប្រើសម្រាប់ការបញ្ជា និងវិក្កយបត្រ។",
+      "seed": "ផ្ទុកបញ្ជីស្តង់ដារ",
+      "seeding": "កំពុងផ្ទុក…",
+      "seeded": "បានបន្ថែម {count} ធាតុ។",
+      "upToDate": "បញ្ជីទាន់សម័យហើយ។",
+      "categories": "ប្រភេទ",
+      "categoryName": "ឈ្មោះប្រភេទ",
+      "categoryPlaceholder": "ឧ. Nursing Procedures",
+      "add": "បន្ថែម",
+      "deleteCategoryConfirm": "លុបប្រភេទ \"{name}\"?",
+      "noCategories": "មិនទាន់មានប្រភេទទេ។",
+      "services": "នីតិវិធី",
+      "serviceName": "ឈ្មោះនីតិវិធី",
+      "servicePlaceholder": "ឧ. Wound Dressing",
+      "category": "ប្រភេទ",
+      "uncategorized": "មិនបានចាត់ថ្នាក់",
+      "price": "តម្លៃ",
+      "addService": "បន្ថែមនីតិវិធី",
+      "deleteServiceConfirm": "លុបនីតិវិធី \"{name}\"?",
+      "noServices": "មិនទាន់មាននីតិវិធីទេ។"
     }
   },
   "prescriptions": {
@@ -1875,7 +2069,19 @@
     },
     "procedure": {
       "nameRequired": "ត្រូវការឈ្មោះ",
+      "categoryNameRequired": "ត្រូវការឈ្មោះប្រភេទ",
+      "patientRequired": "ជ្រើសរើសអ្នកជំងឺ",
+      "selectProcedure": "ជ្រើសរើសនីតិវិធីយ៉ាងហោចណាស់មួយ",
+      "isImaging": "នេះជាការថតរូបភាព — សូមបញ្ចូលក្រោម រូបភាពវេជ្ជសាស្ត្រ មិនមែននីតិវិធីទេ។",
       "createFailed": "មិនអាចបង្កើតនីតិវិធីបានទេ។"
+    },
+    "imaging": {
+      "nameRequired": "ត្រូវការឈ្មោះ",
+      "categoryNameRequired": "ត្រូវការឈ្មោះប្រភេទ",
+      "patientRequired": "ជ្រើសរើសអ្នកជំងឺ",
+      "selectStudy": "ជ្រើសរើសការថតយ៉ាងហោចណាស់មួយ",
+      "isProcedure": "នេះជានីតិវិធី — សូមបញ្ចូលក្រោម នីតិវិធី មិនមែនរូបភាពវេជ្ជសាស្ត្រទេ។",
+      "createFailed": "មិនអាចបង្កើតសំណើរូបភាពបានទេ។"
     },
     "membership": {
       "nameRequired": "ត្រូវការឈ្មោះ",
