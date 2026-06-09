@@ -20,6 +20,7 @@ import { ReportExport } from "@/components/reports/report-export";
 import { PrintButton } from "@/components/print-button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollableX } from "@/components/ui/scrollable-x";
 
 export const metadata = { title: "Reports" };
 
@@ -213,7 +214,7 @@ export default async function ReportsPage({
             {inventory.items.length === 0 ? (
               <p className="text-sm text-[var(--muted-foreground)]">{t("noMedicines")}</p>
             ) : (
-              <div className="w-full overflow-x-auto">
+              <ScrollableX className="w-full">
                 <table className="w-full text-sm">
                   <thead className="border-b border-[var(--border)] text-left text-xs text-[var(--muted-foreground)]">
                     <tr>
@@ -237,7 +238,7 @@ export default async function ReportsPage({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </ScrollableX>
             )}
           </CardContent>
         </Card>

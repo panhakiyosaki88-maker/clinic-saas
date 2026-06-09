@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { ScrollableX } from "@/components/ui/scrollable-x";
 
 /**
  * Polished data-table primitives: zebra rows, soft header band, row hover.
@@ -9,8 +10,9 @@ import { cn } from "@/lib/utils";
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
     // Wrapper enables horizontal scroll on narrow screens instead of clipping
-    // (the enclosing Card uses overflow-hidden).
-    <div className="w-full overflow-x-auto">
+    // (the enclosing Card uses overflow-hidden), with synced scrollbars on both
+    // the top and bottom edges of the table.
+    <ScrollableX className="w-full">
       <table
         ref={ref}
         className={cn(
@@ -19,7 +21,7 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
         )}
         {...props}
       />
-    </div>
+    </ScrollableX>
   )
 );
 Table.displayName = "Table";

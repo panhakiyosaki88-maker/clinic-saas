@@ -8,6 +8,7 @@ import { Bell } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
+import { ScrollableX } from "@/components/ui/scrollable-x";
 
 export const metadata = { title: "Notifications" };
 
@@ -69,7 +70,7 @@ export default async function NotificationsPage() {
                 </DataCard>
               ))}
             >
-            <div className="overflow-x-auto">
+            <ScrollableX>
             <table className="w-full min-w-[36rem] text-sm">
               <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                 <tr>
@@ -95,7 +96,7 @@ export default async function NotificationsPage() {
                 ))}
               </tbody>
             </table>
-            </div>
+            </ScrollableX>
             </ResponsiveTable>
           )}
         </CardContent>

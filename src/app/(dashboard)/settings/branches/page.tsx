@@ -9,6 +9,7 @@ import { BranchForm } from "@/components/settings/branch-form";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
+import { ScrollableX } from "@/components/ui/scrollable-x";
 
 export const metadata = { title: "Branches · Settings" };
 
@@ -65,7 +66,7 @@ export default async function BranchesSettingsPage() {
                 </DataCard>
               ))}
             >
-            <div className="overflow-x-auto">
+            <ScrollableX>
               <table className="w-full min-w-[32rem] text-sm">
                 <thead className="border-b border-[var(--border)] text-left text-[var(--muted-foreground)]">
                   <tr>
@@ -104,7 +105,7 @@ export default async function BranchesSettingsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollableX>
             </ResponsiveTable>
           )}
         </CardContent>

@@ -22,6 +22,7 @@ import { INVOICE_STATUSES } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
+import { ScrollableX } from "@/components/ui/scrollable-x";
 
 export interface InvoiceTableRow {
   id: string;
@@ -214,7 +215,7 @@ export function InvoiceTable({
           )
         }
       >
-      <div className="w-full overflow-x-auto rounded-lg border border-[var(--border)]">
+      <ScrollableX className="w-full rounded-lg border border-[var(--border)]">
         <table className="w-full min-w-[40rem] text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
             {table.getHeaderGroups().map((hg) => (
@@ -253,7 +254,7 @@ export function InvoiceTable({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollableX>
       </ResponsiveTable>
 
       <div className="flex items-center justify-between text-sm">
