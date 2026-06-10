@@ -44,6 +44,9 @@ export const createPatientSchema = z.object({
   medicalHistory: optionalText,
   chronicDiseases: optionalText,
   notes: optionalText,
+  // Set by the form when staff acknowledge a possible-duplicate warning and
+  // choose to register anyway. Not a DB column.
+  confirmedDuplicate: z.coerce.boolean().optional(),
 });
 export type CreatePatientInput = z.infer<typeof createPatientSchema>;
 

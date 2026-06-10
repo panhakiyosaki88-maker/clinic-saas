@@ -729,7 +729,10 @@
       "cancel": "Cancel",
       "newTitle": "New patient",
       "editTitle": "Edit patient",
-      "backToList": "← Patients"
+      "backToList": "← Patients",
+      "duplicateTitle": "{count, plural, one {# patient already has a similar name} other {# patients already have a similar name}} — check before registering:",
+      "duplicateSameDob": "same date of birth",
+      "duplicateConfirm": "This is a different person — register anyway"
     },
     "purge": {
       "delete": "Delete {name}",
@@ -2391,7 +2394,8 @@
       "planLimit": "You've reached your plan's patient limit. Upgrade to add more.",
       "createFailed": "Could not create patient.",
       "titleRequired": "A title is required",
-      "notFound": "Patient not found."
+      "notFound": "Patient not found.",
+      "duplicateName": "A patient with this name already exists. Confirm it is a different person to register anyway."
     },
     "notification": {
       "enterMessage": "Enter a message",

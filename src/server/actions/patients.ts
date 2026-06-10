@@ -6,6 +6,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
+  findPatientDuplicates,
+  findPatientsByExactName,
+  type DuplicatePatient,
+} from "@/lib/db/queries/patients";
+import {
   createPatientSchema,
   updatePatientSchema,
   addTimelineNoteSchema,
@@ -77,6 +82,19 @@ function toColumns(v: Partial<CreatePatientInput>): PatientWrite {
   return out;
 }
 
+/**
+ * Possible-duplicate matches for a name, used to warn staff (live, as they type)
+ * before they register someone who may already exist. Read-only; RLS scopes it
+ * to the caller's clinic.
+ */
+export async function findDuplicatePatients(
+  name: string,
+  excludeId?: string
+): Promise<DuplicatePatient[]> {
+  await requirePermission(PERMISSIONS.PATIENTS_WRITE);
+  return findPatientDuplicates(name, { excludeId });
+}
+
 export async function createPatient(
   input: CreatePatientInput
 ): Promise<ActionResult<{ patientId: string }>> {
@@ -85,6 +103,16 @@ export async function createPatient(
   const parsed = createPatientSchema.safeParse(input);
   if (!parsed.success) {
     return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
+  }
+
+  // Guard against accidental duplicate registration: unless staff have confirmed
+  // this is a different person, refuse when an active patient already has exactly
+  // this name. Real namesakes are allowed once acknowledged in the form.
+  if (!parsed.data.confirmedDuplicate) {
+    const existing = await findPatientsByExactName(parsed.data.fullName);
+    if (existing.length > 0) {
+      return fail(te("patient.duplicateName"));
+    }
   }
 
   const supabase = await createClient();

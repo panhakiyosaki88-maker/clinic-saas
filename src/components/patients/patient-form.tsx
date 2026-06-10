@@ -1,10 +1,13 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { createPatient, updatePatient } from "@/server/actions/patients";
-import type { Patient } from "@/lib/db/queries/patients";
+import { createPatient, updatePatient, findDuplicatePatients } from "@/server/actions/patients";
+import type { Patient, DuplicatePatient } from "@/lib/db/queries/patients";
+import { formatDate } from "@/lib/date";
+import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,8 +57,37 @@ export function PatientForm({
   const [error, setError] = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
 
+  // Possible-duplicate detection: as staff type the name, look up existing
+  // patients with a similar name and warn before a duplicate is registered.
+  const [name, setName] = React.useState(patient?.full_name ?? "");
+  const [dob, setDob] = React.useState(patient?.date_of_birth ?? "");
+  const [duplicates, setDuplicates] = React.useState<DuplicatePatient[]>([]);
+  const [confirmDifferent, setConfirmDifferent] = React.useState(false);
+
+  React.useEffect(() => {
+    const term = name.trim();
+    if (term.length < 2) {
+      setDuplicates([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      try {
+        const matches = await findDuplicatePatients(term, patient?.id);
+        setDuplicates(matches);
+        setConfirmDifferent(false);
+      } catch {
+        setDuplicates([]);
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [name, patient?.id]);
+
+  // Only registrations are blocked; edits show the warning for information.
+  const blockedByDuplicate = !isEdit && duplicates.length > 0 && !confirmDifferent;
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (blockedByDuplicate) return;
     setError(null);
     setFieldErrors({});
     const f = new FormData(e.currentTarget);
@@ -83,6 +115,7 @@ export function PatientForm({
       medicalHistory: String(f.get("medicalHistory") ?? ""),
       chronicDiseases: String(f.get("chronicDiseases") ?? ""),
       notes: String(f.get("notes") ?? ""),
+      confirmedDuplicate: confirmDifferent,
     };
 
     startTransition(async () => {
@@ -108,7 +141,14 @@ export function PatientForm({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("fullName")} htmlFor="fullName" errors={fieldErrors.fullName}>
-            <Input id="fullName" name="fullName" defaultValue={patient?.full_name ?? ""} required autoFocus />
+            <Input
+              id="fullName"
+              name="fullName"
+              defaultValue={patient?.full_name ?? ""}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoFocus
+            />
           </Field>
           <Field label={t("gender")} htmlFor="gender">
             <select id="gender" name="gender" className={selectClass} defaultValue={patient?.gender ?? ""}>
@@ -119,7 +159,13 @@ export function PatientForm({
             </select>
           </Field>
           <Field label={t("dateOfBirth")} htmlFor="dateOfBirth" errors={fieldErrors.dateOfBirth}>
-            <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={patient?.date_of_birth ?? ""} />
+            <Input
+              id="dateOfBirth"
+              name="dateOfBirth"
+              type="date"
+              defaultValue={patient?.date_of_birth ?? ""}
+              onChange={(e) => setDob(e.target.value)}
+            />
           </Field>
           <Field label={t("occupation")} htmlFor="occupation">
             <Input id="occupation" name="occupation" defaultValue={patient?.occupation ?? ""} />
@@ -174,6 +220,51 @@ export function PatientForm({
             <Input id="nationalIdNumber" name="nationalIdNumber" defaultValue={patient?.national_id_number ?? ""} />
           </Field>
         </div>
+
+        {duplicates.length > 0 && (
+          <div className="rounded-md border border-amber-300 bg-amber-50 p-3 dark:border-amber-500/40 dark:bg-amber-500/10">
+            <p className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-300">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              {t("duplicateTitle", { count: duplicates.length })}
+            </p>
+            <ul className="mt-2 space-y-1.5 text-sm">
+              {duplicates.map((d) => {
+                const sameDob = !!dob && d.date_of_birth === dob;
+                return (
+                  <li key={d.id} className="flex flex-wrap items-baseline gap-x-2">
+                    <Link
+                      href={`/patients/${d.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+                    >
+                      {d.full_name}
+                    </Link>
+                    <span className="text-xs text-[var(--muted-foreground)]">{d.patient_number}</span>
+                    {d.date_of_birth && (
+                      <span className={`text-xs ${sameDob ? "font-semibold text-amber-700 dark:text-amber-300" : "text-[var(--muted-foreground)]"}`}>
+                        {formatDate(d.date_of_birth)}{sameDob ? ` · ${t("duplicateSameDob")}` : ""}
+                      </span>
+                    )}
+                    {d.phone && <span className="text-xs text-[var(--muted-foreground)]">{d.phone}</span>}
+                  </li>
+                );
+              })}
+            </ul>
+            {!isEdit && (
+              <label className="mt-3 flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-300">
+                <input
+                  type="checkbox"
+                  checked={confirmDifferent}
+                  onChange={(e) => setConfirmDifferent(e.target.checked)}
+                  className="h-4 w-4 rounded border-amber-400"
+                />
+                {t("duplicateConfirm")}
+              </label>
+            )}
+          </div>
+        )}
+
         <Field label={t("address")} htmlFor="address">
           <Textarea id="address" name="address" defaultValue={patient?.address ?? ""} />
         </Field>
@@ -252,7 +343,7 @@ export function PatientForm({
       )}
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending || blockedByDuplicate}>
           {pending ? t("saving") : isEdit ? t("save") : t("create")}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={pending}>

@@ -133,6 +133,61 @@ export async function listPatients(opts: {
   };
 }
 
+/** A lightweight patient match used to warn about likely duplicate registrations. */
+export interface DuplicatePatient {
+  id: string;
+  full_name: string;
+  patient_number: string;
+  date_of_birth: string | null;
+  phone: string | null;
+  gender: Gender | null;
+}
+
+const DUPLICATE_SELECT = "id, full_name, patient_number, date_of_birth, phone, gender";
+
+/** Active patients whose name contains `name` — surfaced as a soft warning while
+ *  registering, so staff can spot an existing record before creating a duplicate. */
+export async function findPatientDuplicates(
+  name: string,
+  opts: { excludeId?: string; limit?: number } = {}
+): Promise<DuplicatePatient[]> {
+  const term = sanitizeSearch(name);
+  if (term.length < 2) return [];
+  const supabase = await createClient();
+  let query = supabase
+    .from("patients")
+    .select(DUPLICATE_SELECT)
+    .is("deleted_at", null)
+    .ilike("full_name", `%${term}%`)
+    .order("created_at", { ascending: false })
+    .limit(opts.limit ?? 8);
+  if (opts.excludeId) query = query.neq("id", opts.excludeId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as DuplicatePatient[];
+}
+
+/** Active patients with exactly this name (case-insensitive) — the server-side
+ *  guard backing the registration duplicate warning. */
+export async function findPatientsByExactName(
+  name: string,
+  excludeId?: string
+): Promise<DuplicatePatient[]> {
+  const term = sanitizeSearch(name);
+  if (term.length < 2) return [];
+  const supabase = await createClient();
+  let query = supabase
+    .from("patients")
+    .select(DUPLICATE_SELECT)
+    .is("deleted_at", null)
+    .ilike("full_name", term)
+    .limit(5);
+  if (excludeId) query = query.neq("id", excludeId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as DuplicatePatient[];
+}
+
 /** Compact patient list for select inputs (e.g. booking an appointment). */
 export async function listPatientOptions(limit = 500): Promise<{ id: string; label: string }[]> {
   const supabase = await createClient();
