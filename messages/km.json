@@ -1513,7 +1513,10 @@
       "patient": "អ្នកជំងឺ",
       "study": "ការថត",
       "status": "ស្ថានភាព",
-      "requested": "បានស្នើ"
+      "requested": "បានស្នើ",
+      "scheduled": "បានកំណត់ពេល",
+      "performed": "បានធ្វើ",
+      "reported": "បានរាយការណ៍"
     },
     "status": {
       "requested": "បានស្នើ",

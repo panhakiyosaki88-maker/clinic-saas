@@ -80,6 +80,9 @@ export default async function ImagingPage() {
                   />
                   <DataCardRow label={t("table.status")} value={<ImagingStatusBadge status={r.status} />} />
                   <DataCardRow label={t("table.requested")} value={fmt(r.requested_at)} />
+                  <DataCardRow label={t("table.scheduled")} value={fmt(r.scheduled_at)} />
+                  <DataCardRow label={t("table.performed")} value={fmt(r.performed_at)} />
+                  <DataCardRow label={t("table.reported")} value={fmt(r.reported_at)} />
                 </DataCard>
               ))}
             >
@@ -90,6 +93,9 @@ export default async function ImagingPage() {
                   <TH>{t("table.study")}</TH>
                   <TH>{t("table.status")}</TH>
                   <TH>{t("table.requested")}</TH>
+                  <TH>{t("table.scheduled")}</TH>
+                  <TH>{t("table.performed")}</TH>
+                  <TH>{t("table.reported")}</TH>
                 </tr>
               </THead>
               <TBody>
@@ -107,6 +113,9 @@ export default async function ImagingPage() {
                     </TD>
                     <TD><ImagingStatusBadge status={r.status} /></TD>
                     <TD className="text-slate-500 dark:text-slate-400">{fmt(r.requested_at)}</TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{fmt(r.scheduled_at)}</TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{fmt(r.performed_at)}</TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{fmt(r.reported_at)}</TD>
                   </TR>
                 ))}
               </TBody>

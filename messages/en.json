@@ -1513,7 +1513,10 @@
       "patient": "Patient",
       "study": "Study",
       "status": "Status",
-      "requested": "Requested"
+      "requested": "Requested",
+      "scheduled": "Scheduled",
+      "performed": "Performed",
+      "reported": "Reported"
     },
     "status": {
       "requested": "Requested",
