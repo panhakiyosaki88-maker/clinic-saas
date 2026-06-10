@@ -120,10 +120,10 @@ export default async function PrescriptionDetailPage({
                   </td>
                   {dose ? (
                     dose.map((v, i) => (
-                      <td key={i} className="py-2 text-center tabular-nums">{v && v !== "0" ? v : "—"}</td>
+                      <td key={i} className="py-2 text-center align-middle tabular-nums">{v && v !== "0" ? v : "—"}</td>
                     ))
                   ) : (
-                    <td colSpan={4} className="py-2 text-center text-xs text-[var(--muted-foreground)]">
+                    <td colSpan={4} className="py-2 text-center align-middle text-xs text-[var(--muted-foreground)]">
                       {it.dosage ?? "—"}
                     </td>
                   )}
