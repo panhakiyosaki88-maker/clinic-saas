@@ -110,11 +110,11 @@ export default async function InvoiceDetailPage({
       </div>
 
       {/* Printable invoice */}
-      <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 print:border-0">
+      <article className="print-document rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 print:border-0">
         <header className="mb-6 flex items-start justify-between gap-4 border-b border-[var(--border)] pb-4">
           <ClinicLetterhead clinic={clinic} />
           <div className="shrink-0 text-right text-sm">
-            <p className="text-base font-semibold uppercase tracking-wide">{t("invoiceDetail.heading")}</p>
+            <p className="text-3xl font-bold uppercase tracking-wide">{t("invoiceDetail.heading")}</p>
             <p className="font-mono font-medium">{inv.invoice_number}</p>
             <p className="text-[var(--muted-foreground)]">{formatDate(inv.issued_at)}</p>
             <p className="mt-1">{t.has(`status.${inv.status}`) ? t(`status.${inv.status}`) : inv.status}</p>

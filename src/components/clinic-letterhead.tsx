@@ -93,7 +93,7 @@ export function ClinicLetterhead({
 
   return (
     <div
-      className={`flex gap-4 ${
+      className={`letterhead flex gap-4 ${
         centered ? "flex-col items-center text-center" : "items-start"
       }`}
     >

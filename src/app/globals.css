@@ -169,3 +169,24 @@
     padding: 14mm;
   }
 }
+
+/* Printable documents (prescriptions, invoices, receipts).
+   Nudge the body text up a step for readability, but leave the clinic
+   letterhead at its designed sizes (it resets itself below). These rules are
+   unlayered, so they win over Tailwind's layered text-xs / text-sm utilities. */
+.print-document .text-xs {
+  font-size: 0.8125rem;
+  line-height: 1.15rem;
+}
+.print-document .text-sm {
+  font-size: 0.95rem;
+  line-height: 1.45rem;
+}
+.print-document .letterhead .text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+.print-document .letterhead .text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}

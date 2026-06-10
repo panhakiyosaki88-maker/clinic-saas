@@ -39,11 +39,11 @@ export default async function ReceiptPage({
         <PrintButton label={t("receipt.receiptPdf")} />
       </div>
 
-      <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center print:border-0">
+      <article className="print-document rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center print:border-0">
         <div className="mb-4 border-b border-[var(--border)] pb-4">
           <ClinicLetterhead clinic={clinic} align="center" />
         </div>
-        <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("receipt.heading")}</p>
+        <p className="mb-4 text-2xl font-bold uppercase tracking-wide text-[var(--muted-foreground)]">{t("receipt.heading")}</p>
 
         <div className="mb-4 text-left text-sm">
           <p><span className="text-[var(--muted-foreground)]">{t("receipt.invoice")} </span><span className="font-mono">{inv.invoice_number}</span></p>

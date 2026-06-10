@@ -58,10 +58,10 @@ export default async function PrescriptionDetailPage({
       </div>
 
       {/* Printable document */}
-      <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 print:border-0">
+      <article className="print-document rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 print:border-0">
         <header className="mb-6 flex items-start justify-between gap-4 border-b border-[var(--border)] pb-4">
           <ClinicLetterhead clinic={clinic} />
-          <p className="shrink-0 text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+          <p className="shrink-0 text-3xl font-bold uppercase tracking-wide text-[var(--muted-foreground)]">
             {t("detail.heading")}
           </p>
         </header>
