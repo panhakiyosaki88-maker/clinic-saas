@@ -14,6 +14,9 @@ export const DEFAULT_SETTINGS = {
   payment_reminder_enabled: true,
   payment_overdue_days: 3,
   follow_up_enabled: true,
+  doctor_schedule_enabled: true,
+  owner_alerts_enabled: true,
+  owner_daily_summary_enabled: true,
 };
 
 export type EffectiveSettings = typeof DEFAULT_SETTINGS;
@@ -38,6 +41,9 @@ export function mergeSettings(row: NotificationSettings | null): EffectiveSettin
     payment_reminder_enabled: row.payment_reminder_enabled,
     payment_overdue_days: row.payment_overdue_days,
     follow_up_enabled: row.follow_up_enabled,
+    doctor_schedule_enabled: row.doctor_schedule_enabled,
+    owner_alerts_enabled: row.owner_alerts_enabled,
+    owner_daily_summary_enabled: row.owner_daily_summary_enabled,
   };
 }
 

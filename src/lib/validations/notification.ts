@@ -7,6 +7,9 @@ export const notificationSettingsSchema = z.object({
   paymentReminderEnabled: z.boolean(),
   paymentOverdueDays: z.coerce.number().int().min(0).max(365),
   followUpEnabled: z.boolean(),
+  doctorScheduleEnabled: z.boolean(),
+  ownerAlertsEnabled: z.boolean(),
+  ownerDailySummaryEnabled: z.boolean(),
 });
 export type NotificationSettingsInput = z.infer<typeof notificationSettingsSchema>;
 

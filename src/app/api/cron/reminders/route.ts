@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   const { data: clinics, error } = await admin.from("clinics").select("id, name");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const totals: ProcessResult = { appointment: 0, payment: 0 };
+  const totals: ProcessResult = { appointment: 0, payment: 0, doctor: 0, ownerSummary: 0 };
   let clinicsProcessed = 0;
 
   for (const clinic of clinics ?? []) {
@@ -39,9 +39,12 @@ export async function GET(request: Request) {
       templates: (templatesRes.data ?? []) as NotificationTemplate[],
       clinicName: clinic.name ?? "",
       userId: null,
+      includeStaff: true,
     });
     totals.appointment += counts.appointment;
     totals.payment += counts.payment;
+    totals.doctor += counts.doctor;
+    totals.ownerSummary += counts.ownerSummary;
     clinicsProcessed++;
   }
 

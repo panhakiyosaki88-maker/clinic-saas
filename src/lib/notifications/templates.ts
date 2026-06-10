@@ -13,15 +13,18 @@ export interface MessageTemplate {
   body: string;
 }
 
+/** The notification types that use the (clinic-editable) template system. */
+export type TemplateType = "appointment_reminder" | "payment_reminder" | "follow_up" | "custom";
+
 /** The variables each notification type exposes, for the settings UI hint. */
-export const TEMPLATE_VARIABLES: Record<NotificationType, string[]> = {
+export const TEMPLATE_VARIABLES: Record<TemplateType, string[]> = {
   appointment_reminder: ["patient", "datetime", "clinic"],
   payment_reminder: ["patient", "invoice", "amount", "clinic"],
   follow_up: ["patient", "message", "clinic"],
   custom: ["patient", "message", "clinic"],
 };
 
-const EMAIL_DEFAULTS: Record<NotificationType, MessageTemplate> = {
+const EMAIL_DEFAULTS: Record<TemplateType, MessageTemplate> = {
   appointment_reminder: {
     subject: "Appointment reminder",
     body: "<p>Dear {{patient}},</p><p>This is a reminder of your appointment on <strong>{{datetime}}</strong>.</p><p>Thank you.</p>",
@@ -40,7 +43,7 @@ const EMAIL_DEFAULTS: Record<NotificationType, MessageTemplate> = {
   },
 };
 
-const TELEGRAM_DEFAULTS: Record<NotificationType, MessageTemplate> = {
+const TELEGRAM_DEFAULTS: Record<TemplateType, MessageTemplate> = {
   appointment_reminder: {
     subject: null,
     body: "Dear {{patient}}, this is a reminder of your appointment on {{datetime}}. Thank you.",
@@ -61,7 +64,9 @@ const TELEGRAM_DEFAULTS: Record<NotificationType, MessageTemplate> = {
 
 /** The built-in template for a type on a given channel. */
 export function defaultTemplate(type: NotificationType, channel: NotificationChannel): MessageTemplate {
-  return (channel === "telegram" ? TELEGRAM_DEFAULTS : EMAIL_DEFAULTS)[type];
+  const map = channel === "telegram" ? TELEGRAM_DEFAULTS : EMAIL_DEFAULTS;
+  const key: TemplateType = type in map ? (type as TemplateType) : "custom";
+  return map[key];
 }
 
 /** Replaces every {{key}} with vars[key] (missing keys become an empty string). */

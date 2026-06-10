@@ -14,7 +14,8 @@ import {
 } from "@/lib/validations/appointment";
 import { ok, fail, type ActionResult } from "./types";
 import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
-import { ymd } from "@/lib/date";
+import { ymd, formatDateTime } from "@/lib/date";
+import { notifyClinicOwner } from "@/lib/notifications/staff-send";
 import type { Database } from "@/types/database";
 
 type AppointmentWrite = Database["public"]["Tables"]["appointments"]["Update"];
@@ -109,6 +110,21 @@ export async function createAppointment(
     description: v.reason || null,
     created_by: user.id,
   });
+
+  // Best-effort owner alert for new scheduled bookings — never blocks the booking.
+  if (!isWalkIn) {
+    try {
+      const { data: pat } = await supabase.from("patients").select("full_name").eq("id", v.patientId).maybeSingle();
+      await notifyClinicOwner({
+        clinicId,
+        type: "owner_alert",
+        subject: "New appointment booked",
+        text: `New booking: ${pat?.full_name ?? "a patient"} on ${formatDateTime(scheduledAt)}.`,
+      });
+    } catch {
+      // ignore notification failures
+    }
+  }
 
   revalidatePath("/appointments");
   return ok({ appointmentId: data.id });

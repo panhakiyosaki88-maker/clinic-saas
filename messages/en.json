@@ -1524,7 +1524,10 @@
       "appointment_reminder": "Appointment reminder",
       "payment_reminder": "Payment reminder",
       "follow_up": "Follow-up",
-      "custom": "Custom"
+      "custom": "Custom",
+      "doctor_schedule": "Doctor schedule",
+      "owner_alert": "Owner alert",
+      "staff_message": "Staff message"
     },
     "status": {
       "sent": "Sent",
@@ -1597,7 +1600,42 @@
           "email": "Email",
           "telegram": "Telegram"
         }
-      }
+      },
+      "doctorSchedule": "Doctor daily schedule",
+      "ownerAlerts": "Owner business alerts",
+      "dailySummary": "Daily summary"
+    },
+    "telegram": {
+      "title": "Telegram",
+      "myTitle": "Connect your Telegram",
+      "myDescription": "Link your personal Telegram to receive your reminders and alerts here.",
+      "patientTitle": "Patient Telegram",
+      "patientDescription": "Share this connect link with the patient; once they start the bot, their reminders go to Telegram.",
+      "connected": "Connected",
+      "disconnect": "Disconnect",
+      "connect": "Connect Telegram",
+      "notConfigured": "Telegram bot is not configured yet (set TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME and TELEGRAM_LINK_SECRET).",
+      "instructions": "Scan the QR code, or open the link in Telegram and press Start. Then tap Refresh.",
+      "openTelegram": "Open in Telegram",
+      "refreshStatus": "Refresh status",
+      "checking": "Checking…",
+      "botSetup": "Bot setup",
+      "botSetupHint": "One-time: after setting TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET, register the webhook so Telegram delivers messages to this app.",
+      "registerWebhook": "Register webhook",
+      "registering": "Registering…",
+      "webhookSet": "Webhook registered ✓"
+    },
+    "compose": {
+      "title": "New message",
+      "subtitle": "Send a message to a team member",
+      "back": "← Notifications",
+      "newMessage": "New message",
+      "recipient": "Recipient",
+      "message": "Message",
+      "placeholder": "Write your message…",
+      "send": "Send",
+      "sending": "Sending…",
+      "noMembers": "No team members with an account yet."
     }
   },
   "reports": {

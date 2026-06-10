@@ -1524,7 +1524,10 @@
       "appointment_reminder": "ការរំលឹកការណាត់ជួប",
       "payment_reminder": "ការរំលឹកការទូទាត់",
       "follow_up": "ការតាមដាន",
-      "custom": "ផ្ទាល់ខ្លួន"
+      "custom": "ផ្ទាល់ខ្លួន",
+      "doctor_schedule": "កាលវិភាគវេជ្ជបណ្ឌិត",
+      "owner_alert": "ការជូនដំណឹងម្ចាស់",
+      "staff_message": "សារបុគ្គលិក"
     },
     "status": {
       "sent": "បានផ្ញើ",
@@ -1597,7 +1600,42 @@
           "email": "អ៊ីមែល",
           "telegram": "តេឡេក្រាម"
         }
-      }
+      },
+      "doctorSchedule": "កាលវិភាគប្រចាំថ្ងៃរបស់វេជ្ជបណ្ឌិត",
+      "ownerAlerts": "ការជូនដំណឹងអាជីវកម្មម្ចាស់",
+      "dailySummary": "សេចក្ដីសង្ខេបប្រចាំថ្ងៃ"
+    },
+    "telegram": {
+      "title": "តេឡេក្រាម",
+      "myTitle": "ភ្ជាប់តេឡេក្រាមរបស់អ្នក",
+      "myDescription": "ភ្ជាប់តេឡេក្រាមផ្ទាល់ខ្លួនរបស់អ្នក ដើម្បីទទួលការរំលឹក និងការជូនដំណឹងនៅទីនេះ។",
+      "patientTitle": "តេឡេក្រាមអ្នកជំងឺ",
+      "patientDescription": "ចែករំលែកតំណភ្ជាប់នេះជាមួយអ្នកជំងឺ។ នៅពេលពួកគេចាប់ផ្ដើមបូត ការរំលឹកនឹងផ្ញើទៅតេឡេក្រាម។",
+      "connected": "បានភ្ជាប់",
+      "disconnect": "ផ្ដាច់",
+      "connect": "ភ្ជាប់តេឡេក្រាម",
+      "notConfigured": "បូតតេឡេក្រាមមិនទាន់កំណត់រចនាសម្ព័ន្ធនៅឡើយទេ។",
+      "instructions": "ស្កេន QR ឬបើកតំណក្នុងតេឡេក្រាម រួចចុច Start។ បន្ទាប់មកចុចផ្ទុកឡើងវិញ។",
+      "openTelegram": "បើកក្នុងតេឡេក្រាម",
+      "refreshStatus": "ផ្ទុកស្ថានភាពឡើងវិញ",
+      "checking": "កំពុងពិនិត្យ…",
+      "botSetup": "ការដំឡើងបូត",
+      "botSetupHint": "ម្ដង៖ បន្ទាប់ពីកំណត់ TELEGRAM_BOT_TOKEN និង TELEGRAM_WEBHOOK_SECRET សូមចុះឈ្មោះ webhook។",
+      "registerWebhook": "ចុះឈ្មោះ webhook",
+      "registering": "កំពុងចុះឈ្មោះ…",
+      "webhookSet": "បានចុះឈ្មោះ webhook ✓"
+    },
+    "compose": {
+      "title": "សារថ្មី",
+      "subtitle": "ផ្ញើសារទៅសមាជិកក្រុម",
+      "back": "← ការជូនដំណឹង",
+      "newMessage": "សារថ្មី",
+      "recipient": "អ្នកទទួល",
+      "message": "សារ",
+      "placeholder": "សរសេរសាររបស់អ្នក…",
+      "send": "ផ្ញើ",
+      "sending": "កំពុងផ្ញើ…",
+      "noMembers": "មិនទាន់មានសមាជិកក្រុមដែលមានគណនីទេ។"
     }
   },
   "reports": {

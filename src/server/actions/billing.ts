@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveVisitBranchId } from "@/lib/db/queries/visits";
+import { notifyClinicOwner } from "@/lib/notifications/staff-send";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -520,6 +521,18 @@ export async function recordPayment(input: RecordPaymentInput): Promise<ActionRe
     created_by: user.id,
   });
   if (error) return fail(error.message);
+
+  // Best-effort owner alert — never blocks recording the payment.
+  try {
+    await notifyClinicOwner({
+      clinicId,
+      type: "owner_alert",
+      subject: "Payment received",
+      text: `Payment received: ${Number(v.amount).toFixed(2)} (${v.method}).`,
+    });
+  } catch {
+    // ignore notification failures
+  }
 
   revalidateBilling(v.invoiceId);
   return ok(undefined);

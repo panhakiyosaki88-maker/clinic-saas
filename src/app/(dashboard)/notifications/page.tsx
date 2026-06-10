@@ -9,6 +9,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Bell } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 import { ScrollableX } from "@/components/ui/scrollable-x";
 import { NotificationsToolbar } from "@/components/notifications/notifications-toolbar";
@@ -64,6 +65,9 @@ export default async function NotificationsPage({ searchParams }: { searchParams
         actions={
           canSend && (
             <div className="flex flex-wrap gap-2">
+              <Link href="/notifications/new">
+                <Button size="sm" variant="outline">{t("compose.newMessage")}</Button>
+              </Link>
               <RemindTomorrowButton />
               <RunDueButton />
             </div>

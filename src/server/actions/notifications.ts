@@ -15,6 +15,8 @@ import {
   type NotificationTemplate,
 } from "@/lib/db/queries/notification-settings";
 import { processClinicReminders, sendAppointmentRemindersInWindow } from "@/lib/notifications/reminders";
+import { sendToProfile } from "@/lib/notifications/staff-send";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { startOfDay, addDays } from "@/lib/date";
 import { ok, fail, type ActionResult } from "./types";
 import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
@@ -244,6 +246,47 @@ export async function retryNotification(notificationId: string): Promise<ActionR
 
   revalidatePath("/notifications");
   return ok({ status: result.status });
+}
+
+const staffMessageSchema = z.object({
+  userId: z.string().uuid(),
+  message: z.string().trim().min(1, "notification.enterMessage").max(2000),
+});
+
+/** Sends an ad-hoc message to a staff member (owner/doctor/etc.) of this clinic. */
+export async function sendStaffMessage(
+  input: { userId: string; message: string }
+): Promise<ActionResult<{ status: SendResult["status"] }>> {
+  const { clinicId, user } = await requirePermission(PERMISSIONS.NOTIFICATIONS_SEND);
+  const te = await getErrorT();
+  const parsed = staffMessageSchema.safeParse(input);
+  if (!parsed.success) return fail(te("fixFields"), localizeFieldErrors(parsed.error.flatten().fieldErrors, te));
+  const { userId, message } = parsed.data;
+
+  const admin = createAdminClient();
+  // Authorize: the target must be a member of the caller's clinic.
+  const { count } = await admin
+    .from("memberships")
+    .select("id", { count: "exact", head: true })
+    .eq("clinic_id", clinicId)
+    .eq("user_id", userId)
+    .is("deleted_at", null);
+  if (!count) return fail(te("notFound"));
+
+  const settings = await getNotificationSettings();
+  const status = await sendToProfile({
+    supabase: admin,
+    clinicId,
+    userId,
+    type: "staff_message",
+    subject: "Message from your clinic",
+    text: message,
+    preferred: settings.default_channel,
+    loggedBy: user.id,
+  });
+
+  revalidatePath("/notifications");
+  return ok({ status });
 }
 
 /** Flushes all due appointment & payment reminders for the current clinic now. */

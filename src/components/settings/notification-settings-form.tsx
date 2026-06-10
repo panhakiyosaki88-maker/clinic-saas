@@ -31,6 +31,9 @@ export function NotificationSettingsForm({ initial }: { initial: EffectiveSettin
         paymentReminderEnabled: s.payment_reminder_enabled,
         paymentOverdueDays: s.payment_overdue_days,
         followUpEnabled: s.follow_up_enabled,
+        doctorScheduleEnabled: s.doctor_schedule_enabled,
+        ownerAlertsEnabled: s.owner_alerts_enabled,
+        ownerDailySummaryEnabled: s.owner_daily_summary_enabled,
       });
       setMsg(res.ok ? t("saved") : res.error);
       if (res.ok) router.refresh();
@@ -97,6 +100,28 @@ export function NotificationSettingsForm({ initial }: { initial: EffectiveSettin
             enabled={s.follow_up_enabled}
             onToggle={(v) => setS({ ...s, follow_up_enabled: v })}
           />
+
+          <Row
+            label={t("doctorSchedule")}
+            enabled={s.doctor_schedule_enabled}
+            onToggle={(v) => setS({ ...s, doctor_schedule_enabled: v })}
+          />
+
+          <Row
+            label={t("ownerAlerts")}
+            enabled={s.owner_alerts_enabled}
+            onToggle={(v) => setS({ ...s, owner_alerts_enabled: v })}
+          >
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={s.owner_daily_summary_enabled}
+                onChange={(e) => setS({ ...s, owner_daily_summary_enabled: e.target.checked })}
+              />
+              {t("dailySummary")}
+            </label>
+          </Row>
 
           <div className="flex items-center gap-3 pt-2">
             <Button type="submit" disabled={pending}>

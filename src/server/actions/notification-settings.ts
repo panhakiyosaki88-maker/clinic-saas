@@ -32,6 +32,9 @@ export async function saveNotificationSettings(input: NotificationSettingsInput)
       payment_reminder_enabled: v.paymentReminderEnabled,
       payment_overdue_days: v.paymentOverdueDays,
       follow_up_enabled: v.followUpEnabled,
+      doctor_schedule_enabled: v.doctorScheduleEnabled,
+      owner_alerts_enabled: v.ownerAlertsEnabled,
+      owner_daily_summary_enabled: v.ownerDailySummaryEnabled,
       created_by: user.id,
     },
     { onConflict: "clinic_id" }

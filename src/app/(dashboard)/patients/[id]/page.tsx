@@ -46,6 +46,7 @@ import { DeletePatientButton } from "@/components/patients/delete-patient-button
 import { InsuranceSection } from "@/components/patients/insurance-section";
 import { ClinicalLists } from "@/components/patients/clinical-lists";
 import { EngagementSection } from "@/components/patients/engagement-section";
+import { TelegramConnectCard } from "@/components/notifications/telegram-connect-card";
 import { PatientTags } from "@/components/patients/patient-tags";
 import { ProfileTabs, type ProfileTab } from "@/components/patients/profile-tabs";
 import { PatientLabByDate } from "@/components/lab/patient-lab-by-date";
@@ -165,6 +166,7 @@ export default async function PatientProfilePage({
   const t = await getTranslations("patients.profile");
   const tInvStatus = await getTranslations("billing.status");
   const tVisitStatus = await getTranslations("visits.detail.status");
+  const tTg = await getTranslations("notifications.telegram");
 
   // -- Panels -----------------------------------------------------------------
   const overviewPanel = (
@@ -471,6 +473,15 @@ export default async function PatientProfilePage({
         communications={communications}
         canWrite={canWrite}
       />
+      {canWrite && (
+        <TelegramConnectCard
+          kind="patient"
+          id={patient.id}
+          connected={!!patient.telegram_chat_id}
+          title={tTg("patientTitle")}
+          description={tTg("patientDescription")}
+        />
+      )}
     </div>
   );
 

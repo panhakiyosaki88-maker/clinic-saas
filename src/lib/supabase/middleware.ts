@@ -44,7 +44,9 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/signup") ||
     pathname.startsWith("/auth") ||
     // Cron endpoints authenticate via the CRON_SECRET header, not a session.
-    pathname.startsWith("/api/cron");
+    pathname.startsWith("/api/cron") ||
+    // Telegram webhook authenticates via the Telegram secret header.
+    pathname.startsWith("/api/telegram");
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

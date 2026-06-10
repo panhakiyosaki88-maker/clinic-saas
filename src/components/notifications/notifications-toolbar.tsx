@@ -8,7 +8,15 @@ import { Input } from "@/components/ui/input";
 const selectClass =
   "h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
 
-const TYPES = ["appointment_reminder", "payment_reminder", "follow_up", "custom"] as const;
+const TYPES = [
+  "appointment_reminder",
+  "payment_reminder",
+  "follow_up",
+  "doctor_schedule",
+  "owner_alert",
+  "staff_message",
+  "custom",
+] as const;
 const STATUSES = ["sent", "pending", "failed", "skipped"] as const;
 const CHANNELS = ["email", "telegram"] as const;
 

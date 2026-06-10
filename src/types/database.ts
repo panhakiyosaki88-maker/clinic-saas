@@ -92,7 +92,14 @@ export type BenefitType = "percent" | "fixed";
 export type PatientMembershipStatus = "active" | "expired" | "cancelled";
 export type NotificationChannel = "email" | "telegram";
 export type NotificationStatus = "pending" | "sent" | "failed" | "skipped";
-export type NotificationType = "appointment_reminder" | "payment_reminder" | "follow_up" | "custom";
+export type NotificationType =
+  | "appointment_reminder"
+  | "payment_reminder"
+  | "follow_up"
+  | "custom"
+  | "doctor_schedule"
+  | "owner_alert"
+  | "staff_message";
 export type TimelineEvent =
   | "registered"
   | "note"
@@ -116,6 +123,7 @@ export interface Database {
           email: string | null;
           full_name: string | null;
           avatar_url: string | null;
+          telegram_chat_id: string | null;
           status: AccountStatus;
           approved_at: string | null;
           approved_by: string | null;
@@ -127,6 +135,7 @@ export interface Database {
           email?: string | null;
           full_name?: string | null;
           avatar_url?: string | null;
+          telegram_chat_id?: string | null;
           status?: AccountStatus;
           approved_at?: string | null;
           approved_by?: string | null;
@@ -1682,6 +1691,9 @@ export interface Database {
           payment_reminder_enabled: boolean;
           payment_overdue_days: number;
           follow_up_enabled: boolean;
+          doctor_schedule_enabled: boolean;
+          owner_alerts_enabled: boolean;
+          owner_daily_summary_enabled: boolean;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -1695,6 +1707,9 @@ export interface Database {
           payment_reminder_enabled?: boolean;
           payment_overdue_days?: number;
           follow_up_enabled?: boolean;
+          doctor_schedule_enabled?: boolean;
+          owner_alerts_enabled?: boolean;
+          owner_daily_summary_enabled?: boolean;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;

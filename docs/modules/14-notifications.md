@@ -37,6 +37,31 @@ Turns the passive log into an operational, automated channel.
   links**, **channel column**, per-row **Retry** (`retryNotification`), and a **detail view**
   (`/notifications/[id]`) showing the full rendered message.
 
+## Staff & owner notifications (`0051` + `0052`)
+Reaches accounts (clinic owner, doctors), not just patients.
+- **Self-service Telegram linking** (`profiles.telegram_chat_id`): a signed deep-link token
+  (`src/lib/notifications/telegram-link.ts`, HMAC — no token table) + a webhook
+  (`/api/telegram/webhook`, verified by `TELEGRAM_WEBHOOK_SECRET`) that saves a chat id when the
+  person sends `/start <token>`. "Connect Telegram" buttons + QR live on the **patient profile**
+  and each staff member's **Settings → Notifications** (their own account). One-click **Register
+  webhook** there too. Middleware exempts `/api/telegram`.
+- **Doctor daily schedule** (`doctor_schedule`): the daily cron sends each doctor (with a linked
+  contact) their own appointment list for the day. Gated by `doctor_schedule_enabled`.
+- **Owner business alerts** (`owner_alert`): event-driven — **new booking** (`createAppointment`)
+  and **payment received** (`recordPayment`) notify the clinic owner (`clinics.owner_user_id`),
+  best-effort via `notifyClinicOwner` (service-role, RLS-safe). Plus a **daily summary**
+  (appointments / revenue / outstanding) in the cron. Gated by `owner_alerts_enabled` /
+  `owner_daily_summary_enabled`.
+- **Ad-hoc staff message** (`staff_message`): `/notifications/new` — pick a team member and send a
+  message over their channel (`sendStaffMessage`). "New message" button on the log.
+- Staff sends run only in the **cron** path (service-role, for cross-user profile reads);
+  "Run due now" stays patient-only.
+
+### Telegram env (Vercel, Production)
+`TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` (no @), `TELEGRAM_LINK_SECRET`, `TELEGRAM_WEBHOOK_SECRET`.
+After deploy: **Settings → Notifications → Register webhook**, then each person taps their
+**Connect Telegram** link and presses **Start**.
+
 ## Configure email (Resend) — for these in-app reminders
 1. Create an account at <https://resend.com>, verify a sending domain (or use the test sender).
 2. Create an API key.

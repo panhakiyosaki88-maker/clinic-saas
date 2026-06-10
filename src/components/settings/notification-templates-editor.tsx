@@ -4,8 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { saveNotificationTemplate, resetNotificationTemplate } from "@/server/actions/notification-settings";
-import { defaultTemplate, TEMPLATE_VARIABLES } from "@/lib/notifications/templates";
-import type { NotificationChannel, NotificationType } from "@/types/database";
+import { defaultTemplate, TEMPLATE_VARIABLES, type TemplateType } from "@/lib/notifications/templates";
+import type { NotificationChannel } from "@/types/database";
 import type { NotificationTemplate } from "@/lib/db/queries/notification-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const TYPES: NotificationType[] = ["appointment_reminder", "payment_reminder", "follow_up"];
+const TYPES: TemplateType[] = ["appointment_reminder", "payment_reminder", "follow_up"];
 
 export function NotificationTemplatesEditor({ templates }: { templates: NotificationTemplate[] }) {
   const t = useTranslations("notifications.settings.templates");
@@ -32,7 +32,7 @@ export function NotificationTemplatesEditor({ templates }: { templates: Notifica
   );
 }
 
-function TypeEditor({ type, templates }: { type: NotificationType; templates: NotificationTemplate[] }) {
+function TypeEditor({ type, templates }: { type: TemplateType; templates: NotificationTemplate[] }) {
   const t = useTranslations("notifications.settings.templates");
   const tType = useTranslations("notifications.type");
   const router = useRouter();
