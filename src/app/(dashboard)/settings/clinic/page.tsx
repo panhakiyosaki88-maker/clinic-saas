@@ -18,6 +18,20 @@ import {
 
 export const metadata = { title: "General · Settings" };
 
+/** Safely coerce the clinic's `custom_fields` JSON into label/value rows. */
+function parseCustomFields(raw: unknown): { label: string; value: string }[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((r) => {
+    if (r && typeof r === "object" && "label" in r) {
+      const { label, value } = r as { label?: unknown; value?: unknown };
+      if (typeof label === "string" && label.trim()) {
+        return [{ label, value: typeof value === "string" ? value : "" }];
+      }
+    }
+    return [];
+  });
+}
+
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 border-b border-[var(--border)] py-2 last:border-0">
@@ -33,6 +47,7 @@ export default async function ClinicSettingsPage() {
 
   const canManage = await hasPermission(PERMISSIONS.CLINIC_MANAGE);
   const t = await getTranslations("settings");
+  const customFields = parseCustomFields(clinic.custom_fields);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
@@ -71,6 +86,10 @@ export default async function ClinicSettingsPage() {
                 subtitle: clinic.subtitle,
                 contactEmail: clinic.contact_email,
                 contactPhone: clinic.contact_phone,
+                address: clinic.address,
+                telegram: clinic.telegram,
+                facebookPage: clinic.facebook_page,
+                customFields,
               }}
             />
           ) : (
@@ -79,6 +98,12 @@ export default async function ClinicSettingsPage() {
               <Field label="Subtitle" value={clinic.subtitle ?? ""} />
               <Field label="Contact email" value={clinic.contact_email ?? ""} />
               <Field label="Contact phone" value={clinic.contact_phone ?? ""} />
+              <Field label="Address" value={clinic.address ?? ""} />
+              <Field label="Telegram" value={clinic.telegram ?? ""} />
+              <Field label="Facebook Page" value={clinic.facebook_page ?? ""} />
+              {customFields.map((f, i) => (
+                <Field key={i} label={f.label} value={f.value} />
+              ))}
               <p className="mt-3 text-xs text-[var(--muted-foreground)]">
                 Only the clinic owner can edit these details.
               </p>

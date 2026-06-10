@@ -28,12 +28,23 @@ export const createClinicSchema = z.object({
 });
 export type CreateClinicInput = z.infer<typeof createClinicSchema>;
 
+/** One owner-defined custom profile field. */
+export const clinicCustomFieldSchema = z.object({
+  label: z.string().trim().min(1, "Label is required").max(60),
+  value: z.string().trim().max(255),
+});
+export type ClinicCustomField = z.infer<typeof clinicCustomFieldSchema>;
+
 /** Editable clinic profile fields (clinic owner). */
 export const updateClinicSchema = z.object({
   name: z.string().min(2).max(120).optional(),
   subtitle: z.string().max(120).optional().or(z.literal("")),
   contactEmail: z.string().email().optional().or(z.literal("")),
   contactPhone: z.string().max(40).optional().or(z.literal("")),
+  address: z.string().max(255).optional().or(z.literal("")),
+  telegram: z.string().max(120).optional().or(z.literal("")),
+  facebookPage: z.string().max(255).optional().or(z.literal("")),
+  customFields: z.array(clinicCustomFieldSchema).max(20).optional(),
 });
 export type UpdateClinicInput = z.infer<typeof updateClinicSchema>;
 

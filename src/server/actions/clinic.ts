@@ -153,6 +153,10 @@ export async function updateClinic(
       ...(v.subtitle !== undefined ? { subtitle: v.subtitle || null } : {}),
       ...(v.contactEmail !== undefined ? { contact_email: v.contactEmail || null } : {}),
       ...(v.contactPhone !== undefined ? { contact_phone: v.contactPhone || null } : {}),
+      ...(v.address !== undefined ? { address: v.address || null } : {}),
+      ...(v.telegram !== undefined ? { telegram: v.telegram || null } : {}),
+      ...(v.facebookPage !== undefined ? { facebook_page: v.facebookPage || null } : {}),
+      ...(v.customFields !== undefined ? { custom_fields: v.customFields } : {}),
     })
     .eq("id", clinicId);
 

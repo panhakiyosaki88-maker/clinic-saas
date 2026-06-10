@@ -154,6 +154,10 @@ export interface Database {
           owner_user_id: string | null;
           contact_email: string | null;
           contact_phone: string | null;
+          address: string | null;
+          telegram: string | null;
+          facebook_page: string | null;
+          custom_fields: Json;
           country: string;
           timezone: string;
           currency: string;
@@ -172,6 +176,10 @@ export interface Database {
           owner_user_id?: string | null;
           contact_email?: string | null;
           contact_phone?: string | null;
+          address?: string | null;
+          telegram?: string | null;
+          facebook_page?: string | null;
+          custom_fields?: Json;
           country?: string;
           timezone?: string;
           currency?: string;
