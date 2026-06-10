@@ -22,6 +22,7 @@ import {
 } from "@/lib/validations/doctor";
 import { ok, fail, type ActionResult } from "./types";
 import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
+import { toUpperName } from "@/lib/name";
 import type { Database, Gender, EmploymentType } from "@/types/database";
 
 type DoctorWrite = Database["public"]["Tables"]["doctors"]["Update"];
@@ -30,7 +31,7 @@ function toColumns(v: Partial<CreateDoctorInput>): DoctorWrite {
   const orNull = (s: string | undefined) => (s && s.length > 0 ? s : null);
   const enumOrNull = <T>(s: string | undefined) => (s && s.length > 0 ? (s as T) : null);
   const out: DoctorWrite = {};
-  if (v.fullName !== undefined) out.full_name = v.fullName;
+  if (v.fullName !== undefined) out.full_name = toUpperName(v.fullName);
   if (v.branchId !== undefined) out.branch_id = orNull(v.branchId);
   if (v.title !== undefined) out.title = orNull(v.title);
   if (v.specialization !== undefined) out.specialization = orNull(v.specialization);
@@ -69,7 +70,7 @@ export async function createDoctor(
       clinic_id: clinicId,
       created_by: user.id,
       ...toColumns(parsed.data),
-      full_name: parsed.data.fullName,
+      full_name: toUpperName(parsed.data.fullName),
     })
     .select("id")
     .single();

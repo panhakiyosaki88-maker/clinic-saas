@@ -38,6 +38,7 @@ import {
 } from "@/lib/validations/patient";
 import { ok, fail, type ActionResult } from "./types";
 import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
+import { toUpperName } from "@/lib/name";
 import type {
   Database,
   Gender,
@@ -54,7 +55,7 @@ function toColumns(v: Partial<CreatePatientInput>): PatientWrite {
   const orNull = (s: string | undefined) => (s && s.length > 0 ? s : null);
   const enumOrNull = <T>(s: string | undefined) => (s && s.length > 0 ? (s as T) : null);
   const out: PatientWrite = {};
-  if (v.fullName !== undefined) out.full_name = v.fullName;
+  if (v.fullName !== undefined) out.full_name = toUpperName(v.fullName);
   if (v.branchId !== undefined) out.branch_id = orNull(v.branchId);
   if (v.gender !== undefined) out.gender = enumOrNull<Gender>(v.gender);
   if (v.dateOfBirth !== undefined) out.date_of_birth = orNull(v.dateOfBirth);
@@ -122,7 +123,7 @@ export async function createPatient(
       clinic_id: clinicId,
       created_by: user.id,
       ...toColumns(parsed.data),
-      full_name: parsed.data.fullName,
+      full_name: toUpperName(parsed.data.fullName),
     })
     .select("id, full_name")
     .single();
