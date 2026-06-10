@@ -1694,6 +1694,10 @@ export interface Database {
           doctor_schedule_enabled: boolean;
           owner_alerts_enabled: boolean;
           owner_daily_summary_enabled: boolean;
+          telegram_bot_token: string | null;
+          telegram_bot_username: string | null;
+          telegram_webhook_secret: string | null;
+          telegram_link_secret: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -1710,6 +1714,10 @@ export interface Database {
           doctor_schedule_enabled?: boolean;
           owner_alerts_enabled?: boolean;
           owner_daily_summary_enabled?: boolean;
+          telegram_bot_token?: string | null;
+          telegram_bot_username?: string | null;
+          telegram_webhook_secret?: string | null;
+          telegram_link_secret?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;

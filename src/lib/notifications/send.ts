@@ -41,9 +41,9 @@ export async function sendEmail(opts: {
  * Sends a Telegram message via the Bot API. `chatId` is the recipient's chat id.
  * Skipped when TELEGRAM_BOT_TOKEN is not configured.
  */
-export async function sendTelegram(opts: { chatId: string; text: string }): Promise<SendResult> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return { status: "skipped", error: "TELEGRAM_BOT_TOKEN not set" };
+export async function sendTelegram(opts: { chatId: string; text: string; token?: string }): Promise<SendResult> {
+  const token = opts.token || process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return { status: "skipped", error: "Telegram bot is not configured" };
 
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {

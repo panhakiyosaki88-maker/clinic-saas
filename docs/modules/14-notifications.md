@@ -57,10 +57,19 @@ Reaches accounts (clinic owner, doctors), not just patients.
 - Staff sends run only in the **cron** path (service-role, for cross-user profile reads);
   "Run due now" stays patient-only.
 
-### Telegram env (Vercel, Production)
-`TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` (no @), `TELEGRAM_LINK_SECRET`, `TELEGRAM_WEBHOOK_SECRET`.
-After deploy: **Settings → Notifications → Register webhook**, then each person taps their
-**Connect Telegram** link and presses **Start**.
+### Per-clinic bot config (`0053`)
+The bot is configured **in the app**, not (only) via env. **Settings → Notifications → Telegram bot**:
+the owner pastes their **bot token + @username** (`saveTelegramBotConfig`); the webhook + link
+secrets are generated server-side and stored on `notification_settings`. `getTelegramConfig(clinic)`
+resolves the effective bot (clinic's saved bot → `TELEGRAM_*` env fallback → none), and the bot token
+is threaded into every send (`dispatchNotification` / `sendToProfile` take a `telegramToken`). The
+webhook finds the owning clinic by matching the `X-Telegram-Bot-Api-Secret-Token` header against
+`notification_settings.telegram_webhook_secret`. Owners can **Change** or **Remove** the bot anytime.
+
+The `TELEGRAM_*` env vars are now an **optional platform-wide fallback** only.
+
+Setup: **Settings → Notifications** → enter bot token + username → **Register webhook** → each person
+taps their **Connect Telegram** link and presses **Start**.
 
 ## Configure email (Resend) — for these in-app reminders
 1. Create an account at <https://resend.com>, verify a sending domain (or use the test sender).

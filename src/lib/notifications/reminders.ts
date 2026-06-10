@@ -20,6 +20,8 @@ export interface ProcessOptions {
   clinicName: string;
   userId: string | null;
   now?: Date;
+  /** The clinic's Telegram bot token (DB bot or env fallback), for Telegram sends. */
+  telegramToken?: string | null;
   /** Include doctor-schedule + owner-summary sends (cron only — needs cross-user
    *  profile reads, so a service-role client). The manual RLS path leaves it off. */
   includeStaff?: boolean;
@@ -145,6 +147,7 @@ export async function processClinicReminders(
           clinic: opts.clinicName,
         },
         template: resolver("payment_reminder"),
+        telegramToken: opts.telegramToken,
       });
       await logOutcome(supabase, {
         clinicId, channel: outcome.channel, type: "payment_reminder",
@@ -229,7 +232,7 @@ export async function sendDoctorSchedules(
     const html = `<p>Hi ${name}, your appointments for <strong>${dateLabel}</strong>:</p><ul>${lines.map((l) => `<li>${l}</li>`).join("")}</ul>`;
     const status = await sendToProfile({
       supabase, clinicId, userId, type: "doctor_schedule",
-      subject, text, html, preferred: opts.settings.default_channel, loggedBy: userId,
+      subject, text, html, preferred: opts.settings.default_channel, telegramToken: opts.telegramToken, loggedBy: userId,
     });
     if (status === "sent") sent++;
   }
@@ -279,7 +282,7 @@ export async function sendOwnerDailySummary(
   const text = `${dateLabel}: ${apptCount} appointment(s), revenue ${revenue.toFixed(2)}, outstanding ${outstanding.toFixed(2)}.`;
   const status = await sendToProfile({
     supabase, clinicId, userId: ownerId, type: "owner_alert",
-    subject, text, preferred: opts.settings.default_channel, loggedBy: ownerId,
+    subject, text, preferred: opts.settings.default_channel, telegramToken: opts.telegramToken, loggedBy: ownerId,
   });
   return status === "sent" ? 1 : 0;
 }
@@ -320,6 +323,7 @@ export async function sendAppointmentRemindersInWindow(
       preferred: opts.settings.default_channel,
       vars: { patient: p?.full_name ?? "patient", datetime: formatDateTime(a.scheduled_at), clinic: opts.clinicName },
       template: (channel) => resolveTemplate("appointment_reminder", channel, opts.templates),
+      telegramToken: opts.telegramToken,
     });
     await logOutcome(supabase, {
       clinicId, channel: outcome.channel, type: "appointment_reminder",

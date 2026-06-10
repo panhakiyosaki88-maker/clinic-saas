@@ -475,6 +475,7 @@ export default async function PatientProfilePage({
       />
       {canWrite && (
         <TelegramConnectCard
+          clinicId={clinic.id}
           kind="patient"
           id={patient.id}
           connected={!!patient.telegram_chat_id}

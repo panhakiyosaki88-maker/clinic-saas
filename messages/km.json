@@ -1623,7 +1623,24 @@
       "botSetupHint": "ម្ដង៖ បន្ទាប់ពីកំណត់ TELEGRAM_BOT_TOKEN និង TELEGRAM_WEBHOOK_SECRET សូមចុះឈ្មោះ webhook។",
       "registerWebhook": "ចុះឈ្មោះ webhook",
       "registering": "កំពុងចុះឈ្មោះ…",
-      "webhookSet": "បានចុះឈ្មោះ webhook ✓"
+      "webhookSet": "បានចុះឈ្មោះ webhook ✓",
+      "bot": {
+        "title": "បូតតេឡេក្រាម",
+        "hint": "ប្រើបូតតេឡេក្រាមផ្ទាល់ខ្លួនរបស់អ្នក។ បង្កើតវាជាមួយ @BotFather រួចបញ្ចូល token និងឈ្មោះអ្នកប្រើនៅទីនេះ។ អ្នកអាចផ្លាស់ប្ដូរ ឬដកចេញពេលណាក៏បាន។",
+        "token": "Bot token",
+        "tokenHint": "ពី @BotFather ឧ. 123456789:AA…",
+        "username": "ឈ្មោះបូត",
+        "usernameHint": "គ្មាន @ ឧ. MyClinicBot",
+        "save": "រក្សាទុកបូត",
+        "saving": "កំពុងរក្សាទុក…",
+        "saved": "បានរក្សាទុក។",
+        "cancel": "បោះបង់",
+        "change": "ផ្លាស់ប្ដូរបូត",
+        "remove": "ដកចេញ",
+        "cleared": "បានដកចេញ។",
+        "connectedBot": "បានភ្ជាប់៖ @{username}",
+        "usingPlatform": "កំពុងប្រើបូតវេទិកា។"
+      }
     },
     "compose": {
       "title": "សារថ្មី",
@@ -2345,7 +2362,8 @@
     },
     "notification": {
       "enterMessage": "បញ្ចូលសារ",
-      "bodyRequired": "បញ្ចូលខ្លឹមសារសារ"
+      "bodyRequired": "បញ្ចូលខ្លឹមសារសារ",
+      "invalidBotToken": "Token បូតមិនត្រឹមត្រូវ"
     },
     "invoice": {
       "descriptionRequired": "ត្រូវការការពិពណ៌នា",

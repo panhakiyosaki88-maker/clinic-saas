@@ -16,6 +16,7 @@ import {
 } from "@/lib/db/queries/notification-settings";
 import { processClinicReminders, sendAppointmentRemindersInWindow } from "@/lib/notifications/reminders";
 import { sendToProfile } from "@/lib/notifications/staff-send";
+import { getTelegramConfig } from "@/lib/notifications/telegram-config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { startOfDay, addDays } from "@/lib/date";
 import { ok, fail, type ActionResult } from "./types";
@@ -30,17 +31,18 @@ interface PatientContact {
   telegram_chat_id: string | null;
 }
 
-/** Loads the clinic's delivery config (channel preference + templates + name). */
+/** Loads the clinic's delivery config (channel preference + templates + name + bot token). */
 async function loadConfig(
   supabase: SupabaseServer,
   clinicId: string
-): Promise<{ settings: EffectiveSettings; templates: NotificationTemplate[]; clinicName: string }> {
-  const [settings, templates, clinicRes] = await Promise.all([
+): Promise<{ settings: EffectiveSettings; templates: NotificationTemplate[]; clinicName: string; telegramToken: string | null }> {
+  const [settings, templates, clinicRes, tg] = await Promise.all([
     getNotificationSettings(),
     listNotificationTemplates(),
     supabase.from("clinics").select("name").eq("id", clinicId).maybeSingle(),
+    getTelegramConfig(supabase, clinicId),
   ]);
-  return { settings, templates, clinicName: clinicRes.data?.name ?? "" };
+  return { settings, templates, clinicName: clinicRes.data?.name ?? "", telegramToken: tg.botToken };
 }
 
 interface LogArgs {
@@ -95,7 +97,7 @@ export async function sendAppointmentReminder(
   if (!data) return fail(te("appointment.notFound"));
 
   const patient = (data as unknown as { patients: PatientContact | null }).patients;
-  const { settings, templates, clinicName } = await loadConfig(supabase, clinicId);
+  const { settings, templates, clinicName, telegramToken } = await loadConfig(supabase, clinicId);
   const { formatDateTime } = await import("@/lib/date");
 
   const outcome = await dispatchNotification({
@@ -104,6 +106,7 @@ export async function sendAppointmentReminder(
     preferred: settings.default_channel,
     vars: { patient: patient?.full_name ?? "patient", datetime: formatDateTime(data.scheduled_at), clinic: clinicName },
     template: (channel) => resolveTemplate("appointment_reminder", channel, templates),
+    telegramToken,
   });
 
   await logNotification(supabase, {
@@ -133,7 +136,7 @@ export async function sendPaymentReminder(
   if (!data) return fail(te("invoice.notFound"));
 
   const patient = (data as unknown as { patients: PatientContact | null }).patients;
-  const { settings, templates, clinicName } = await loadConfig(supabase, clinicId);
+  const { settings, templates, clinicName, telegramToken } = await loadConfig(supabase, clinicId);
 
   const outcome = await dispatchNotification({
     type: "payment_reminder",
@@ -146,6 +149,7 @@ export async function sendPaymentReminder(
       clinic: clinicName,
     },
     template: (channel) => resolveTemplate("payment_reminder", channel, templates),
+    telegramToken,
   });
 
   await logNotification(supabase, {
@@ -177,7 +181,7 @@ export async function sendFollowUp(input: { patientId: string; message: string }
     .maybeSingle();
   if (!patient) return fail(te("patient.notFound"));
 
-  const { settings, templates, clinicName } = await loadConfig(supabase, clinicId);
+  const { settings, templates, clinicName, telegramToken } = await loadConfig(supabase, clinicId);
 
   const outcome = await dispatchNotification({
     type: "follow_up",
@@ -185,6 +189,7 @@ export async function sendFollowUp(input: { patientId: string; message: string }
     preferred: settings.default_channel,
     vars: { patient: patient.full_name, message: parsed.data.message, clinic: clinicName },
     template: (channel) => resolveTemplate("follow_up", channel, templates),
+    telegramToken,
   });
 
   await logNotification(supabase, {
@@ -226,10 +231,11 @@ export async function retryNotification(notificationId: string): Promise<ActionR
   if (!row) return fail(te("notFound"));
 
   const hasRecipient = row.recipient && row.recipient !== "(no contact)";
+  const telegramToken = row.channel === "telegram" ? await getTelegramConfig(supabase, clinicId).then((c) => c.botToken) : null;
   const result: SendResult = !hasRecipient
     ? { status: "skipped", error: "No recipient on record" }
     : row.channel === "telegram"
-      ? await sendTelegram({ chatId: row.recipient, text: row.body })
+      ? await sendTelegram({ chatId: row.recipient, text: row.body, token: telegramToken ?? undefined })
       : await sendEmail({ to: row.recipient, subject: row.subject ?? "", html: row.body });
 
   await supabase
@@ -274,6 +280,7 @@ export async function sendStaffMessage(
   if (!count) return fail(te("notFound"));
 
   const settings = await getNotificationSettings();
+  const tg = await getTelegramConfig(admin, clinicId);
   const status = await sendToProfile({
     supabase: admin,
     clinicId,
@@ -282,6 +289,7 @@ export async function sendStaffMessage(
     subject: "Message from your clinic",
     text: message,
     preferred: settings.default_channel,
+    telegramToken: tg.botToken,
     loggedBy: user.id,
   });
 
@@ -293,10 +301,10 @@ export async function sendStaffMessage(
 export async function runDueReminders(): Promise<ActionResult<{ appointment: number; payment: number }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.NOTIFICATIONS_SEND);
   const supabase = await createClient();
-  const { settings, templates, clinicName } = await loadConfig(supabase, clinicId);
+  const { settings, templates, clinicName, telegramToken } = await loadConfig(supabase, clinicId);
 
   const counts = await processClinicReminders(supabase, clinicId, {
-    settings, templates, clinicName, userId: user.id,
+    settings, templates, clinicName, userId: user.id, telegramToken,
   });
 
   revalidatePath("/notifications");
@@ -311,13 +319,13 @@ export async function runDueReminders(): Promise<ActionResult<{ appointment: num
 export async function remindTomorrowsAppointments(): Promise<ActionResult<{ count: number }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.NOTIFICATIONS_SEND);
   const supabase = await createClient();
-  const { settings, templates, clinicName } = await loadConfig(supabase, clinicId);
+  const { settings, templates, clinicName, telegramToken } = await loadConfig(supabase, clinicId);
 
   const todayStart = startOfDay(new Date());
   const count = await sendAppointmentRemindersInWindow(
     supabase,
     clinicId,
-    { settings, templates, clinicName, userId: user.id },
+    { settings, templates, clinicName, userId: user.id, telegramToken },
     addDays(todayStart, 1).toISOString(),
     addDays(todayStart, 2).toISOString()
   );

@@ -6,9 +6,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /** Reply to a chat via the Bot API (best-effort; ignores failures). */
-async function reply(chatId: number | string, text: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return;
+async function reply(token: string, chatId: number | string, text: string) {
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
@@ -21,20 +19,37 @@ async function reply(chatId: number | string, text: string) {
 }
 
 /**
- * Telegram webhook. Registered with a `secret_token`, which Telegram echoes back
- * in the `X-Telegram-Bot-Api-Secret-Token` header — we reject anything else.
- *
- * Handles:
+ * Telegram webhook. Each clinic's bot is registered with its own `secret_token`,
+ * which Telegram echoes back in `X-Telegram-Bot-Api-Secret-Token`. We use that to
+ * find the owning clinic (and its bot token + link secret); the platform env bot
+ * is also accepted as a fallback. Then:
  *   /start <token>  → link this chat to the encoded patient/user account
  *   /start          → help text
  *   /stop           → unlink this chat from any account
  */
 export async function POST(request: Request) {
-  const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
-  const got = request.headers.get("x-telegram-bot-api-secret-token");
-  if (!expected || got !== expected) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const header = request.headers.get("x-telegram-bot-api-secret-token");
+  if (!header) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const admin = createAdminClient();
+
+  // Resolve the bot token + link secret for this update from the secret header.
+  let botToken: string | null = null;
+  let linkSecret: string | null = null;
+  const envSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (envSecret && header === envSecret) {
+    botToken = process.env.TELEGRAM_BOT_TOKEN || null;
+    linkSecret = process.env.TELEGRAM_LINK_SECRET || null;
+  } else {
+    const { data } = await admin
+      .from("notification_settings")
+      .select("telegram_bot_token, telegram_link_secret")
+      .eq("telegram_webhook_secret", header)
+      .maybeSingle();
+    botToken = data?.telegram_bot_token ?? null;
+    linkSecret = data?.telegram_link_secret ?? null;
   }
+  if (!botToken) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let update: { message?: { chat?: { id?: number }; text?: string } };
   try {
@@ -47,32 +62,30 @@ export async function POST(request: Request) {
   const text = (update.message?.text ?? "").trim();
   if (!chatId || !text) return NextResponse.json({ ok: true });
 
-  const admin = createAdminClient();
-
   if (text === "/stop") {
-    // Detach this chat from whatever account it was linked to.
     await admin.from("patients").update({ telegram_chat_id: null }).eq("telegram_chat_id", String(chatId));
     await admin.from("profiles").update({ telegram_chat_id: null }).eq("telegram_chat_id", String(chatId));
-    await reply(chatId, "You've been unsubscribed. You won't receive further messages here.");
+    await reply(botToken, chatId, "You've been unsubscribed. You won't receive further messages here.");
     return NextResponse.json({ ok: true });
   }
 
   if (text.startsWith("/start")) {
     const payload = text.slice("/start".length).trim();
     if (!payload) {
-      await reply(chatId, "Welcome! Open the “Connect Telegram” link from your clinic to finish linking this chat.");
+      await reply(botToken, chatId, "Welcome! Open the “Connect Telegram” link from your clinic to finish linking this chat.");
       return NextResponse.json({ ok: true });
     }
 
-    const decoded = verifyLinkToken(payload);
+    const decoded = verifyLinkToken(linkSecret, payload);
     if (!decoded) {
-      await reply(chatId, "That link is invalid or expired. Please use a fresh “Connect Telegram” link from your clinic.");
+      await reply(botToken, chatId, "That link is invalid or expired. Please use a fresh “Connect Telegram” link from your clinic.");
       return NextResponse.json({ ok: true });
     }
 
     const table = decoded.kind === "patient" ? "patients" : "profiles";
     const { error } = await admin.from(table).update({ telegram_chat_id: String(chatId) }).eq("id", decoded.id);
     await reply(
+      botToken,
       chatId,
       error
         ? "Sorry, something went wrong linking your account. Please try again later."
@@ -81,7 +94,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // Any other message — gentle nudge.
-  await reply(chatId, "Send /start with your clinic's Connect link to receive messages, or /stop to unsubscribe.");
+  await reply(botToken, chatId, "Send /start with your clinic's Connect link to receive messages, or /stop to unsubscribe.");
   return NextResponse.json({ ok: true });
 }

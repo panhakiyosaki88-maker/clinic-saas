@@ -42,6 +42,8 @@ export async function dispatchNotification(opts: {
   preferred: NotificationChannel;
   vars: Record<string, string>;
   template: (channel: NotificationChannel) => MessageTemplate;
+  /** Bot token to send Telegram with (the clinic's bot, or env fallback). */
+  telegramToken?: string | null;
 }): Promise<DispatchOutcome> {
   const picked = pickChannel(opts.contact, opts.preferred);
   if (!picked) {
@@ -61,7 +63,7 @@ export async function dispatchNotification(opts: {
 
   const result: SendResult =
     picked.channel === "telegram"
-      ? await sendTelegram({ chatId: picked.recipient, text: body })
+      ? await sendTelegram({ chatId: picked.recipient, text: body, token: opts.telegramToken ?? undefined })
       : await sendEmail({ to: picked.recipient, subject: subject ?? "", html: body });
 
   return { channel: picked.channel, recipient: picked.recipient, subject, body, result };

@@ -1623,7 +1623,24 @@
       "botSetupHint": "One-time: after setting TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET, register the webhook so Telegram delivers messages to this app.",
       "registerWebhook": "Register webhook",
       "registering": "Registering…",
-      "webhookSet": "Webhook registered ✓"
+      "webhookSet": "Webhook registered ✓",
+      "bot": {
+        "title": "Telegram bot",
+        "hint": "Use your own Telegram bot. Create one with @BotFather, then paste its token and username here. You can change or remove it anytime.",
+        "token": "Bot token",
+        "tokenHint": "From @BotFather, e.g. 123456789:AA…",
+        "username": "Bot username",
+        "usernameHint": "Without the @, e.g. MyClinicBot",
+        "save": "Save bot",
+        "saving": "Saving…",
+        "saved": "Saved.",
+        "cancel": "Cancel",
+        "change": "Change bot",
+        "remove": "Remove",
+        "cleared": "Removed.",
+        "connectedBot": "Connected: @{username}",
+        "usingPlatform": "Using the platform bot (from environment)."
+      }
     },
     "compose": {
       "title": "New message",
@@ -2345,7 +2362,8 @@
     },
     "notification": {
       "enterMessage": "Enter a message",
-      "bodyRequired": "Enter a message body"
+      "bodyRequired": "Enter a message body",
+      "invalidBotToken": "Invalid bot token"
     },
     "invoice": {
       "descriptionRequired": "Description is required",

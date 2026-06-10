@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mergeSettings, type NotificationTemplate } from "@/lib/db/queries/notification-settings";
 import { processClinicReminders, type ProcessResult } from "@/lib/notifications/reminders";
+import { getTelegramConfig } from "@/lib/notifications/telegram-config";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,11 +35,13 @@ export async function GET(request: Request) {
       admin.from("notification_templates").select("*").eq("clinic_id", clinic.id).is("deleted_at", null),
     ]);
 
+    const tg = await getTelegramConfig(admin, clinic.id);
     const counts = await processClinicReminders(admin, clinic.id, {
       settings: mergeSettings(settingsRes.data ?? null),
       templates: (templatesRes.data ?? []) as NotificationTemplate[],
       clinicName: clinic.name ?? "",
       userId: null,
+      telegramToken: tg.botToken,
       includeStaff: true,
     });
     totals.appointment += counts.appointment;

@@ -4,6 +4,7 @@ import type { Database, NotificationChannel, NotificationType } from "@/types/da
 import { createAdminClient } from "@/lib/supabase/admin";
 import { pickChannel } from "./dispatch";
 import { sendEmail, sendTelegram } from "./send";
+import { getTelegramConfig } from "./telegram-config";
 
 type DB = SupabaseClient<Database>;
 
@@ -37,6 +38,7 @@ export async function sendToProfile(opts: {
   text: string;
   html?: string;
   preferred: NotificationChannel;
+  telegramToken?: string | null;
   loggedBy?: string | null;
 }): Promise<"sent" | "failed" | "skipped"> {
   const contact = await getProfileContact(opts.supabase, opts.userId);
@@ -55,7 +57,7 @@ export async function sendToProfile(opts: {
     recipient = picked.recipient;
     result =
       channel === "telegram"
-        ? await sendTelegram({ chatId: recipient, text: opts.text })
+        ? await sendTelegram({ chatId: recipient, text: opts.text, token: opts.telegramToken ?? undefined })
         : await sendEmail({ to: recipient, subject: opts.subject, html: opts.html ?? `<p>${opts.text}</p>` });
   }
 
@@ -100,6 +102,7 @@ export async function notifyClinicOwner(opts: {
   if (!ownerId) return;
   if (settings && settings.owner_alerts_enabled === false) return;
 
+  const tg = await getTelegramConfig(admin, opts.clinicId);
   await sendToProfile({
     supabase: admin,
     clinicId: opts.clinicId,
@@ -109,5 +112,6 @@ export async function notifyClinicOwner(opts: {
     text: opts.text,
     html: opts.html,
     preferred: (settings?.default_channel as NotificationChannel) ?? "email",
+    telegramToken: tg.botToken,
   });
 }
