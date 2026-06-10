@@ -1992,6 +1992,7 @@
       "date": "Date",
       "medicine": "Medicine",
       "duration": "Duration",
+      "durationDays": "{count, plural, one {# day} other {# days}}",
       "quantity": "Quantity",
       "notes": "Notes",
       "signature": "Signature",

@@ -22,6 +22,18 @@ function withDoctorTitle(name: string): string {
 /** The four dosing times, in printed-column order. */
 const DOSE_TIMES = ["Morning", "Afternoon", "Evening", "Night"] as const;
 
+/** Duration is stored as English text (e.g. "3 days"). On the printout we
+ *  re-localize a plain "<n> day(s)" value so it follows the active language;
+ *  any other free-text duration is shown unchanged. */
+function localizeDuration(
+  duration: string | null,
+  daysLabel: (count: number) => string
+): string {
+  if (!duration) return "—";
+  const m = duration.trim().match(/^(\d+)\s*days?$/i);
+  return m ? daysLabel(Number(m[1])) : duration;
+}
+
 /** Parse a stored dosage pattern "M-A-E-N" into its four slot amounts. Slots may
  *  be whole numbers or fractions (e.g. "1-0-1-0" or "1/2-0-1/2-0"). Returns null
  *  for legacy / free-text dosage so it can be shown as-is. */
@@ -115,7 +127,9 @@ export default async function PrescriptionDetailPage({
                       {it.dosage ?? "—"}
                     </td>
                   )}
-                  <td className="py-2">{it.duration ?? "—"}</td>
+                  <td className="py-2">
+                    {localizeDuration(it.duration, (count) => t("detail.durationDays", { count }))}
+                  </td>
                   <td className="py-2 text-right tabular-nums">{it.quantity ?? "—"}</td>
                 </tr>
               );

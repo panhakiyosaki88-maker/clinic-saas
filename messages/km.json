@@ -1992,6 +1992,7 @@
       "date": "កាលបរិច្ឆេទ",
       "medicine": "ឱសថ",
       "duration": "រយៈពេល",
+      "durationDays": "{count} ថ្ងៃ",
       "quantity": "បរិមាណ",
       "notes": "កំណត់សម្គាល់",
       "signature": "ហត្ថលេខា",
