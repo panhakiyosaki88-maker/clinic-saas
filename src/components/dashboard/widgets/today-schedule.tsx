@@ -37,6 +37,7 @@ export async function TodaySchedule({
                 <Link href={`/appointments/${a.id}`} className="block truncate text-sm font-medium text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400">
                   {a.patient_name}
                 </Link>
+                {a.patient_khmer_name && <p className="truncate text-xs text-slate-500 dark:text-slate-300">{a.patient_khmer_name}</p>}
                 <p className="truncate text-xs text-slate-400">{a.doctor_name ?? t("labels.unassigned")}</p>
               </div>
               <StatusBadge status={a.status} />

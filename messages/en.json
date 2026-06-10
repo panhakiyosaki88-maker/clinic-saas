@@ -732,7 +732,9 @@
       "backToList": "← Patients",
       "duplicateTitle": "{count, plural, one {# patient already has a similar name} other {# patients already have a similar name}} — check before registering:",
       "duplicateSameDob": "same date of birth",
-      "duplicateConfirm": "This is a different person — register anyway"
+      "duplicateConfirm": "This is a different person — register anyway",
+      "latinFullName": "Latin Full Name",
+      "khmerFullName": "Khmer Full Name"
     },
     "purge": {
       "delete": "Delete {name}",

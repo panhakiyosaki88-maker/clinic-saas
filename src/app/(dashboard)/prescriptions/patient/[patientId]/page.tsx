@@ -35,6 +35,9 @@ export default async function PatientPrescriptionsPage({
         <h1 className="mt-1 text-2xl font-bold">
           <Link href={`/patients/${patientId}`} className="hover:underline">{patientName}</Link>
         </h1>
+        {prescriptions[0].patient_khmer_name && (
+          <p className="text-lg font-semibold text-[var(--muted-foreground)]">{prescriptions[0].patient_khmer_name}</p>
+        )}
         <p className="text-sm text-[var(--muted-foreground)]">{t("summary", { count: prescriptions.length })}</p>
       </header>
 

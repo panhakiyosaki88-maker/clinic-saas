@@ -6,6 +6,7 @@ export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 export interface NotificationRow extends Notification {
   patient_name: string | null;
+  patient_khmer_name: string | null;
 }
 
 export interface NotificationFilters {
@@ -17,9 +18,9 @@ export interface NotificationFilters {
   to?: string; // ISO date (inclusive)
 }
 
-const SELECT = `*, patients ( full_name )`;
+const SELECT = `*, patients ( full_name, khmer_name )`;
 
-type Joined = Notification & { patients: { full_name: string } | null };
+type Joined = Notification & { patients: { full_name: string; khmer_name: string | null } | null };
 
 export async function listNotifications(filters: NotificationFilters = {}, limit = 200): Promise<NotificationRow[]> {
   const supabase = await createClient();
@@ -37,6 +38,7 @@ export async function listNotifications(filters: NotificationFilters = {}, limit
   return ((data ?? []) as unknown as Joined[]).map((n) => ({
     ...n,
     patient_name: n.patients?.full_name ?? null,
+    patient_khmer_name: n.patients?.khmer_name ?? null,
   }));
 }
 
@@ -46,5 +48,5 @@ export async function getNotification(id: string): Promise<NotificationRow | nul
   if (error) throw error;
   if (!data) return null;
   const n = data as unknown as Joined;
-  return { ...n, patient_name: n.patients?.full_name ?? null };
+  return { ...n, patient_name: n.patients?.full_name ?? null, patient_khmer_name: n.patients?.khmer_name ?? null };
 }

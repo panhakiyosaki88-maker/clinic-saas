@@ -28,9 +28,12 @@ export async function DayView({
                 {a.is_walk_in ? t("labels.walkIn") : timeLabel(a.scheduled_at)}
               </span>
               <div>
-                <Link href={`/appointments/${a.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                <Link href={`/appointments/${a.id}`} className="block text-sm font-medium text-[var(--primary)] hover:underline">
                   {a.patient_name}
                 </Link>
+                {a.patient_khmer_name && (
+                  <p className="text-xs font-medium text-[var(--muted-foreground)]">{a.patient_khmer_name}</p>
+                )}
                 <p className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
                   {a.doctor_name && <DoctorAvatar name={a.doctor_name} avatarPath={a.doctor_avatar_path} size={32} />}
                   <span>{a.doctor_name ?? t("labels.unassigned")}{a.reason ? ` · ${a.reason}` : ""}</span>

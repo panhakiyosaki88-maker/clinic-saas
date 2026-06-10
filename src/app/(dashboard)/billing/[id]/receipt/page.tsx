@@ -44,7 +44,7 @@ export default async function ReceiptPage({
 
         <div className="mb-4 text-left text-sm">
           <p><span className="text-[var(--muted-foreground)]">{t("receipt.invoice")} </span><span className="font-mono">{inv.invoice_number}</span></p>
-          {inv.patient_name && <p><span className="text-[var(--muted-foreground)]">{t("receipt.patient")} </span>{inv.patient_name}</p>}
+          {inv.patient_name && <p><span className="text-[var(--muted-foreground)]">{t("receipt.patient")} </span>{inv.patient_name}{inv.patient_khmer_name ? ` · ${inv.patient_khmer_name}` : ""}</p>}
           <p><span className="text-[var(--muted-foreground)]">{t("receipt.date")} </span>{formatDate(new Date())}</p>
         </div>
 

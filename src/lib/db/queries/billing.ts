@@ -9,17 +9,19 @@ export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 
 export interface InvoiceWithPatient extends Invoice {
   patient_name: string | null;
+  patient_khmer_name: string | null;
   patient_number: string | null;
 }
 
-const LIST_SELECT = `*, patients ( full_name, patient_number )`;
+const LIST_SELECT = `*, patients ( full_name, khmer_name, patient_number )`;
 
-type ListJoined = Invoice & { patients: { full_name: string; patient_number: string } | null };
+type ListJoined = Invoice & { patients: { full_name: string; khmer_name: string | null; patient_number: string } | null };
 
 function mapList(rows: ListJoined[]): InvoiceWithPatient[] {
   return rows.map((r) => ({
     ...r,
     patient_name: r.patients?.full_name ?? null,
+    patient_khmer_name: r.patients?.khmer_name ?? null,
     patient_number: r.patients?.patient_number ?? null,
   }));
 }
@@ -171,7 +173,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   const { data, error } = await supabase
     .from("invoices")
     .select(
-      `*, patients ( full_name, patient_number ), clinics ( name ), branches ( payment_qr_path, payment_qr_caption ), invoice_items ( * ), payments ( * )`
+      `*, patients ( full_name, khmer_name, patient_number ), clinics ( name ), branches ( payment_qr_path, payment_qr_caption ), invoice_items ( * ), payments ( * )`
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -180,7 +182,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   if (!data) return null;
 
   const row = data as unknown as Invoice & {
-    patients: { full_name: string; patient_number: string } | null;
+    patients: { full_name: string; khmer_name: string | null; patient_number: string } | null;
     clinics: { name: string } | null;
     branches: { payment_qr_path: string | null; payment_qr_caption: string | null } | null;
     invoice_items: InvoiceItem[] | null;
@@ -208,6 +210,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
   return {
     ...row,
     patient_name: row.patients?.full_name ?? null,
+    patient_khmer_name: row.patients?.khmer_name ?? null,
     patient_number: row.patients?.patient_number ?? null,
     clinic_name: row.clinics?.name ?? "",
     payment_qr_path,

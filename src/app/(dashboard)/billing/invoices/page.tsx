@@ -56,6 +56,7 @@ export default async function InvoicesPage() {
               id: i.id,
               invoice_number: i.invoice_number,
               patient: i.patient_name ?? "",
+              patientKhmer: i.patient_khmer_name,
               status: i.status,
               total: Number(i.total),
               balance: Number(i.balance),

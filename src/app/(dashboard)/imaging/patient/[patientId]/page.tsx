@@ -56,6 +56,9 @@ export default async function PatientImagingPage({
         <h1 className="mt-1 text-2xl font-bold">
           <Link href={`/patients/${patientId}`} className="hover:underline">{patientName}</Link>
         </h1>
+        {requests[0].patient_khmer_name && (
+          <p className="text-lg font-semibold text-[var(--muted-foreground)]">{requests[0].patient_khmer_name}</p>
+        )}
         <p className="text-sm text-[var(--muted-foreground)]">{t("summary", { count: requests.length })}</p>
       </header>
 

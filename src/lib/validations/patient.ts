@@ -18,6 +18,7 @@ const dateString = z
 export const createPatientSchema = z.object({
   // Messages are i18n keys under the `errors` namespace (localized in the action).
   fullName: z.string().trim().min(2, "patient.nameRequired").max(160),
+  khmerName: z.string().trim().max(160).optional().or(z.literal("")),
   branchId: z.string().uuid().optional().or(z.literal("")),
   gender: genderSchema.optional().or(z.literal("")),
   dateOfBirth: dateString,

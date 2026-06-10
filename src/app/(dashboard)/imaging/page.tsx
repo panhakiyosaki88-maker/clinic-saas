@@ -10,6 +10,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ScanLine, Plus, Tags } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
 import { ServiceStateBadge, type ServiceState } from "@/components/ui/service-state-badge";
+import { PatientName } from "@/components/patients/patient-name";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
@@ -38,6 +39,7 @@ export default async function ImagingPage() {
   interface Agg {
     patientId: string;
     name: string;
+    khmer: string | null;
     number: string;
     count: number;
     active: number;
@@ -53,6 +55,7 @@ export default async function ImagingPage() {
       {
         patientId: r.patient_id,
         name: r.patient_name,
+        khmer: r.patient_khmer_name,
         number: r.patient_number,
         count: 0,
         active: 0,
@@ -114,10 +117,12 @@ export default async function ImagingPage() {
                 <DataCard
                   key={p.patientId}
                   title={
-                    <Link href={`/imaging/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
-                      {p.name}
-                      {p.number && <span className="ml-2 text-xs font-normal text-slate-400">{p.number}</span>}
-                    </Link>
+                    <PatientName khmerName={p.khmer} khmerClassName="text-xs font-normal text-slate-400">
+                      <Link href={`/imaging/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                        {p.name}
+                        {p.number && <span className="ml-2 text-xs font-normal text-slate-400">{p.number}</span>}
+                      </Link>
+                    </PatientName>
                   }
                 >
                   <DataCardRow label={t("table.status")} value={<ServiceStateBadge status={p.status} ns="imaging.state" />} />
@@ -141,10 +146,12 @@ export default async function ImagingPage() {
                 {patients.map((p) => (
                   <TR key={p.patientId}>
                     <TD>
-                      <Link href={`/imaging/patient/${p.patientId}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">
-                        {p.name}
-                      </Link>
-                      {p.number && <span className="ml-2 text-xs text-slate-400">{p.number}</span>}
+                      <PatientName khmerName={p.khmer}>
+                        <Link href={`/imaging/patient/${p.patientId}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+                          {p.name}
+                        </Link>
+                        {p.number && <span className="ml-2 text-xs text-slate-400">{p.number}</span>}
+                      </PatientName>
                     </TD>
                     <TD className="text-slate-500 dark:text-slate-400">{p.count}</TD>
                     <TD><ServiceStateBadge status={p.status} ns="imaging.state" /></TD>

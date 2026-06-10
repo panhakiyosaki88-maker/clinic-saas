@@ -56,6 +56,7 @@ function toColumns(v: Partial<CreatePatientInput>): PatientWrite {
   const enumOrNull = <T>(s: string | undefined) => (s && s.length > 0 ? (s as T) : null);
   const out: PatientWrite = {};
   if (v.fullName !== undefined) out.full_name = toUpperName(v.fullName);
+  if (v.khmerName !== undefined) out.khmer_name = orNull(v.khmerName);
   if (v.branchId !== undefined) out.branch_id = orNull(v.branchId);
   if (v.gender !== undefined) out.gender = enumOrNull<Gender>(v.gender);
   if (v.dateOfBirth !== undefined) out.date_of_birth = orNull(v.dateOfBirth);

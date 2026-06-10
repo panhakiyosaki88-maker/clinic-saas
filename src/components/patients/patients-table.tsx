@@ -9,11 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
 import { PatientPurgeButton } from "@/components/patients/patient-purge-button";
+import { PatientName } from "@/components/patients/patient-name";
 
 export interface PatientRow {
   id: string;
   patient_number: string;
   full_name: string;
+  khmer_name: string | null;
   gender: string | null;
   age: number | null;
   blood_type: string | null;
@@ -119,9 +121,14 @@ export function PatientsTable({
             <DataCard
               key={p.id}
               title={
-                <Link href={`/patients/${p.id}`} className="text-brand-600 hover:underline dark:text-brand-400">
-                  {p.full_name}
-                </Link>
+                <PatientName
+                  khmerName={p.khmer_name}
+                  khmerClassName="text-xs font-normal text-slate-400"
+                >
+                  <Link href={`/patients/${p.id}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                    {p.full_name}
+                  </Link>
+                </PatientName>
               }
               actions={canWrite ? <PatientPurgeButton patientId={p.id} patientName={p.full_name} /> : undefined}
             >
@@ -166,9 +173,11 @@ export function PatientsTable({
               <TR key={p.id}>
                 <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.patient_number}</TD>
                 <TD>
-                  <Link href={`/patients/${p.id}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">
-                    {p.full_name}
-                  </Link>
+                  <PatientName khmerName={p.khmer_name}>
+                    <Link href={`/patients/${p.id}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+                      {p.full_name}
+                    </Link>
+                  </PatientName>
                 </TD>
                 <TD className="text-slate-500 dark:text-slate-400">
                   {p.gender ? (t.has(`gender.${p.gender}`) ? t(`gender.${p.gender}`) : p.gender) : "—"}

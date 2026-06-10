@@ -29,6 +29,7 @@ export interface InvoiceTableRow {
   id: string;
   invoice_number: string;
   patient: string;
+  patientKhmer: string | null;
   status: string;
   total: number;
   balance: number;
@@ -97,7 +98,18 @@ export function InvoiceTable({
           </Link>
         ),
       }),
-      col.accessor("patient", { header: t("table.patient"), cell: (c) => c.getValue() || "—" }),
+      col.accessor("patient", {
+        header: t("table.patient"),
+        cell: (c) => {
+          const khmer = c.row.original.patientKhmer;
+          return (
+            <span>
+              <span>{c.getValue() || "—"}</span>
+              {khmer && <span className="block text-xs text-[var(--muted-foreground)]">{khmer}</span>}
+            </span>
+          );
+        },
+      }),
       col.accessor("issued_at", {
         header: t("table.issued"),
         cell: (c) => formatDate(c.getValue()),
@@ -197,7 +209,15 @@ export function InvoiceTable({
                     ) : undefined
                   }
                 >
-                  <DataCardRow label={t("table.patient")} value={r.patient || "—"} />
+                  <DataCardRow
+                    label={t("table.patient")}
+                    value={
+                      <span>
+                        <span>{r.patient || "—"}</span>
+                        {r.patientKhmer && <span className="block text-xs text-[var(--muted-foreground)]">{r.patientKhmer}</span>}
+                      </span>
+                    }
+                  />
                   <DataCardRow label={t("table.issued")} value={formatDate(r.issued_at)} />
                   <DataCardRow label={t("table.total")} value={<span className="tabular-nums">{money(r.total)}</span>} />
                   <DataCardRow label={t("table.balance")} value={<span className="tabular-nums">{money(r.balance)}</span>} />

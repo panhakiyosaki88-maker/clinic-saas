@@ -8,15 +8,16 @@ export type Appointment = Database["public"]["Tables"]["appointments"]["Row"];
 
 export interface AppointmentWithNames extends Appointment {
   patient_name: string;
+  patient_khmer_name: string | null;
   patient_number: string;
   doctor_name: string | null;
   doctor_avatar_path: string | null;
 }
 
-const SELECT = `*, patients ( full_name, patient_number ), doctors ( full_name, avatar_path )`;
+const SELECT = `*, patients ( full_name, khmer_name, patient_number ), doctors ( full_name, avatar_path )`;
 
 type Joined = Appointment & {
-  patients: { full_name: string; patient_number: string } | null;
+  patients: { full_name: string; khmer_name: string | null; patient_number: string } | null;
   doctors: { full_name: string; avatar_path: string | null } | null;
 };
 
@@ -24,6 +25,7 @@ function map(rows: Joined[]): AppointmentWithNames[] {
   return rows.map((r) => ({
     ...r,
     patient_name: r.patients?.full_name ?? "—",
+    patient_khmer_name: r.patients?.khmer_name ?? null,
     patient_number: r.patients?.patient_number ?? "",
     doctor_name: r.doctors?.full_name ?? null,
     doctor_avatar_path: r.doctors?.avatar_path ?? null,
@@ -159,6 +161,7 @@ export async function getWeeklyAppointmentCounts(days = 7): Promise<DayCount[]> 
 export interface FollowUp {
   id: string;
   patient_name: string;
+  patient_khmer_name: string | null;
   scheduled_at: string;
 }
 
@@ -169,7 +172,7 @@ export async function getUpcomingFollowUps(days = 7): Promise<FollowUp[]> {
   const until = new Date(Date.now() + days * 86400000).toISOString();
   const { data, error } = await supabase
     .from("appointments")
-    .select("id, scheduled_at, patients ( full_name )")
+    .select("id, scheduled_at, patients ( full_name, khmer_name )")
     .is("deleted_at", null)
     .ilike("reason", "%follow%")
     .gte("scheduled_at", now)
@@ -178,8 +181,8 @@ export async function getUpcomingFollowUps(days = 7): Promise<FollowUp[]> {
     .order("scheduled_at", { ascending: true })
     .limit(10);
   if (error) throw error;
-  return ((data ?? []) as unknown as { id: string; scheduled_at: string; patients: { full_name: string } | null }[]).map(
-    (r) => ({ id: r.id, patient_name: r.patients?.full_name ?? "—", scheduled_at: r.scheduled_at })
+  return ((data ?? []) as unknown as { id: string; scheduled_at: string; patients: { full_name: string; khmer_name: string | null } | null }[]).map(
+    (r) => ({ id: r.id, patient_name: r.patients?.full_name ?? "—", patient_khmer_name: r.patients?.khmer_name ?? null, scheduled_at: r.scheduled_at })
   );
 }
 

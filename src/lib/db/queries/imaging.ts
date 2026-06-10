@@ -10,15 +10,16 @@ export type ImagingResult = Database["public"]["Tables"]["imaging_results"]["Row
 
 export interface ImagingRequestWithNames extends ImagingRequest {
   patient_name: string;
+  patient_khmer_name: string | null;
   patient_number: string;
   doctor_name: string | null;
   category_name: string | null;
 }
 
-const SELECT = `*, patients ( full_name, patient_number ), doctors ( full_name ), imaging_categories ( name )`;
+const SELECT = `*, patients ( full_name, khmer_name, patient_number ), doctors ( full_name ), imaging_categories ( name )`;
 
 type Joined = ImagingRequest & {
-  patients: { full_name: string; patient_number: string } | null;
+  patients: { full_name: string; khmer_name: string | null; patient_number: string } | null;
   doctors: { full_name: string } | null;
   imaging_categories: { name: string } | null;
 };
@@ -27,6 +28,7 @@ function map(rows: Joined[]): ImagingRequestWithNames[] {
   return rows.map((r) => ({
     ...r,
     patient_name: r.patients?.full_name ?? "—",
+    patient_khmer_name: r.patients?.khmer_name ?? null,
     patient_number: r.patients?.patient_number ?? "",
     doctor_name: r.doctors?.full_name ?? null,
     category_name: r.imaging_categories?.name ?? null,

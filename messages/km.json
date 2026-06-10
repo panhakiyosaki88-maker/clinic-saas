@@ -732,7 +732,9 @@
       "backToList": "← អ្នកជំងឺ",
       "duplicateTitle": "{count, plural, other {មានអ្នកជំងឺ # នាក់មានឈ្មោះស្រដៀងគ្នា}} — សូមពិនិត្យមុនពេលចុះឈ្មោះ៖",
       "duplicateSameDob": "ថ្ងៃខែឆ្នាំកំណើតដូចគ្នា",
-      "duplicateConfirm": "នេះជាមនុស្សផ្សេង — ចុះឈ្មោះយ៉ាងណាក៏ដោយ"
+      "duplicateConfirm": "នេះជាមនុស្សផ្សេង — ចុះឈ្មោះយ៉ាងណាក៏ដោយ",
+      "latinFullName": "ឈ្មោះពេញឡាតាំង",
+      "khmerFullName": "ឈ្មោះពេញខ្មែរ"
     },
     "purge": {
       "delete": "លុប {name}",

@@ -37,6 +37,7 @@ export default async function PrescriptionsPage() {
     patientId: string;
     patient_number: string;
     patient_name: string;
+    patient_khmer_name: string | null;
     rx_count: number;
     item_count: number;
     last_prescribed_at: string;
@@ -50,6 +51,7 @@ export default async function PrescriptionsPage() {
         patientId: p.patient_id,
         patient_number: p.patient_number,
         patient_name: p.patient_name,
+        patient_khmer_name: p.patient_khmer_name,
         rx_count: 0,
         item_count: 0,
         last_prescribed_at: p.prescribed_at,

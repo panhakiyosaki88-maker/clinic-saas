@@ -97,15 +97,20 @@ export async function QueueBoard({
                         } bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <Link
-                            href={`/appointments/${a.id}`}
-                            className="truncate text-sm font-medium text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400"
-                          >
-                            {col.key === "waiting" && (
-                              <span className="mr-1.5 font-mono text-xs text-slate-400">#{i + 1}</span>
+                          <div className="min-w-0">
+                            <Link
+                              href={`/appointments/${a.id}`}
+                              className="block truncate text-sm font-medium text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400"
+                            >
+                              {col.key === "waiting" && (
+                                <span className="mr-1.5 font-mono text-xs text-slate-400">#{i + 1}</span>
+                              )}
+                              {a.patient_name}
+                            </Link>
+                            {a.patient_khmer_name && (
+                              <span className="block truncate text-xs text-slate-500 dark:text-slate-300">{a.patient_khmer_name}</span>
                             )}
-                            {a.patient_name}
-                          </Link>
+                          </div>
                           {mins !== null && (
                             <span
                               className={`shrink-0 font-mono text-xs ${

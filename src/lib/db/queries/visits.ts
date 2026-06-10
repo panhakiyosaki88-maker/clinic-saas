@@ -6,19 +6,21 @@ export type PatientVisit = Database["public"]["Tables"]["patient_visits"]["Row"]
 
 export interface VisitWithNames extends PatientVisit {
   patient_name: string | null;
+  patient_khmer_name: string | null;
   patient_number: string | null;
   doctor_name: string | null;
 }
 
-const SELECT = `*, patients ( full_name, patient_number ), doctors ( full_name )`;
+const SELECT = `*, patients ( full_name, khmer_name, patient_number ), doctors ( full_name )`;
 type Joined = PatientVisit & {
-  patients: { full_name: string; patient_number: string } | null;
+  patients: { full_name: string; khmer_name: string | null; patient_number: string } | null;
   doctors: { full_name: string } | null;
 };
 function mapVisit(r: Joined): VisitWithNames {
   return {
     ...r,
     patient_name: r.patients?.full_name ?? null,
+    patient_khmer_name: r.patients?.khmer_name ?? null,
     patient_number: r.patients?.patient_number ?? null,
     doctor_name: r.doctors?.full_name ?? null,
   };

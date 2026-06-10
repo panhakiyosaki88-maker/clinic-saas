@@ -595,6 +595,9 @@ export default async function PatientProfilePage({
         <div>
           <BackLink label={t("backToList")} fallback="/patients" />
           <h1 className="mt-1 text-2xl font-bold">{patient.full_name}</h1>
+          {patient.khmer_name && (
+            <p className="text-lg font-semibold text-[var(--muted-foreground)]">{patient.khmer_name}</p>
+          )}
           <p className="font-mono text-xs text-[var(--muted-foreground)]">{patient.patient_number}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

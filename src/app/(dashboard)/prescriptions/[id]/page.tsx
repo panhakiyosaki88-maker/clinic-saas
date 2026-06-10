@@ -67,6 +67,7 @@ export default async function PrescriptionDetailPage({
           <div>
             <p className="text-xs text-[var(--muted-foreground)]">{t("detail.patient")}</p>
             <p className="font-medium">{rx.patient_name}</p>
+            {rx.patient_khmer_name && <p className="font-medium">{rx.patient_khmer_name}</p>}
             <p className="font-mono text-xs">{rx.patient_number}</p>
           </div>
           <div className="text-right">

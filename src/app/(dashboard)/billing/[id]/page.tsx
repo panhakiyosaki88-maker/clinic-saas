@@ -126,6 +126,7 @@ export default async function InvoiceDetailPage({
           <p className="mb-4 text-sm">
             <span className="text-[var(--muted-foreground)]">{t("invoiceDetail.billTo")} </span>
             {inv.patient_name} {inv.patient_number ? `(${inv.patient_number})` : ""}
+            {inv.patient_khmer_name && <span className="block">{inv.patient_khmer_name}</span>}
           </p>
         )}
 

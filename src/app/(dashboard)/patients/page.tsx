@@ -124,6 +124,7 @@ export default async function PatientsPage({
                 id: p.id,
                 patient_number: p.patient_number,
                 full_name: p.full_name,
+                khmer_name: p.khmer_name,
                 gender: p.gender,
                 age: patientAge(p.date_of_birth),
                 blood_type: p.blood_type,

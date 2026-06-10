@@ -85,9 +85,12 @@ export async function PatientIntelligence({
           <ul className="space-y-1.5">
             {followUps.slice(0, 5).map((f) => (
               <li key={f.id} className="flex items-center justify-between gap-2 text-sm">
-                <Link href={`/appointments/${f.id}`} className="truncate text-slate-700 hover:text-brand-600 dark:text-slate-200 dark:hover:text-brand-400">
-                  {f.patient_name}
-                </Link>
+                <span className="min-w-0 truncate">
+                  <Link href={`/appointments/${f.id}`} className="text-slate-700 hover:text-brand-600 dark:text-slate-200 dark:hover:text-brand-400">
+                    {f.patient_name}
+                  </Link>
+                  {f.patient_khmer_name && <span className="text-slate-400"> · {f.patient_khmer_name}</span>}
+                </span>
                 <span className="shrink-0 text-xs text-slate-400">{dayLabel(f.scheduled_at, t("labels.today"), locale)}</span>
               </li>
             ))}

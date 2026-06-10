@@ -22,9 +22,14 @@ export async function QueuePanel({ queue, canWrite }: { queue: QueueEntry[]; can
                   <span className="flex size-6 items-center justify-center rounded-full bg-[var(--primary)]/15 text-xs font-semibold text-[var(--primary)]">
                     {q.position}
                   </span>
-                  <Link href={`/appointments/${q.id}`} className="text-sm font-medium hover:underline">
-                    {q.patient_name}
-                  </Link>
+                  <span>
+                    <Link href={`/appointments/${q.id}`} className="block text-sm font-medium hover:underline">
+                      {q.patient_name}
+                    </Link>
+                    {q.patient_khmer_name && (
+                      <span className="block text-xs text-[var(--muted-foreground)]">{q.patient_khmer_name}</span>
+                    )}
+                  </span>
                 </div>
                 {canWrite && <StatusControl appointmentId={q.id} status={q.status} />}
               </li>

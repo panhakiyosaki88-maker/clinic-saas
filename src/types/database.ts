@@ -333,6 +333,7 @@ export interface Database {
           patient_seq: number;
           patient_number: string;
           full_name: string;
+          khmer_name: string | null;
           gender: Gender | null;
           date_of_birth: string | null;
           phone: string | null;
@@ -368,6 +369,7 @@ export interface Database {
           patient_seq?: number;
           patient_number?: string;
           full_name: string;
+          khmer_name?: string | null;
           gender?: Gender | null;
           date_of_birth?: string | null;
           phone?: string | null;

@@ -8,11 +8,13 @@ import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
+import { PatientName } from "@/components/patients/patient-name";
 
 export interface PrescriptionRow {
   patientId: string;
   patient_number: string;
   patient_name: string;
+  patient_khmer_name: string | null;
   rx_count: number;
   item_count: number;
   last_prescribed_at: string;
@@ -115,10 +117,12 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
             <DataCard
               key={p.patientId}
               title={
-                <Link href={`/prescriptions/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
-                  {p.patient_name}
-                  {p.patient_number && <span className="ml-2 text-xs font-normal text-slate-400">{p.patient_number}</span>}
-                </Link>
+                <PatientName khmerName={p.patient_khmer_name} khmerClassName="text-xs font-normal text-slate-400">
+                  <Link href={`/prescriptions/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                    {p.patient_name}
+                    {p.patient_number && <span className="ml-2 text-xs font-normal text-slate-400">{p.patient_number}</span>}
+                  </Link>
+                </PatientName>
               }
             >
               <DataCardRow label={t("prescriptions")} value={p.rx_count} />
@@ -152,13 +156,15 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
               {view.map((p) => (
                 <TR key={p.patientId}>
                   <TD>
-                    <Link
-                      href={`/prescriptions/patient/${p.patientId}`}
-                      className="font-medium text-brand-600 hover:underline dark:text-brand-400"
-                    >
-                      {p.patient_name}
-                    </Link>
-                    {p.patient_number && <span className="ml-2 text-xs text-slate-400">{p.patient_number}</span>}
+                    <PatientName khmerName={p.patient_khmer_name}>
+                      <Link
+                        href={`/prescriptions/patient/${p.patientId}`}
+                        className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+                      >
+                        {p.patient_name}
+                      </Link>
+                      {p.patient_number && <span className="ml-2 text-xs text-slate-400">{p.patient_number}</span>}
+                    </PatientName>
                   </TD>
                   <TD className="text-right text-slate-500 dark:text-slate-400">{p.rx_count}</TD>
                   <TD className="text-right text-slate-500 dark:text-slate-400">{p.item_count}</TD>

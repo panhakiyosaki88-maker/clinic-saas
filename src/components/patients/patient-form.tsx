@@ -93,6 +93,7 @@ export function PatientForm({
     const f = new FormData(e.currentTarget);
     const payload = {
       fullName: String(f.get("fullName") ?? ""),
+      khmerName: String(f.get("khmerName") ?? ""),
       branchId: String(f.get("branchId") ?? ""),
       gender: String(f.get("gender") ?? "") as never,
       dateOfBirth: String(f.get("dateOfBirth") ?? ""),
@@ -140,7 +141,7 @@ export function PatientForm({
           {t("sections.demographics")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("fullName")} htmlFor="fullName" errors={fieldErrors.fullName}>
+          <Field label={t("latinFullName")} htmlFor="fullName" errors={fieldErrors.fullName}>
             <Input
               id="fullName"
               name="fullName"
@@ -149,6 +150,9 @@ export function PatientForm({
               required
               autoFocus
             />
+          </Field>
+          <Field label={t("khmerFullName")} htmlFor="khmerName" errors={fieldErrors.khmerName}>
+            <Input id="khmerName" name="khmerName" defaultValue={patient?.khmer_name ?? ""} />
           </Field>
           <Field label={t("gender")} htmlFor="gender">
             <select id="gender" name="gender" className={selectClass} defaultValue={patient?.gender ?? ""}>

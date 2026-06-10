@@ -51,6 +51,9 @@ export default async function AppointmentDetailPage({
         <div>
           <BackLink label={t("back")} fallback="/appointments" />
           <h1 className="mt-1 text-2xl font-bold">{a.patient_name}</h1>
+          {a.patient_khmer_name && (
+            <p className="text-lg font-semibold text-[var(--muted-foreground)]">{a.patient_khmer_name}</p>
+          )}
           <StatusBadge status={a.status} />
         </div>
         <div className="flex items-center gap-2">
@@ -76,7 +79,7 @@ export default async function AppointmentDetailPage({
       <Card>
         <CardHeader><CardTitle>{t("details")}</CardTitle></CardHeader>
         <CardContent>
-          <Row label={t("patient")} value={`${a.patient_name} (${a.patient_number})`} />
+          <Row label={t("patient")} value={`${a.patient_name}${a.patient_khmer_name ? ` · ${a.patient_khmer_name}` : ""} (${a.patient_number})`} />
           <Row
             label={t("doctor")}
             value={

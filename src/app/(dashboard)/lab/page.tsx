@@ -10,6 +10,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { FlaskConical, Plus, Tags } from "lucide-react";
 import { PageHeader, HeaderAction } from "@/components/page-header";
 import { LabStateBadge } from "@/components/lab/lab-state-badge";
+import { PatientName } from "@/components/patients/patient-name";
 import type { PatientLabState } from "@/lib/validations/lab";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
@@ -40,6 +41,7 @@ export default async function LabPage() {
   interface Agg {
     patientId: string;
     name: string;
+    khmer: string | null;
     number: string;
     count: number;
     active: number;
@@ -55,6 +57,7 @@ export default async function LabPage() {
       {
         patientId: r.patient_id,
         name: r.patient_name,
+        khmer: r.patient_khmer_name,
         number: r.patient_number,
         count: 0,
         active: 0,
@@ -118,10 +121,12 @@ export default async function LabPage() {
                 <DataCard
                   key={p.patientId}
                   title={
-                    <Link href={`/lab/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
-                      {p.name}
-                      {p.number && <span className="ml-2 text-xs font-normal text-slate-400">{p.number}</span>}
-                    </Link>
+                    <PatientName khmerName={p.khmer} khmerClassName="text-xs font-normal text-slate-400">
+                      <Link href={`/lab/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                        {p.name}
+                        {p.number && <span className="ml-2 text-xs font-normal text-slate-400">{p.number}</span>}
+                      </Link>
+                    </PatientName>
                   }
                 >
                   <DataCardRow label={t("table.status")} value={<LabStateBadge status={p.status} />} />
@@ -145,8 +150,10 @@ export default async function LabPage() {
                 {patients.map((p) => (
                   <TR key={p.patientId}>
                     <TD>
-                      <Link href={`/lab/patient/${p.patientId}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">{p.name}</Link>
-                      {p.number && <span className="ml-2 text-xs text-slate-400">{p.number}</span>}
+                      <PatientName khmerName={p.khmer}>
+                        <Link href={`/lab/patient/${p.patientId}`} className="font-medium text-brand-600 hover:underline dark:text-brand-400">{p.name}</Link>
+                        {p.number && <span className="ml-2 text-xs text-slate-400">{p.number}</span>}
+                      </PatientName>
                     </TD>
                     <TD className="text-slate-500 dark:text-slate-400">{p.count}</TD>
                     <TD>
