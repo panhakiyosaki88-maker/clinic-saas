@@ -72,7 +72,7 @@ export function DashboardShell({
     href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
+    <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 print:min-h-0 print:bg-white">
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -84,7 +84,7 @@ export function DashboardShell({
       {/* Sidebar */}
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200 bg-white transition-all duration-200 dark:border-slate-800 dark:bg-slate-900",
+          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200 bg-white transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 print:hidden",
           collapsed ? "lg:w-16" : "lg:w-64",
           "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
@@ -155,9 +155,9 @@ export function DashboardShell({
       </aside>
 
       {/* Main column */}
-      <div className={collapsed ? "lg:pl-16" : "lg:pl-64"}>
+      <div className={(collapsed ? "lg:pl-16" : "lg:pl-64") + " print:pl-0"}>
         {/* Header */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-slate-200 bg-white/80 px-2 backdrop-blur sm:gap-3 sm:px-4 dark:border-slate-800 dark:bg-slate-900/80">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-slate-200 bg-white/80 px-2 backdrop-blur sm:gap-3 sm:px-4 dark:border-slate-800 dark:bg-slate-900/80 print:hidden">
           <button className="shrink-0 lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
             <Menu className="size-6" />
           </button>
@@ -222,7 +222,7 @@ export function DashboardShell({
           </div>
         </header>
 
-        <div className="min-h-[calc(100vh-4rem)]">{children}</div>
+        <div className="min-h-[calc(100vh-4rem)] print:min-h-0">{children}</div>
       </div>
     </div>
   );
