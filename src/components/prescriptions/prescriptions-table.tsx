@@ -8,30 +8,28 @@ import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
-import { DoctorAvatar } from "@/components/doctors/doctor-avatar";
 
 export interface PrescriptionRow {
-  id: string;
+  patientId: string;
   patient_number: string;
   patient_name: string;
-  doctor_name: string | null;
-  doctor_avatar_path: string | null;
-  prescribed_at: string;
+  rx_count: number;
   item_count: number;
+  last_prescribed_at: string;
+  doctors: string[];
 }
 
 type SortKey = keyof Pick<
   PrescriptionRow,
-  "patient_number" | "patient_name" | "doctor_name" | "prescribed_at" | "item_count"
+  "patient_name" | "rx_count" | "item_count" | "last_prescribed_at"
 >;
 type Kind = "text" | "number" | "date";
 
 const COLUMNS: { key: SortKey; labelKey: string; kind: Kind }[] = [
-  { key: "patient_number", labelKey: "number", kind: "text" },
   { key: "patient_name", labelKey: "patient", kind: "text" },
-  { key: "doctor_name", labelKey: "doctor", kind: "text" },
-  { key: "prescribed_at", labelKey: "prescribed", kind: "date" },
+  { key: "rx_count", labelKey: "prescriptions", kind: "number" },
   { key: "item_count", labelKey: "items", kind: "number" },
+  { key: "last_prescribed_at", labelKey: "last", kind: "date" },
 ];
 
 const fmtDate = (d: string | null | undefined) => formatDate(d) || "—";
@@ -39,13 +37,6 @@ const fmtDate = (d: string | null | undefined) => formatDate(d) || "—";
 function compare(a: PrescriptionRow, b: PrescriptionRow, key: SortKey, kind: Kind, dir: 1 | -1): number {
   const av = a[key];
   const bv = b[key];
-  // Nulls always sort to the bottom regardless of direction.
-  const aNull = av === null || av === undefined || av === "";
-  const bNull = bv === null || bv === undefined || bv === "";
-  if (aNull && bNull) return 0;
-  if (aNull) return 1;
-  if (bNull) return -1;
-
   let res: number;
   if (kind === "number") res = (av as number) - (bv as number);
   else if (kind === "date") res = new Date(av as string).getTime() - new Date(bv as string).getTime();
@@ -58,13 +49,13 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
   const [filter, setFilter] = React.useState("");
   const [doctor, setDoctor] = React.useState("");
   const [sort, setSort] = React.useState<{ key: SortKey; dir: 1 | -1 } | null>({
-    key: "prescribed_at",
+    key: "last_prescribed_at",
     dir: -1,
   });
 
   const doctors = React.useMemo(() => {
     const names = new Set<string>();
-    for (const r of rows) if (r.doctor_name) names.add(r.doctor_name);
+    for (const r of rows) for (const d of r.doctors) names.add(d);
     return [...names].sort((a, b) => a.localeCompare(b));
   }, [rows]);
 
@@ -73,11 +64,11 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
     let out = rows;
     if (q) {
       out = out.filter((r) =>
-        [r.patient_number, r.patient_name, r.doctor_name].some((v) => v?.toLowerCase().includes(q))
+        [r.patient_number, r.patient_name, ...r.doctors].some((v) => v?.toLowerCase().includes(q))
       );
     }
     if (doctor) {
-      out = out.filter((r) => r.doctor_name === doctor);
+      out = out.filter((r) => r.doctors.includes(doctor));
     }
     if (sort) {
       const col = COLUMNS.find((c) => c.key === sort.key)!;
@@ -122,81 +113,60 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
         <ResponsiveTable
           cards={view.map((p) => (
             <DataCard
-              key={p.id}
+              key={p.patientId}
               title={
-                <Link href={`/prescriptions/${p.id}`} className="text-brand-600 hover:underline dark:text-brand-400">
+                <Link href={`/prescriptions/patient/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">
                   {p.patient_name}
+                  {p.patient_number && <span className="ml-2 text-xs font-normal text-slate-400">{p.patient_number}</span>}
                 </Link>
               }
             >
-              <DataCardRow label={t("number")} value={<span className="font-mono text-xs">{p.patient_number}</span>} />
+              <DataCardRow label={t("prescriptions")} value={p.rx_count} />
               <DataCardRow label={t("items")} value={p.item_count} />
-              <DataCardRow
-                label={t("doctor")}
-                value={
-                  p.doctor_name ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <DoctorAvatar name={p.doctor_name} avatarPath={p.doctor_avatar_path} size={24} />
-                      {p.doctor_name}
-                    </span>
-                  ) : (
-                    "—"
-                  )
-                }
-              />
-              <DataCardRow label={t("prescribed")} value={fmtDate(p.prescribed_at)} />
+              <DataCardRow label={t("last")} value={fmtDate(p.last_prescribed_at)} />
             </DataCard>
           ))}
         >
-        <Table>
-          <THead>
-            <tr>
-              {COLUMNS.map((c) => {
-                const active = sort?.key === c.key;
-                const Icon = !active ? ChevronsUpDown : sort!.dir === 1 ? ChevronUp : ChevronDown;
-                return (
-                  <TH key={c.key} className={c.kind === "number" ? "text-right" : undefined}>
-                    <button
-                      type="button"
-                      onClick={() => toggleSort(c.key)}
-                      className={`-mx-1 inline-flex items-center gap-1 rounded px-1 hover:text-slate-900 dark:hover:text-slate-100 ${active ? "text-slate-900 dark:text-slate-100" : ""}`}
+          <Table>
+            <THead>
+              <tr>
+                {COLUMNS.map((c) => {
+                  const active = sort?.key === c.key;
+                  const Icon = !active ? ChevronsUpDown : sort!.dir === 1 ? ChevronUp : ChevronDown;
+                  return (
+                    <TH key={c.key} className={c.kind === "number" ? "text-right" : undefined}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort(c.key)}
+                        className={`-mx-1 inline-flex items-center gap-1 rounded px-1 hover:text-slate-900 dark:hover:text-slate-100 ${active ? "text-slate-900 dark:text-slate-100" : ""}`}
+                      >
+                        {t(c.labelKey)}
+                        <Icon className={`h-3.5 w-3.5 ${active ? "" : "opacity-40"}`} />
+                      </button>
+                    </TH>
+                  );
+                })}
+              </tr>
+            </THead>
+            <TBody>
+              {view.map((p) => (
+                <TR key={p.patientId}>
+                  <TD>
+                    <Link
+                      href={`/prescriptions/patient/${p.patientId}`}
+                      className="font-medium text-brand-600 hover:underline dark:text-brand-400"
                     >
-                      {t(c.labelKey)}
-                      <Icon className={`h-3.5 w-3.5 ${active ? "" : "opacity-40"}`} />
-                    </button>
-                  </TH>
-                );
-              })}
-            </tr>
-          </THead>
-          <TBody>
-            {view.map((p) => (
-              <TR key={p.id}>
-                <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.patient_number}</TD>
-                <TD>
-                  <Link
-                    href={`/prescriptions/${p.id}`}
-                    className="font-medium text-brand-600 hover:underline dark:text-brand-400"
-                  >
-                    {p.patient_name}
-                  </Link>
-                </TD>
-                <TD className="text-slate-500 dark:text-slate-400">
-                  {p.doctor_name ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <DoctorAvatar name={p.doctor_name} avatarPath={p.doctor_avatar_path} size={32} />
-                      {p.doctor_name}
-                    </span>
-                  ) : (
-                    "—"
-                  )}
-                </TD>
-                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.prescribed_at)}</TD>
-                <TD className="text-right text-slate-500 dark:text-slate-400">{p.item_count}</TD>
-              </TR>
-            ))}
-          </TBody>
-        </Table>
+                      {p.patient_name}
+                    </Link>
+                    {p.patient_number && <span className="ml-2 text-xs text-slate-400">{p.patient_number}</span>}
+                  </TD>
+                  <TD className="text-right text-slate-500 dark:text-slate-400">{p.rx_count}</TD>
+                  <TD className="text-right text-slate-500 dark:text-slate-400">{p.item_count}</TD>
+                  <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.last_prescribed_at)}</TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
         </ResponsiveTable>
       )}
     </div>

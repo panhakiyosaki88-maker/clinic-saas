@@ -9,6 +9,8 @@ import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import type { LinkKind } from "@/lib/notifications/telegram-link";
 import { getTelegramConfig } from "@/lib/notifications/telegram-config";
+import { sendToProfile } from "@/lib/notifications/staff-send";
+import { getNotificationSettings } from "@/lib/db/queries/notification-settings";
 import { ok, fail, type ActionResult } from "./types";
 import { getErrorT } from "@/lib/i18n/action-errors";
 
@@ -101,6 +103,36 @@ export async function clearTelegramBotConfig(): Promise<ActionResult> {
   if (error) return fail(error.message);
   revalidatePath("/settings/notifications");
   return ok(undefined);
+}
+
+/**
+ * Sends a test notification to the current user over their connected channel,
+ * so the owner can confirm delivery works before relying on it.
+ */
+export async function sendTestNotification(): Promise<ActionResult<{ status: "sent" | "failed" | "skipped" }>> {
+  const { clinicId, user } = await requirePermission(PERMISSIONS.NOTIFICATIONS_SEND);
+  const supabase = await createClient();
+
+  const [clinicRes, tg, settings] = await Promise.all([
+    supabase.from("clinics").select("name").eq("id", clinicId).maybeSingle(),
+    getTelegramConfig(supabase, clinicId),
+    getNotificationSettings(),
+  ]);
+
+  const status = await sendToProfile({
+    supabase,
+    clinicId,
+    userId: user.id,
+    type: "staff_message",
+    subject: "Test notification",
+    text: `✅ Test notification from ${clinicRes.data?.name ?? "your clinic"}. Your notifications are working.`,
+    preferred: settings.default_channel,
+    telegramToken: tg.botToken,
+    loggedBy: user.id,
+  });
+
+  revalidatePath("/notifications");
+  return ok({ status });
 }
 
 /**

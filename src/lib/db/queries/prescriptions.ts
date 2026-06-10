@@ -67,6 +67,35 @@ export async function listPatientPrescriptions(patientId: string): Promise<Presc
   return mapList((data ?? []) as unknown as ListJoined[]);
 }
 
+export interface PrescriptionWithItems extends PrescriptionWithNames {
+  items: PrescriptionItem[];
+}
+
+/** A patient's prescription history, each with its medicines — for the
+ *  per-patient prescriptions page. */
+export async function listPatientPrescriptionsDetailed(
+  patientId: string
+): Promise<PrescriptionWithItems[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("prescriptions")
+    .select(
+      `*, patients ( full_name, patient_number ), doctors ( full_name, avatar_path ),
+       prescription_items ( * )`
+    )
+    .eq("patient_id", patientId)
+    .is("deleted_at", null)
+    .order("prescribed_at", { ascending: false });
+  if (error) throw error;
+  const rows = (data ?? []) as unknown as (Omit<ListJoined, "prescription_items"> & {
+    prescription_items: PrescriptionItem[] | null;
+  })[];
+  return rows.map((r) => ({
+    ...mapList([r])[0],
+    items: (r.prescription_items ?? []).slice().sort((a, b) => a.sort_order - b.sort_order),
+  }));
+}
+
 export interface PrescriptionDetail extends PrescriptionWithNames {
   items: PrescriptionItem[];
   clinic_name: string;

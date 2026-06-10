@@ -1640,6 +1640,15 @@
         "cleared": "Removed.",
         "connectedBot": "Connected: @{username}",
         "usingPlatform": "Using the platform bot (from environment)."
+      },
+      "test": {
+        "title": "Send a test",
+        "hint": "Send a test notification to your own connected channel to confirm delivery works.",
+        "send": "Send test",
+        "sending": "Sending…",
+        "sent": "Test sent ✓",
+        "skipped": "No contact yet — connect Telegram above or add your email.",
+        "failed": "Send failed — check the bot token and try again."
       }
     },
     "compose": {
@@ -1703,7 +1712,7 @@
   "imaging": {
     "title": "Imaging",
     "noPermission": "You don't have permission to view imaging.",
-    "summary": "{count, plural, one {# request} other {# requests}}",
+    "summary": "{patients, plural, one {# patient} other {# patients}} · {count, plural, one {# study} other {# studies}}",
     "catalogLink": "Catalog",
     "newRequest": "New request",
     "empty": "No imaging requests yet.",
@@ -1714,7 +1723,10 @@
       "requested": "Requested",
       "scheduled": "Scheduled",
       "performed": "Performed",
-      "reported": "Reported"
+      "reported": "Reported",
+      "studies": "Studies",
+      "startDate": "Start Date",
+      "finishDate": "Finish Date"
     },
     "status": {
       "requested": "Requested",
@@ -1799,12 +1811,17 @@
       "cancel": "Cancel",
       "deleteStudyConfirm": "Delete study \"{name}\"?",
       "noStudies": "No studies yet."
+    },
+    "state": {
+      "requested": "Pending",
+      "processing": "In Progress",
+      "completed": "Finish"
     }
   },
   "procedures": {
     "title": "Procedures",
     "noPermission": "You don't have permission to view procedures.",
-    "summary": "{count, plural, one {# order} other {# orders}}",
+    "summary": "{patients, plural, one {# patient} other {# patients}} · {count, plural, one {# order} other {# orders}}",
     "catalogLink": "Catalog",
     "newOrder": "New order",
     "empty": "No procedure orders yet.",
@@ -1812,7 +1829,10 @@
       "patient": "Patient",
       "procedure": "Procedure",
       "status": "Status",
-      "ordered": "Ordered"
+      "ordered": "Ordered",
+      "procedures": "Procedures",
+      "startDate": "Start Date",
+      "finishDate": "Finish Date"
     },
     "status": {
       "ordered": "Ordered",
@@ -1885,12 +1905,17 @@
       "cancel": "Cancel",
       "deleteServiceConfirm": "Delete procedure \"{name}\"?",
       "noServices": "No procedures yet."
+    },
+    "state": {
+      "requested": "Pending",
+      "processing": "In Progress",
+      "completed": "Finish"
     }
   },
   "prescriptions": {
     "title": "Prescriptions",
     "noPermission": "You don't have permission to view prescriptions.",
-    "summary": "{count, plural, one {# prescription} other {# prescriptions}}",
+    "summary": "{patients, plural, one {# patient} other {# patients}} · {count, plural, one {# prescription} other {# prescriptions}}",
     "newPrescription": "New prescription",
     "empty": "No prescriptions yet.",
     "table": {
@@ -1902,7 +1927,9 @@
       "filterPlaceholder": "Filter by number, patient, or doctor…",
       "allDoctors": "All doctors",
       "countOf": "{shown} of {total}",
-      "noMatch": "No prescriptions match your filter."
+      "noMatch": "No prescriptions match your filter.",
+      "prescriptions": "Prescriptions",
+      "last": "Last"
     },
     "form": {
       "patient": "Patient",
@@ -1957,6 +1984,12 @@
       "voiding": "Voiding…",
       "confirm": "Confirm",
       "cancel": "Cancel"
+    },
+    "patientPage": {
+      "backToList": "← Prescriptions",
+      "summary": "{count, plural, one {# prescription} other {# prescriptions}}",
+      "view": "View / print →",
+      "noMedicines": "No medicines."
     }
   },
   "lab": {

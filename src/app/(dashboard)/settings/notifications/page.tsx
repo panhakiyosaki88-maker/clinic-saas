@@ -13,6 +13,8 @@ import { NotificationSettingsForm } from "@/components/settings/notification-set
 import { NotificationTemplatesEditor } from "@/components/settings/notification-templates-editor";
 import { TelegramConnectCard } from "@/components/notifications/telegram-connect-card";
 import { TelegramBotConfigForm } from "@/components/notifications/telegram-bot-config-form";
+import { SendTestButton } from "@/components/notifications/send-test-button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Notification settings" };
 
@@ -56,6 +58,16 @@ export default async function NotificationSettingsPage() {
           description={tg("myDescription")}
         />
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{tg("test.title")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-[var(--muted-foreground)]">{tg("test.hint")}</p>
+          <SendTestButton />
+        </CardContent>
+      </Card>
 
       <NotificationTemplatesEditor templates={templates} />
     </main>
