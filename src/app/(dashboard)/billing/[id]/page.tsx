@@ -19,6 +19,7 @@ import {
   type ServiceCategoryValue,
 } from "@/lib/validations/invoice";
 import { PrintButton } from "@/components/print-button";
+import { ClinicLetterhead } from "@/components/clinic-letterhead";
 import { PaymentForm } from "@/components/billing/payment-form";
 import { CancelInvoiceButton } from "@/components/billing/cancel-invoice-button";
 import { InvoiceActions } from "@/components/billing/invoice-actions";
@@ -110,12 +111,10 @@ export default async function InvoiceDetailPage({
 
       {/* Printable invoice */}
       <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 print:border-0">
-        <header className="mb-6 flex items-start justify-between border-b border-[var(--border)] pb-4">
-          <div>
-            <h1 className="text-xl font-bold">{inv.clinic_name}</h1>
-            <p className="text-sm text-[var(--muted-foreground)]">{t("invoiceDetail.heading")}</p>
-          </div>
-          <div className="text-right text-sm">
+        <header className="mb-6 flex items-start justify-between gap-4 border-b border-[var(--border)] pb-4">
+          <ClinicLetterhead clinic={clinic} />
+          <div className="shrink-0 text-right text-sm">
+            <p className="text-base font-semibold uppercase tracking-wide">{t("invoiceDetail.heading")}</p>
             <p className="font-mono font-medium">{inv.invoice_number}</p>
             <p className="text-[var(--muted-foreground)]">{formatDate(inv.issued_at)}</p>
             <p className="mt-1">{t.has(`status.${inv.status}`) ? t(`status.${inv.status}`) : inv.status}</p>

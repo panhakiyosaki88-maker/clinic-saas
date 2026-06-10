@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Building2 } from "lucide-react";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { parseClinicCustomFields } from "@/lib/clinic-profile";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { ClinicProfileForm } from "@/components/settings/clinic-profile-form";
@@ -18,20 +19,6 @@ import {
 
 export const metadata = { title: "General · Settings" };
 
-/** Safely coerce the clinic's `custom_fields` JSON into label/value rows. */
-function parseCustomFields(raw: unknown): { label: string; value: string }[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((r) => {
-    if (r && typeof r === "object" && "label" in r) {
-      const { label, value } = r as { label?: unknown; value?: unknown };
-      if (typeof label === "string" && label.trim()) {
-        return [{ label, value: typeof value === "string" ? value : "" }];
-      }
-    }
-    return [];
-  });
-}
-
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 border-b border-[var(--border)] py-2 last:border-0">
@@ -47,7 +34,7 @@ export default async function ClinicSettingsPage() {
 
   const canManage = await hasPermission(PERMISSIONS.CLINIC_MANAGE);
   const t = await getTranslations("settings");
-  const customFields = parseCustomFields(clinic.custom_fields);
+  const customFields = parseClinicCustomFields(clinic.custom_fields);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">

@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PrintButton } from "@/components/prescriptions/print-button";
 import { DeletePrescriptionButton } from "@/components/prescriptions/delete-prescription-button";
+import { ClinicLetterhead } from "@/components/clinic-letterhead";
 import { formatDate } from "@/lib/date";
 
 export const metadata = { title: "Prescription" };
@@ -58,9 +59,11 @@ export default async function PrescriptionDetailPage({
 
       {/* Printable document */}
       <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 print:border-0">
-        <header className="mb-6 border-b border-[var(--border)] pb-4">
-          <h1 className="text-xl font-bold">{rx.clinic_name}</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">{t("detail.heading")}</p>
+        <header className="mb-6 flex items-start justify-between gap-4 border-b border-[var(--border)] pb-4">
+          <ClinicLetterhead clinic={clinic} />
+          <p className="shrink-0 text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+            {t("detail.heading")}
+          </p>
         </header>
 
         <div className="mb-6 grid grid-cols-2 gap-3 text-sm">

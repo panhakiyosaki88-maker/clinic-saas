@@ -9,6 +9,7 @@ import { Money } from "@/components/billing/money";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PrintButton } from "@/components/print-button";
+import { ClinicLetterhead } from "@/components/clinic-letterhead";
 import { formatDate } from "@/lib/date";
 
 export const metadata = { title: "Receipt" };
@@ -39,8 +40,10 @@ export default async function ReceiptPage({
       </div>
 
       <article className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-8 text-center print:border-0">
-        <h1 className="text-lg font-bold">{inv.clinic_name}</h1>
-        <p className="mb-4 text-sm text-[var(--muted-foreground)]">{t("receipt.heading")}</p>
+        <div className="mb-4 border-b border-[var(--border)] pb-4">
+          <ClinicLetterhead clinic={clinic} align="center" />
+        </div>
+        <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{t("receipt.heading")}</p>
 
         <div className="mb-4 text-left text-sm">
           <p><span className="text-[var(--muted-foreground)]">{t("receipt.invoice")} </span><span className="font-mono">{inv.invoice_number}</span></p>
