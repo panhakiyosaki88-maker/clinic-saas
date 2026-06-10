@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { formatDate } from "@/lib/date";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
@@ -33,8 +34,7 @@ const COLUMNS: { key: SortKey; labelKey: string; kind: Kind }[] = [
   { key: "item_count", labelKey: "items", kind: "number" },
 ];
 
-const fmtDate = (d: string | null | undefined, locale: string) =>
-  d ? new Date(d).toLocaleDateString(locale) : "—";
+const fmtDate = (d: string | null | undefined) => formatDate(d) || "—";
 
 function compare(a: PrescriptionRow, b: PrescriptionRow, key: SortKey, kind: Kind, dir: 1 | -1): number {
   const av = a[key];
@@ -55,7 +55,6 @@ function compare(a: PrescriptionRow, b: PrescriptionRow, key: SortKey, kind: Kin
 
 export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
   const t = useTranslations("prescriptions.table");
-  const locale = useLocale();
   const [filter, setFilter] = React.useState("");
   const [doctor, setDoctor] = React.useState("");
   const [sort, setSort] = React.useState<{ key: SortKey; dir: 1 | -1 } | null>({
@@ -145,7 +144,7 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
                   )
                 }
               />
-              <DataCardRow label={t("prescribed")} value={fmtDate(p.prescribed_at, locale)} />
+              <DataCardRow label={t("prescribed")} value={fmtDate(p.prescribed_at)} />
             </DataCard>
           ))}
         >
@@ -192,7 +191,7 @@ export function PrescriptionsTable({ rows }: { rows: PrescriptionRow[] }) {
                     "—"
                   )}
                 </TD>
-                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.prescribed_at, locale)}</TD>
+                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.prescribed_at)}</TD>
                 <TD className="text-right text-slate-500 dark:text-slate-400">{p.item_count}</TD>
               </TR>
             ))}

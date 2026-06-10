@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { formatDate } from "@/lib/date";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
@@ -40,8 +41,7 @@ const COLUMNS: { key: SortKey; labelKey: string; kind: Kind }[] = [
   { key: "visit_count", labelKey: "visits", kind: "number" },
 ];
 
-const fmtDate = (d: string | null | undefined, locale: string) =>
-  d ? new Date(d).toLocaleDateString(locale) : "—";
+const fmtDate = (d: string | null | undefined) => formatDate(d) || "—";
 
 function compare(a: PatientRow, b: PatientRow, key: SortKey, kind: Kind, dir: 1 | -1): number {
   const av = a[key];
@@ -68,7 +68,6 @@ export function PatientsTable({
   canWrite: boolean;
 }) {
   const t = useTranslations("patients");
-  const locale = useLocale();
   const [filter, setFilter] = React.useState("");
   // Default to newest registrations first; users can re-sort any column.
   const [sort, setSort] = React.useState<{ key: SortKey; dir: 1 | -1 } | null>({
@@ -135,8 +134,8 @@ export function PatientsTable({
               <DataCardRow label={t("table.blood")} value={p.blood_type && p.blood_type !== "unknown" ? p.blood_type : "—"} />
               <DataCardRow label={t("table.phone")} value={p.phone ?? "—"} />
               <DataCardRow label={t("table.visits")} value={p.visit_count} />
-              <DataCardRow label={t("table.registered")} value={fmtDate(p.created_at, locale)} />
-              <DataCardRow label={t("table.lastVisit")} value={fmtDate(p.last_visit_date, locale)} />
+              <DataCardRow label={t("table.registered")} value={fmtDate(p.created_at)} />
+              <DataCardRow label={t("table.lastVisit")} value={fmtDate(p.last_visit_date)} />
             </DataCard>
           ))}
         >
@@ -179,8 +178,8 @@ export function PatientsTable({
                   {p.blood_type && p.blood_type !== "unknown" ? p.blood_type : "—"}
                 </TD>
                 <TD className="text-slate-500 dark:text-slate-400">{p.phone ?? "—"}</TD>
-                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.created_at, locale)}</TD>
-                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.last_visit_date, locale)}</TD>
+                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.created_at)}</TD>
+                <TD className="text-slate-500 dark:text-slate-400">{fmtDate(p.last_visit_date)}</TD>
                 <TD className="text-slate-500 dark:text-slate-400">{p.visit_count}</TD>
                 {canWrite && (
                   <TD className="text-right">

@@ -22,6 +22,7 @@ import type {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate } from "@/lib/date";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
@@ -149,7 +150,7 @@ function useEntryForm(action: (payload: Record<string, unknown>) => Promise<{ ok
   return { pending, error, submit };
 }
 
-const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString() : null);
+const fmtDate = (d: string | null) => formatDate(d) || null;
 
 export function ClinicalLists({
   patientId,

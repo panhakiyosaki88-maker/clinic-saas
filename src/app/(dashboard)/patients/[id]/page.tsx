@@ -38,6 +38,7 @@ import { ImagingStatusBadge } from "@/components/imaging/imaging-status-badge";
 import { ProcedureStatusBadge } from "@/components/procedures/procedure-status-badge";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { formatDate, formatDateTime } from "@/lib/date";
 import { DocumentUploader } from "@/components/patients/document-uploader";
 import { DocumentList } from "@/components/patients/document-list";
 import { AddNoteForm } from "@/components/patients/add-note-form";
@@ -257,7 +258,7 @@ export default async function PatientProfilePage({
                       href={`/patients/${patient.id}/records/${v.id}`}
                       className="text-sm font-medium text-[var(--primary)] hover:underline"
                     >
-                      {new Date(v.visit_date).toLocaleDateString()}
+                      {formatDate(v.visit_date)}
                     </Link>
                     <span className="truncate pl-3 text-sm text-[var(--muted-foreground)]">
                       {v.diagnosis || v.chief_complaint || "—"}
@@ -291,7 +292,7 @@ export default async function PatientProfilePage({
             {prescriptions.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2">
                 <Link href={`/prescriptions/${p.id}`} className="text-sm font-medium text-[var(--primary)] hover:underline">
-                  {new Date(p.prescribed_at).toLocaleDateString()}
+                  {formatDate(p.prescribed_at)}
                 </Link>
                 <span className="text-sm text-[var(--muted-foreground)]">
                   {t("items", { count: p.item_count })}
@@ -371,7 +372,7 @@ export default async function PatientProfilePage({
                 <Link href={`/visits/${vt.id}`} className="flex min-w-0 flex-1 items-center justify-between gap-2">
                   <span className="font-medium">{vt.visit_number}</span>
                   <span className="text-xs text-[var(--muted-foreground)]">
-                    {new Date(vt.visit_date).toLocaleDateString()}
+                    {formatDate(vt.visit_date)}
                     {vt.doctor_name ? ` · ${vt.doctor_name}` : ""} · {tVisitStatus.has(vt.status) ? tVisitStatus(vt.status) : vt.status}
                   </span>
                 </Link>
@@ -489,7 +490,7 @@ export default async function PatientProfilePage({
                   <p className="text-sm text-[var(--muted-foreground)]">{ev.description}</p>
                 )}
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  {new Date(ev.created_at).toLocaleString()}
+                  {formatDateTime(ev.created_at)}
                 </p>
               </li>
             ))}
@@ -520,7 +521,7 @@ export default async function PatientProfilePage({
                   {r.service_name}
                 </Link>
                 <span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-                  {new Date(r.requested_at).toLocaleDateString()}
+                  {formatDate(r.requested_at)}
                   <ImagingStatusBadge status={r.status} />
                 </span>
               </li>
@@ -552,7 +553,7 @@ export default async function PatientProfilePage({
                   {o.procedure_name}
                 </Link>
                 <span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-                  {new Date(o.ordered_at).toLocaleDateString()}
+                  {formatDate(o.ordered_at)}
                   <ProcedureStatusBadge status={o.status} />
                 </span>
               </li>

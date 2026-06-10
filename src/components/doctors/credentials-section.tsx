@@ -14,8 +14,9 @@ import type { DoctorQualification, DoctorLicense } from "@/lib/db/queries/doctor
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate } from "@/lib/date";
 
-const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString() : null);
+const fmtDate = (d: string | null) => formatDate(d) || null;
 
 function QualificationList({
   doctorId,

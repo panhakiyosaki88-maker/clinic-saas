@@ -10,6 +10,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { DocumentUploader } from "@/components/patients/document-uploader";
 import { VitalsForm } from "@/components/records/vitals-form";
 import { DeleteRecordButton } from "@/components/records/delete-record-button";
+import { formatDate } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -50,7 +51,7 @@ export default async function RecordDetailPage({
         <div>
           <BackLink label={`← ${patient.full_name}`} fallback={`/patients/${id}`} />
           <h1 className="mt-1 text-2xl font-bold">
-            {t("title", { date: new Date(record.visit_date).toLocaleDateString() })}
+            {t("title", { date: formatDate(record.visit_date) })}
           </h1>
           <p className="text-xs text-[var(--muted-foreground)]">{t.has(`status.${record.status}`) ? t(`status.${record.status}`) : record.status}</p>
         </div>
@@ -94,7 +95,7 @@ export default async function RecordDetailPage({
               <tbody>
                 {vitals.map((v) => (
                   <tr key={v.id} className="border-t border-[var(--border)]">
-                    <td className="py-1">{new Date(v.recorded_at).toLocaleDateString()}</td>
+                    <td className="py-1">{formatDate(v.recorded_at)}</td>
                     <td>{v.systolic && v.diastolic ? `${v.systolic}/${v.diastolic}` : "—"}</td>
                     <td>{v.pulse ?? "—"}</td>
                     <td>{v.temperature ?? "—"}</td>

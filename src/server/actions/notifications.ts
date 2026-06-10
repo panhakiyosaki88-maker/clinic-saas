@@ -8,6 +8,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { sendEmail, type SendResult } from "@/lib/notifications/send";
 import { ok, fail, type ActionResult } from "./types";
 import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
+import { formatDateTime } from "@/lib/date";
 import type { NotificationType } from "@/types/database";
 
 interface LogArgs {
@@ -63,7 +64,7 @@ export async function sendAppointmentReminder(
 
   const patient = (data as unknown as { patients: { full_name: string; email: string | null } | null }).patients;
   const to = patient?.email ?? "";
-  const when = new Date(data.scheduled_at).toLocaleString();
+  const when = formatDateTime(data.scheduled_at);
   const subject = "Appointment reminder";
   const html = `<p>Dear ${patient?.full_name ?? "patient"},</p><p>This is a reminder of your appointment on <strong>${when}</strong>.</p><p>Thank you.</p>`;
 

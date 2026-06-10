@@ -7,6 +7,8 @@
  * anchors that link between them, always line up.
  */
 
+import { formatDate } from "@/lib/date";
+
 /** Grouping key for a request's date, e.g. "2026-06-04". */
 export function labSessionKey(requestedAt: string): string {
   return requestedAt.slice(0, 10);
@@ -22,5 +24,5 @@ export function labSessionAnchor(key: string): string {
  * calendar date never shifts across timezones (only the locale format may).
  */
 export function formatLabSessionDate(key: string): string {
-  return new Date(`${key}T00:00:00`).toLocaleDateString();
+  return formatDate(`${key}T00:00:00`);
 }

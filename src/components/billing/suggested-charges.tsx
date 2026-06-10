@@ -9,6 +9,7 @@ import type { VisitCharge, PrescribedMedicine, ChargeSource } from "@/lib/db/que
 import { type ServiceCategoryValue } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatDate } from "@/lib/date";
 
 const num = (s: string) => (Number.isFinite(Number(s)) ? Number(s) : 0);
 
@@ -258,7 +259,7 @@ export function SuggestedCharges({
       <input type="checkbox" disabled checked={false} readOnly />
       <span className="flex min-w-0 items-center gap-2 text-sm">
         <span className="truncate">{c.description}</span>
-        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(c.date).toLocaleDateString()}</span>
+        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{formatDate(c.date)}</span>
         {billedTag}
       </span>
       <span className="text-sm tabular-nums text-[var(--muted-foreground)]">{c.quantity}</span>
@@ -276,7 +277,7 @@ export function SuggestedCharges({
         <input type="checkbox" checked={selected.has(c.sourceId)} onChange={() => toggle(c.sourceId)} />
         <span className="flex min-w-0 items-center gap-2 text-sm">
           <span className="truncate">{c.description}</span>
-          <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{new Date(c.date).toLocaleDateString()}</span>
+          <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{formatDate(c.date)}</span>
         </span>
         <Input
           type="number"

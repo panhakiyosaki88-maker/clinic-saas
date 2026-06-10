@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { formatDate } from "@/lib/date";
 import { getCurrentClinic, getCurrentSubscription } from "@/lib/db/queries/clinic";
 import { getSubscriptionUsage } from "@/lib/db/queries/subscription";
 import { hasPermission } from "@/lib/auth/guard";
@@ -44,7 +45,7 @@ export default async function SubscriptionPage() {
   ]);
 
   const plan = subscription ? PLANS[subscription.plan] : PLANS.starter;
-  const [t, locale] = await Promise.all([getTranslations("settings"), getLocale()]);
+  const t = await getTranslations("settings");
   const statusKey = subscription?.status;
   const statusLabel = statusKey
     ? t.has(`subscription.status.${statusKey}`)
@@ -61,7 +62,7 @@ export default async function SubscriptionPage() {
           <>
             {plan.name} · {statusLabel}
             {subscription?.trial_ends_at && subscription.status === "trialing"
-              ? ` · ${t("subscription.trialEnds", { date: new Date(subscription.trial_ends_at).toLocaleDateString(locale) })}`
+              ? ` · ${t("subscription.trialEnds", { date: formatDate(subscription.trial_ends_at) })}`
               : ""}
           </>
         }

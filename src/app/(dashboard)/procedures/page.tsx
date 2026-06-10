@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { formatDate } from "@/lib/date";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listProcedureOrders } from "@/lib/db/queries/procedures";
@@ -19,7 +20,6 @@ export default async function ProceduresPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
   const t = await getTranslations("procedures");
-  const locale = await getLocale();
   if (!(await hasPermission(PERMISSIONS.PROCEDURES_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
@@ -31,7 +31,7 @@ export default async function ProceduresPage() {
   const canWrite = await hasPermission(PERMISSIONS.PROCEDURES_WRITE);
   const { activeId, primaryId } = await getActiveBranchContext();
   const orders = await listProcedureOrders(80, { activeId, primaryId });
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale) : "—");
+  const fmt = (d: string | null) => formatDate(d) || "—";
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">

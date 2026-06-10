@@ -13,6 +13,7 @@ import { buildKhqr } from "@/lib/billing/khqr";
 import { paymentQrUrl } from "@/lib/payment-qr";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { formatDate } from "@/lib/date";
 import {
   SERVICE_CATEGORIES,
   type ServiceCategoryValue,
@@ -116,7 +117,7 @@ export default async function InvoiceDetailPage({
           </div>
           <div className="text-right text-sm">
             <p className="font-mono font-medium">{inv.invoice_number}</p>
-            <p className="text-[var(--muted-foreground)]">{new Date(inv.issued_at).toLocaleDateString()}</p>
+            <p className="text-[var(--muted-foreground)]">{formatDate(inv.issued_at)}</p>
             <p className="mt-1">{t.has(`status.${inv.status}`) ? t(`status.${inv.status}`) : inv.status}</p>
           </div>
         </header>

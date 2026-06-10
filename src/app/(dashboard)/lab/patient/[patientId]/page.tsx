@@ -9,6 +9,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { LAB_TEST_PANEL } from "@/lib/lab/test-panel";
 import { labSessionKey, labSessionAnchor, formatLabSessionDate } from "@/lib/lab/session";
+import { formatDate } from "@/lib/date";
 import { type PatientLabState } from "@/lib/validations/lab";
 import { PatientLabUpload } from "@/components/lab/patient-lab-upload";
 import { LabSessionStatus } from "@/components/lab/lab-session-status";
@@ -189,7 +190,7 @@ export default async function PatientLabPage({
                           ) : (
                             <span>{r.file_name ?? r.test_name}</span>
                           )}
-                          <span className="text-xs text-[var(--muted-foreground)]">{new Date(r.result_at).toLocaleDateString()}</span>
+                          <span className="text-xs text-[var(--muted-foreground)]">{formatDate(r.result_at)}</span>
                         </li>
                       ))}
                     </ul>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { formatDateTime } from "@/lib/date";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -39,7 +40,6 @@ export default async function AppointmentDetailPage({
   if (!a) notFound();
 
   const t = await getTranslations("appointments.detail");
-  const locale = await getLocale();
   const [canWrite, canNotify] = await Promise.all([
     hasPermission(PERMISSIONS.APPOINTMENTS_WRITE),
     hasPermission(PERMISSIONS.NOTIFICATIONS_SEND),
@@ -90,12 +90,12 @@ export default async function AppointmentDetailPage({
               )
             }
           />
-          <Row label={t("when")} value={a.is_walk_in ? t("walkIn") : new Date(a.scheduled_at).toLocaleString(locale)} />
+          <Row label={t("when")} value={a.is_walk_in ? t("walkIn") : formatDateTime(a.scheduled_at)} />
           <Row label={t("duration")} value={t("minutes", { min: a.duration_minutes })} />
           <Row label={t("reason")} value={a.reason} />
           <Row label={t("notes")} value={a.notes} />
-          <Row label={t("checkedIn")} value={a.checked_in_at ? new Date(a.checked_in_at).toLocaleString(locale) : null} />
-          <Row label={t("completed")} value={a.completed_at ? new Date(a.completed_at).toLocaleString(locale) : null} />
+          <Row label={t("checkedIn")} value={a.checked_in_at ? formatDateTime(a.checked_in_at) : null} />
+          <Row label={t("completed")} value={a.completed_at ? formatDateTime(a.completed_at) : null} />
         </CardContent>
       </Card>
 

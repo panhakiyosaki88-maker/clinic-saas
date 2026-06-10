@@ -9,6 +9,7 @@ import { Money } from "@/components/billing/money";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PrintButton } from "@/components/print-button";
+import { formatDate } from "@/lib/date";
 
 export const metadata = { title: "Receipt" };
 
@@ -44,7 +45,7 @@ export default async function ReceiptPage({
         <div className="mb-4 text-left text-sm">
           <p><span className="text-[var(--muted-foreground)]">{t("receipt.invoice")} </span><span className="font-mono">{inv.invoice_number}</span></p>
           {inv.patient_name && <p><span className="text-[var(--muted-foreground)]">{t("receipt.patient")} </span>{inv.patient_name}</p>}
-          <p><span className="text-[var(--muted-foreground)]">{t("receipt.date")} </span>{new Date().toLocaleDateString()}</p>
+          <p><span className="text-[var(--muted-foreground)]">{t("receipt.date")} </span>{formatDate(new Date())}</p>
         </div>
 
         <table className="mb-4 w-full text-left text-sm">

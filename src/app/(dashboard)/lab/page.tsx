@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { formatDate } from "@/lib/date";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listLabRequests } from "@/lib/db/queries/lab";
@@ -20,7 +21,6 @@ export default async function LabPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
   const t = await getTranslations("lab");
-  const locale = await getLocale();
   if (!(await hasPermission(PERMISSIONS.LAB_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
@@ -86,7 +86,7 @@ export default async function LabPage() {
     return { ...g, status, finish: status === "completed" ? g.finish : null };
   });
 
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString(locale) : "—");
+  const fmt = (d: string | null) => formatDate(d) || "—";
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">

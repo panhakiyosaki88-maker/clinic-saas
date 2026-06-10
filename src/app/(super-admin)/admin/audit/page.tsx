@@ -3,6 +3,7 @@ import { ScrollText } from "lucide-react";
 import { listRecentAuditLogs } from "@/lib/db/queries/admin";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatDateTime } from "@/lib/date";
 
 export const metadata = { title: "Audit log · Super Admin" };
 
@@ -34,7 +35,7 @@ export default async function AdminAuditPage() {
               <tbody>
                 {logs.map((l) => (
                   <tr key={l.id} className="border-b border-[var(--border)] last:border-0">
-                    <td className="p-3 text-xs text-[var(--muted-foreground)]">{new Date(l.created_at).toLocaleString()}</td>
+                    <td className="p-3 text-xs text-[var(--muted-foreground)]">{formatDateTime(l.created_at)}</td>
                     <td className="p-3">{l.action}</td>
                     <td className="p-3 font-mono text-xs">{l.table_name}</td>
                     <td className="p-3 font-mono text-xs text-[var(--muted-foreground)]">{l.clinic_id?.slice(0, 8) ?? "—"}</td>

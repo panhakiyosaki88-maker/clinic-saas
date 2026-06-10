@@ -1524,6 +1524,9 @@
     },
     "statusControl": {
       "schedule": "កំណត់ពេល",
+      "reschedule": "កំណត់ពេលឡើងវិញ",
+      "pickDate": "កាលបរិច្ឆេទកំណត់ពេល",
+      "setSchedule": "កំណត់ពេល",
       "markPerformed": "សម្គាល់ថាបានធ្វើ",
       "markReported": "សម្គាល់ថាបានរាយការណ៍",
       "cancel": "បោះបង់"
@@ -1564,6 +1567,7 @@
       "report": "របាយការណ៍",
       "attachment": "ឯកសារភ្ជាប់",
       "enterResult": "បញ្ចូលលទ្ធផល",
+      "scheduledFor": "បានកំណត់ពេលសម្រាប់ {date}",
       "resultsRestricted": "អ្នកគ្មានសិទ្ធិមើលលទ្ធផលគ្លីនិកទេ។"
     },
     "catalog": {

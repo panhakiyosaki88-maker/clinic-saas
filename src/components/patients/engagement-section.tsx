@@ -9,6 +9,7 @@ import type { PatientConsent, PatientCommunication } from "@/lib/db/queries/pati
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate, formatDateTime } from "@/lib/date";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
@@ -87,7 +88,7 @@ function ConsentList({
                   </span>
                 </p>
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  {[c.signed_on && t("signed", { date: new Date(c.signed_on).toLocaleDateString() }), c.notes]
+                  {[c.signed_on && t("signed", { date: formatDate(c.signed_on) }), c.notes]
                     .filter(Boolean)
                     .join(" · ") || "—"}
                 </p>
@@ -164,7 +165,7 @@ function CommunicationLog({ communications }: { communications: PatientCommunica
                   </p>
                   {m.body && <p className="truncate text-sm text-[var(--muted-foreground)]">{m.body}</p>}
                   <p className="text-xs text-[var(--muted-foreground)]">
-                    {new Date(m.sent_at).toLocaleString()}
+                    {formatDateTime(m.sent_at)}
                     {m.status ? ` · ${m.status}` : ""}
                   </p>
                 </div>

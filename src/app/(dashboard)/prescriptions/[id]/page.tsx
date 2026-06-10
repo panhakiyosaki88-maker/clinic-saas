@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { PrintButton } from "@/components/prescriptions/print-button";
 import { DeletePrescriptionButton } from "@/components/prescriptions/delete-prescription-button";
+import { formatDate } from "@/lib/date";
 
 export const metadata = { title: "Prescription" };
 
@@ -70,7 +71,7 @@ export default async function PrescriptionDetailPage({
           </div>
           <div className="text-right">
             <p className="text-xs text-[var(--muted-foreground)]">{t("detail.date")}</p>
-            <p className="font-medium">{new Date(rx.prescribed_at).toLocaleDateString()}</p>
+            <p className="font-medium">{formatDate(rx.prescribed_at)}</p>
             {rx.doctor_name && (
               <p className="text-xs">{withDoctorTitle(rx.doctor_name)}</p>
             )}

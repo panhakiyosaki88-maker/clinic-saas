@@ -1524,6 +1524,9 @@
     },
     "statusControl": {
       "schedule": "Schedule",
+      "reschedule": "Reschedule",
+      "pickDate": "Schedule date",
+      "setSchedule": "Set schedule",
       "markPerformed": "Mark performed",
       "markReported": "Mark reported",
       "cancel": "Cancel"
@@ -1564,6 +1567,7 @@
       "report": "Report",
       "attachment": "Attachment",
       "enterResult": "Enter result",
+      "scheduledFor": "Scheduled for {date}",
       "resultsRestricted": "You don't have permission to view clinical results."
     },
     "catalog": {

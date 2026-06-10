@@ -48,6 +48,13 @@ export type CreateImagingRequestInput = z.infer<typeof createImagingRequestSchem
 export const changeImagingStatusSchema = z.object({
   requestId: z.string().uuid(),
   status: z.enum(IMAGING_STATUSES),
+  // Calendar date (YYYY-MM-DD) chosen when scheduling a study; optional so the
+  // other lifecycle transitions can omit it.
+  scheduledAt: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "imaging.invalidDate")
+    .optional()
+    .or(z.literal("")),
 });
 export type ChangeImagingStatusInput = z.infer<typeof changeImagingStatusSchema>;
 

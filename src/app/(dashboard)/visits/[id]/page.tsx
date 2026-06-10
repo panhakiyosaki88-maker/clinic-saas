@@ -6,6 +6,7 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { getVisit, getVisitTimeline, type TimelineKind } from "@/lib/db/queries/visits";
+import { formatDateTime } from "@/lib/date";
 import { listProcedureOptions } from "@/lib/db/queries/procedures";
 import { listMedicineOptions, listPrescribedDispenseOptions } from "@/lib/db/queries/pharmacy";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
@@ -77,7 +78,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
           <BackLink label={`← ${visit.patient_name}`} fallback={`/patients/${visit.patient_id}`} />
           <h1 className="mt-1 text-2xl font-bold">{t("title", { number: visit.visit_number })}</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
-            {new Date(visit.visit_date).toLocaleString()}
+            {formatDateTime(visit.visit_date)}
             {visit.doctor_name ? ` · ${visit.doctor_name}` : ""}
             {" · "}
             <span>{t.has(`status.${visit.status}`) ? t(`status.${visit.status}`) : visit.status}</span>
@@ -112,7 +113,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
                       {e.amount !== null && <span className="tabular-nums text-sm">{money(e.amount)}</span>}
                     </div>
                     <p className="text-xs text-[var(--muted-foreground)]">
-                      {new Date(e.at).toLocaleString()}
+                      {formatDateTime(e.at)}
                       {e.detail ? ` · ${e.detail}` : ""}
                     </p>
                   </div>

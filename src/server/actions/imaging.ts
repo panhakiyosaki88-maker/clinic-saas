@@ -246,24 +246,33 @@ export async function createImagingRequest(
 }
 
 /** Status timestamps stamped as a request advances through its lifecycle. */
-const STAMP: Record<ImagingStatusValue, Record<string, string | null>> = {
-  requested: { scheduled_at: null, performed_at: null, reported_at: null },
-  scheduled: { scheduled_at: new Date().toISOString() },
-  performed: { performed_at: new Date().toISOString() },
-  reported: { reported_at: new Date().toISOString() },
-  cancelled: {},
-};
+function stampFor(status: ImagingStatusValue, scheduledAt?: string): Record<string, string | null> {
+  switch (status) {
+    case "requested":
+      return { scheduled_at: null, performed_at: null, reported_at: null };
+    case "scheduled":
+      // Use the calendar date the user picked (parsed at local midnight so the
+      // stored timestamp lands on that day); fall back to now if none given.
+      return { scheduled_at: scheduledAt ? new Date(`${scheduledAt}T00:00:00`).toISOString() : new Date().toISOString() };
+    case "performed":
+      return { performed_at: new Date().toISOString() };
+    case "reported":
+      return { reported_at: new Date().toISOString() };
+    case "cancelled":
+      return {};
+  }
+}
 
 export async function changeImagingStatus(input: ChangeImagingStatusInput): Promise<ActionResult> {
   const { clinicId } = await requirePermission(PERMISSIONS.IMAGING_WRITE);
   const parsed = changeImagingStatusSchema.safeParse(input);
   if (!parsed.success) return fail("Invalid request.");
-  const { requestId, status } = parsed.data;
+  const { requestId, status, scheduledAt } = parsed.data;
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("imaging_requests")
-    .update({ status, ...STAMP[status] })
+    .update({ status, ...stampFor(status, scheduledAt || undefined) })
     .eq("id", requestId)
     .eq("clinic_id", clinicId);
   if (error) return fail(error.message);

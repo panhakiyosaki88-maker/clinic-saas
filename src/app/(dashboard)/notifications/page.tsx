@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { formatDateTime } from "@/lib/date";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { listNotifications } from "@/lib/db/queries/notifications";
 import { hasPermission } from "@/lib/auth/guard";
@@ -23,7 +24,6 @@ export default async function NotificationsPage() {
   const clinic = await getCurrentClinic();
   if (!clinic) redirect("/onboarding");
   const t = await getTranslations("notifications");
-  const locale = await getLocale();
   if (!(await hasPermission(PERMISSIONS.NOTIFICATIONS_READ))) {
     return (
       <main className="mx-auto max-w-2xl p-6">
@@ -63,7 +63,7 @@ export default async function NotificationsPage() {
                   }
                 >
                   <DataCardRow label={t("table.recipient")} value={n.recipient} wide />
-                  <DataCardRow label={t("table.when")} value={new Date(n.created_at).toLocaleString(locale)} wide />
+                  <DataCardRow label={t("table.when")} value={formatDateTime(n.created_at)} wide />
                   {n.error && n.status === "failed" && (
                     <DataCardRow label={t("table.status")} value={<span className="text-[var(--destructive)]">{n.error}</span>} wide />
                   )}
@@ -83,7 +83,7 @@ export default async function NotificationsPage() {
               <tbody>
                 {items.map((n) => (
                   <tr key={n.id} className="border-b border-[var(--border)] last:border-0">
-                    <td className="p-3 text-xs text-[var(--muted-foreground)]">{new Date(n.created_at).toLocaleString(locale)}</td>
+                    <td className="p-3 text-xs text-[var(--muted-foreground)]">{formatDateTime(n.created_at)}</td>
                     <td className="p-3">{t.has(`type.${n.type}`) ? t(`type.${n.type}`) : n.type.replace("_", " ")}</td>
                     <td className="p-3 text-[var(--muted-foreground)]">{n.recipient}</td>
                     <td className="p-3">

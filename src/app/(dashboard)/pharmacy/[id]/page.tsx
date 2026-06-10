@@ -9,6 +9,7 @@ import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { TransactionForm } from "@/components/pharmacy/transaction-form";
 import { DeleteMedicineButton } from "@/components/pharmacy/delete-medicine-button";
+import { formatDate } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -105,7 +106,7 @@ export default async function MedicineDetailPage({
               <tbody>
                 {transactions.map((tx) => (
                   <tr key={tx.id} className="border-b border-[var(--border)] last:border-0">
-                    <td className="py-2">{new Date(tx.created_at).toLocaleDateString()}</td>
+                    <td className="py-2">{formatDate(tx.created_at)}</td>
                     <td>{tReason.has(tx.reason) ? tReason(tx.reason) : tx.reason}</td>
                     <td>{tx.batch_number ?? "—"}</td>
                     <td>{tx.expiry_date ?? "—"}</td>

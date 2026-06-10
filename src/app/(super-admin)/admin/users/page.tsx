@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { UserControls } from "@/components/admin/user-controls";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AccountStatus } from "@/types/database";
+import { formatDate } from "@/lib/date";
 
 export const metadata = { title: "Users · Super Admin" };
 
@@ -56,7 +57,7 @@ export default async function AdminUsersPage() {
                           {t(`status.${u.status}`)}
                         </span>
                       </td>
-                      <td className="p-3 text-xs text-[var(--muted-foreground)]">{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td className="p-3 text-xs text-[var(--muted-foreground)]">{formatDate(u.created_at)}</td>
                       <td className="p-3">
                         <UserControls
                           userId={u.id}

@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { formatDate } from "@/lib/date";
 import { useRouter } from "next/navigation";
 import {
   useReactTable,
@@ -60,7 +61,6 @@ export function InvoiceTable({
   rate?: number;
 }) {
   const t = useTranslations("billing");
-  const locale = useLocale();
   const router = useRouter();
   const money = React.useCallback((n: number) => formatIn(n, currency, rate), [currency, rate]);
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "issued_at", desc: true }]);
@@ -100,7 +100,7 @@ export function InvoiceTable({
       col.accessor("patient", { header: t("table.patient"), cell: (c) => c.getValue() || "—" }),
       col.accessor("issued_at", {
         header: t("table.issued"),
-        cell: (c) => new Date(c.getValue()).toLocaleDateString(locale),
+        cell: (c) => formatDate(c.getValue()),
       }),
       col.accessor("total", { header: t("table.total"), cell: (c) => <span className="tabular-nums">{money(c.getValue())}</span> }),
       col.accessor("balance", { header: t("table.balance"), cell: (c) => <span className="tabular-nums">{money(c.getValue())}</span> }),
@@ -114,7 +114,7 @@ export function InvoiceTable({
         filterFn: "equals",
       }),
     ],
-    [canWrite, money, t, locale]
+    [canWrite, money, t]
   );
 
   const table = useReactTable({
@@ -198,7 +198,7 @@ export function InvoiceTable({
                   }
                 >
                   <DataCardRow label={t("table.patient")} value={r.patient || "—"} />
-                  <DataCardRow label={t("table.issued")} value={new Date(r.issued_at).toLocaleDateString(locale)} />
+                  <DataCardRow label={t("table.issued")} value={formatDate(r.issued_at)} />
                   <DataCardRow label={t("table.total")} value={<span className="tabular-nums">{money(r.total)}</span>} />
                   <DataCardRow label={t("table.balance")} value={<span className="tabular-nums">{money(r.balance)}</span>} />
                   <DataCardRow

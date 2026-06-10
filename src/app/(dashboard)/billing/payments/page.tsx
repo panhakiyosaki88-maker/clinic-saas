@@ -10,6 +10,7 @@ import { PERMISSIONS } from "@/lib/auth/permissions";
 import { Receipt } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { BillingTabs } from "@/components/billing/billing-tabs";
+import { formatDate } from "@/lib/date";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { ResponsiveTable, DataCard, DataCardRow } from "@/components/ui/responsive-table";
@@ -76,7 +77,7 @@ export default async function PaymentsPage() {
                         </>
                       }
                     />
-                    <DataCardRow label={t("thDate")} value={new Date(p.paid_at).toLocaleDateString()} />
+                    <DataCardRow label={t("thDate")} value={formatDate(p.paid_at)} />
                   </DataCard>
                 );
               })}
@@ -98,7 +99,7 @@ export default async function PaymentsPage() {
                   return (
                     <TR key={p.id}>
                       <TD className="font-mono text-xs text-slate-500 dark:text-slate-400">{p.receipt_number}</TD>
-                      <TD className="text-slate-500 dark:text-slate-400">{new Date(p.paid_at).toLocaleDateString()}</TD>
+                      <TD className="text-slate-500 dark:text-slate-400">{formatDate(p.paid_at)}</TD>
                       <TD>
                         <Link href={`/billing/${p.invoice_id}`} className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400">
                           {p.invoice_number}

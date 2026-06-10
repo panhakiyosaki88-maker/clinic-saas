@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { BillingTabs } from "@/components/billing/billing-tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { formatDateTime } from "@/lib/date";
 
 export const metadata = { title: "Billing audit" };
 
@@ -49,7 +50,7 @@ export default async function BillingAuditPage() {
               <TBody>
                 {entries.map((e) => (
                   <TR key={e.id}>
-                    <TD className="text-slate-500 dark:text-slate-400">{new Date(e.created_at).toLocaleString()}</TD>
+                    <TD className="text-slate-500 dark:text-slate-400">{formatDateTime(e.created_at)}</TD>
                     <TD>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${ACTION_TONE[e.action] ?? ""}`}>
                         {actionLabel(e.action)}

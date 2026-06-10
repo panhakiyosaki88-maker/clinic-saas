@@ -44,6 +44,28 @@ export function timeLabel(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+/**
+ * Format a date as day/month/year (e.g. 09/06/2026).
+ * This is the app-wide standard for displaying calendar dates.
+ * Returns "" for null/undefined/invalid input so callers can do `formatDate(x) || "—"`.
+ */
+export function formatDate(input: string | number | Date | null | undefined): string {
+  if (input === null || input === undefined || input === "") return "";
+  const d = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(d.getTime())) return "";
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}/${d.getFullYear()}`;
+}
+
+/** Format a date-time as day/month/year HH:mm (e.g. 09/06/2026 14:30). */
+export function formatDateTime(input: string | number | Date | null | undefined): string {
+  if (input === null || input === undefined || input === "") return "";
+  const d = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${formatDate(d)} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 export function isSameDay(a: Date, b: Date): boolean {
   return ymd(a) === ymd(b);
 }

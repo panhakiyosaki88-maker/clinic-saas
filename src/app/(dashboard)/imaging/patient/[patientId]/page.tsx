@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { formatDate } from "@/lib/date";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -47,7 +48,6 @@ export default async function PatientImagingPage({
 
   const patientName = requests[0].patient_name;
   const t = await getTranslations("imaging.patientPage");
-  const locale = await getLocale();
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
@@ -68,15 +68,20 @@ export default async function PatientImagingPage({
                 <div>
                   <CardTitle className="text-base">{r.service_name}</CardTitle>
                   <p className="text-xs text-[var(--muted-foreground)]">
-                    {[r.modality, new Date(r.requested_at).toLocaleDateString(locale), r.doctor_name].filter(Boolean).join(" · ")}
+                    {[r.modality, formatDate(r.requested_at), r.doctor_name].filter(Boolean).join(" · ")}
                   </p>
+                  {r.scheduled_at && r.status === "scheduled" && (
+                    <p className="mt-1 text-xs font-medium text-violet-600 dark:text-violet-400">
+                      {t("scheduledFor", { date: formatDate(r.scheduled_at) })}
+                    </p>
+                  )}
                 </div>
                 <ImagingStatusBadge status={r.status} />
               </CardHeader>
               <CardContent className="space-y-4">
                 {r.notes && <p className="text-sm text-[var(--muted-foreground)]">{r.notes}</p>}
 
-                {canWrite && <ImagingStatusControl requestId={r.id} status={r.status} />}
+                {canWrite && <ImagingStatusControl requestId={r.id} status={r.status} scheduledAt={r.scheduled_at} />}
 
                 {canSeeResults ? (
                   <>
@@ -103,7 +108,7 @@ export default async function PatientImagingPage({
                             ) : (
                               <span>{f.file_name ?? t("attachment")}</span>
                             )}
-                            <span className="text-xs text-[var(--muted-foreground)]">{new Date(f.created_at).toLocaleDateString(locale)}</span>
+                            <span className="text-xs text-[var(--muted-foreground)]">{formatDate(f.created_at)}</span>
                           </li>
                         ))}
                       </ul>

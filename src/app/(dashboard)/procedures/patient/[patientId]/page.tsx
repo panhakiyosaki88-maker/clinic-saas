@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { formatDate } from "@/lib/date";
 import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
@@ -31,7 +32,6 @@ export default async function PatientProceduresPage({
 
   const patientName = orders[0].patient_name;
   const t = await getTranslations("procedures.patientPage");
-  const locale = await getLocale();
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
@@ -52,7 +52,7 @@ export default async function PatientProceduresPage({
                 <div>
                   <CardTitle className="text-base">{o.procedure_name}</CardTitle>
                   <p className="text-xs text-[var(--muted-foreground)]">
-                    {[o.category_name, new Date(o.ordered_at).toLocaleDateString(locale), o.doctor_name].filter(Boolean).join(" · ")}
+                    {[o.category_name, formatDate(o.ordered_at), o.doctor_name].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <ProcedureStatusBadge status={o.status} />
