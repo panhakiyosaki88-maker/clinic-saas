@@ -67,7 +67,7 @@ export default async function PaymentsPage() {
                         </Link>
                       }
                     />
-                    <DataCardRow label={t("thPatient")} value={p.patient_name ?? "—"} />
+                    <DataCardRow label={t("thPatient")} value={p.patient_name ? `${p.patient_name}${p.patient_khmer_name ? ` · ${p.patient_khmer_name}` : ""}` : "—"} />
                     <DataCardRow
                       label={t("thMethod")}
                       value={
@@ -105,7 +105,7 @@ export default async function PaymentsPage() {
                           {p.invoice_number}
                         </Link>
                       </TD>
-                      <TD>{p.patient_name ?? "—"}</TD>
+                      <TD>{p.patient_name ?? "—"}{p.patient_khmer_name && <span className="text-slate-400"> · {p.patient_khmer_name}</span>}</TD>
                       <TD className="text-slate-500 dark:text-slate-400">
                         {tm(p.method)}
                         {refund && <span className="ml-1 text-xs font-medium text-[var(--destructive)]">{t("refund")}</span>}

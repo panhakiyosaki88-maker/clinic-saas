@@ -72,6 +72,7 @@ export default async function DebtPage() {
                       {p.patientId ? (
                         <Link href={`/patients/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">{p.patient}</Link>
                       ) : p.patient}
+                      {p.patientKhmer && <span className="text-slate-400"> · {p.patientKhmer}</span>}
                       {p.overdue && <span className="ml-2 text-xs font-medium text-[var(--destructive)]">{t("overdue")}</span>}
                     </>
                   }
@@ -98,6 +99,7 @@ export default async function DebtPage() {
                       {p.patientId ? (
                         <Link href={`/patients/${p.patientId}`} className="text-brand-600 hover:underline dark:text-brand-400">{p.patient}</Link>
                       ) : p.patient}
+                      {p.patientKhmer && <span className="text-slate-400"> · {p.patientKhmer}</span>}
                       {p.overdue && <span className="ml-2 text-xs font-medium text-[var(--destructive)]">{t("overdue")}</span>}
                     </TD>
                     <TD className="text-right tabular-nums text-slate-500 dark:text-slate-400">{p.invoiceCount}</TD>

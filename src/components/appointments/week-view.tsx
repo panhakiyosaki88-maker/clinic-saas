@@ -40,10 +40,10 @@ export async function WeekView({
                   key={a.id}
                   href={`/appointments/${a.id}`}
                   className="block truncate rounded bg-[var(--accent)] px-1.5 py-1 text-xs hover:opacity-80"
-                  title={`${a.patient_name} — ${a.doctor_name ?? t("labels.unassigned")}`}
+                  title={`${a.patient_name}${a.patient_khmer_name ? ` · ${a.patient_khmer_name}` : ""} — ${a.doctor_name ?? t("labels.unassigned")}`}
                 >
                   <span className="font-mono">{a.is_walk_in ? "•" : timeLabel(a.scheduled_at)}</span>{" "}
-                  {a.patient_name}
+                  {a.patient_name}{a.patient_khmer_name ? ` · ${a.patient_khmer_name}` : ""}
                 </Link>
               ))}
               {list.length === 0 && <p className="text-xs text-[var(--muted-foreground)]">—</p>}

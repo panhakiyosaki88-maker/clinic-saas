@@ -124,6 +124,7 @@ export interface PaymentRow {
   invoice_id: string;
   invoice_number: string;
   patient_name: string | null;
+  patient_khmer_name: string | null;
   amount: number;
   method: Payment["method"];
   kind: Payment["kind"];
@@ -136,13 +137,13 @@ export async function listPayments(limit = 100): Promise<PaymentRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("payments")
-    .select("id, receipt_number, invoice_id, amount, method, kind, reference, paid_at, invoices ( invoice_number, patients ( full_name ) )")
+    .select("id, receipt_number, invoice_id, amount, method, kind, reference, paid_at, invoices ( invoice_number, patients ( full_name, khmer_name ) )")
     .order("paid_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
 
   const rows = (data ?? []) as unknown as (Payment & {
-    invoices: { invoice_number: string; patients: { full_name: string } | null } | null;
+    invoices: { invoice_number: string; patients: { full_name: string; khmer_name: string | null } | null } | null;
   })[];
   return rows.map((r) => ({
     id: r.id,
@@ -150,6 +151,7 @@ export async function listPayments(limit = 100): Promise<PaymentRow[]> {
     invoice_id: r.invoice_id,
     invoice_number: r.invoices?.invoice_number ?? "—",
     patient_name: r.invoices?.patients?.full_name ?? null,
+    patient_khmer_name: r.invoices?.patients?.khmer_name ?? null,
     amount: Number(r.amount),
     method: r.method,
     kind: r.kind,

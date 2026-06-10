@@ -20,7 +20,7 @@ export async function OutstandingPayments({ report }: { report: OutstandingRepor
             {report.rows.slice(0, 5).map((r) => (
               <li key={r.invoice_number} className="flex items-center justify-between gap-3 px-5 py-2.5 text-sm">
                 <span className="truncate">
-                  <span className="font-mono text-xs text-slate-400">{r.invoice_number}</span> · {r.patient}
+                  <span className="font-mono text-xs text-slate-400">{r.invoice_number}</span> · {r.patient}{r.patientKhmer ? ` · ${r.patientKhmer}` : ""}
                 </span>
                 <span className="shrink-0 font-medium tabular-nums text-slate-700 dark:text-slate-300">{r.balance.toFixed(2)}</span>
               </li>

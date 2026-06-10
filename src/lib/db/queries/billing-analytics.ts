@@ -23,6 +23,7 @@ export interface BillingKpis {
 export interface RecentPayment {
   id: string;
   patient: string;
+  patientKhmer: string | null;
   method: string;
   kind: PaymentKind;
   amount: number;
@@ -33,6 +34,7 @@ export interface OutstandingRow {
   id: string;
   invoice_number: string;
   patient: string;
+  patientKhmer: string | null;
   balance: number;
   due_date: string | null;
   status: InvoiceStatus;
@@ -47,7 +49,7 @@ export interface BillingDashboard {
   recentPayments: RecentPayment[];
   outstandingInvoices: OutstandingRow[];
   revenueByService: Series[];
-  topPatients: { patient: string; amount: number }[];
+  topPatients: { patient: string; patientKhmer: string | null; amount: number }[];
 }
 
 type PaymentJoined = {
@@ -56,7 +58,7 @@ type PaymentJoined = {
   method: PaymentMethod;
   kind: PaymentKind;
   paid_at: string;
-  invoices: { patient_id: string | null; patients: { full_name: string } | null } | null;
+  invoices: { patient_id: string | null; patients: { full_name: string; khmer_name: string | null } | null } | null;
 };
 
 type InvoiceRow = {
@@ -70,7 +72,7 @@ type InvoiceRow = {
   patient_id: string | null;
   due_date: string | null;
   invoice_number: string;
-  patients: { full_name: string } | null;
+  patients: { full_name: string; khmer_name: string | null } | null;
 };
 
 const dayKey = (d: Date | string) => new Date(d).toISOString().slice(0, 10);
@@ -89,12 +91,12 @@ export async function getBillingDashboard(): Promise<BillingDashboard> {
   const [{ data: payData }, { data: invData }] = await Promise.all([
     supabase
       .from("payments")
-      .select("id, amount, method, kind, paid_at, invoices ( patient_id, patients ( full_name ) )")
+      .select("id, amount, method, kind, paid_at, invoices ( patient_id, patients ( full_name, khmer_name ) )")
       .gte("paid_at", yearStart.toISOString())
       .order("paid_at", { ascending: false }),
     supabase
       .from("invoices")
-      .select("id, status, total, amount_paid, balance, service_type, source, patient_id, due_date, invoice_number, patients ( full_name )")
+      .select("id, status, total, amount_paid, balance, service_type, source, patient_id, due_date, invoice_number, patients ( full_name, khmer_name )")
       .is("deleted_at", null),
   ]);
 
@@ -131,7 +133,7 @@ export async function getBillingDashboard(): Promise<BillingDashboard> {
   const daily = new Map<string, number>();
   const monthly = new Map<string, number>();
   const methodMap = new Map<string, number>();
-  const patientPay = new Map<string, { name: string; amount: number }>();
+  const patientPay = new Map<string, { name: string; khmer: string | null; amount: number }>();
   for (const p of payments) {
     const amt = signed(p);
     daily.set(dayKey(p.paid_at), (daily.get(dayKey(p.paid_at)) ?? 0) + amt);
@@ -140,7 +142,7 @@ export async function getBillingDashboard(): Promise<BillingDashboard> {
     methodMap.set(p.method, (methodMap.get(p.method) ?? 0) + amt);
     const pid = p.invoices?.patient_id;
     if (pid) {
-      const cur = patientPay.get(pid) ?? { name: p.invoices?.patients?.full_name ?? "—", amount: 0 };
+      const cur = patientPay.get(pid) ?? { name: p.invoices?.patients?.full_name ?? "—", khmer: p.invoices?.patients?.khmer_name ?? null, amount: 0 };
       cur.amount += amt;
       patientPay.set(pid, cur);
     }
@@ -176,6 +178,7 @@ export async function getBillingDashboard(): Promise<BillingDashboard> {
   const recentPayments: RecentPayment[] = payments.slice(0, 10).map((p) => ({
     id: p.id,
     patient: p.invoices?.patients?.full_name ?? "—",
+    patientKhmer: p.invoices?.patients?.khmer_name ?? null,
     method: PAYMENT_METHOD_LABELS[p.method as keyof typeof PAYMENT_METHOD_LABELS] ?? p.method,
     kind: p.kind,
     amount: Number(p.amount),
@@ -190,6 +193,7 @@ export async function getBillingDashboard(): Promise<BillingDashboard> {
       id: i.id,
       invoice_number: i.invoice_number,
       patient: i.patients?.full_name ?? "—",
+      patientKhmer: i.patients?.khmer_name ?? null,
       balance: Number(i.balance),
       due_date: i.due_date,
       status: i.status,
@@ -207,7 +211,7 @@ export async function getBillingDashboard(): Promise<BillingDashboard> {
     .slice(0, 6);
 
   const topPatients = [...patientPay.values()]
-    .map((p) => ({ patient: p.name, amount: Number(p.amount.toFixed(2)) }))
+    .map((p) => ({ patient: p.name, patientKhmer: p.khmer, amount: Number(p.amount.toFixed(2)) }))
     .filter((p) => p.amount > 0)
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5);

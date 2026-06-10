@@ -83,7 +83,7 @@ export default async function BillingDashboardPage() {
                 {d.recentPayments.map((p) => (
                   <li key={p.id} className="flex items-center justify-between gap-3 py-2">
                     <span className="min-w-0 truncate">
-                      {p.patient}
+                      {p.patient}{p.patientKhmer ? ` · ${p.patientKhmer}` : ""}
                       <span className="ml-2 text-xs text-[var(--muted-foreground)]">{p.method}</span>
                     </span>
                     <span className={`shrink-0 tabular-nums ${p.kind === "refund" ? "text-[var(--destructive)]" : ""}`}>
@@ -107,7 +107,7 @@ export default async function BillingDashboardPage() {
                   <li key={i.id} className="flex items-center justify-between gap-3 py-2">
                     <Link href={`/billing/${i.id}`} className="min-w-0 truncate text-[var(--primary)] hover:underline">
                       <span className="font-mono text-xs">{i.invoice_number}</span>
-                      <span className="ml-2">{i.patient}</span>
+                      <span className="ml-2">{i.patient}{i.patientKhmer ? ` · ${i.patientKhmer}` : ""}</span>
                     </Link>
                     <span className="shrink-0 tabular-nums">{money(i.balance)}</span>
                   </li>
@@ -144,7 +144,7 @@ export default async function BillingDashboardPage() {
               <ul className="space-y-1.5 text-sm">
                 {d.topPatients.map((p) => (
                   <li key={p.patient} className="flex items-center justify-between gap-3">
-                    <span className="min-w-0 truncate">{p.patient}</span>
+                    <span className="min-w-0 truncate">{p.patient}{p.patientKhmer ? ` · ${p.patientKhmer}` : ""}</span>
                     <span className="tabular-nums text-[var(--muted-foreground)]">{money(p.amount)}</span>
                   </li>
                 ))}

@@ -13,6 +13,7 @@ export interface AgingBuckets {
 export interface PatientDebt {
   patientId: string | null;
   patient: string;
+  patientKhmer: string | null;
   balance: number;
   oldestDays: number;
   invoiceCount: number;
@@ -32,7 +33,7 @@ type Row = {
   status: InvoiceStatus;
   issued_at: string;
   due_date: string | null;
-  patients: { full_name: string } | null;
+  patients: { full_name: string; khmer_name: string | null } | null;
 };
 
 const daysBetween = (from: Date, to: Date) => Math.floor((to.getTime() - from.getTime()) / 86_400_000);
@@ -45,7 +46,7 @@ export async function getDebtReport(): Promise<DebtReport> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("invoices")
-    .select("patient_id, balance, status, issued_at, due_date, patients ( full_name )")
+    .select("patient_id, balance, status, issued_at, due_date, patients ( full_name, khmer_name )")
     .is("deleted_at", null)
     .neq("status", "cancelled")
     .gt("balance", 0);
@@ -74,6 +75,7 @@ export async function getDebtReport(): Promise<DebtReport> {
     const cur = byKey.get(key) ?? {
       patientId: r.patient_id,
       patient: r.patients?.full_name ?? "Walk-in / no patient",
+      patientKhmer: r.patients?.khmer_name ?? null,
       balance: 0,
       oldestDays: 0,
       invoiceCount: 0,

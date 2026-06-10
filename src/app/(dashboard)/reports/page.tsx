@@ -313,7 +313,10 @@ export default async function ReportsPage({
             <ReportExport
               name="outstanding-invoices"
               columns={[{ key: "invoice_number", label: "Invoice" }, { key: "patient", label: "Patient" }, { key: "balance", label: "Balance" }]}
-              rows={outstanding.rows}
+              rows={outstanding.rows.map((r) => ({
+                ...r,
+                patient: r.patientKhmer ? `${r.patient} · ${r.patientKhmer}` : r.patient,
+              }))}
             />
           </CardHeader>
           <CardContent>
@@ -323,7 +326,7 @@ export default async function ReportsPage({
                   {outstanding.rows.map((r) => (
                     <tr key={r.invoice_number} className="border-b border-[var(--border)] last:border-0">
                       <td className="py-1 font-mono text-xs">{r.invoice_number}</td>
-                      <td className="py-1">{r.patient}</td>
+                      <td className="py-1">{r.patient}{r.patientKhmer ? ` · ${r.patientKhmer}` : ""}</td>
                       <td className="py-1 text-right tabular-nums">{money(r.balance)}</td>
                     </tr>
                   ))}

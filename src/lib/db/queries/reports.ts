@@ -298,14 +298,14 @@ export async function getInventoryReport(): Promise<InventoryReport> {
 export interface OutstandingReport {
   count: number;
   total: number;
-  rows: { invoice_number: string; patient: string; balance: number }[];
+  rows: { invoice_number: string; patient: string; patientKhmer: string | null; balance: number }[];
 }
 
 export async function getOutstandingReport(): Promise<OutstandingReport> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("invoices")
-    .select("invoice_number, balance, patients ( full_name )")
+    .select("invoice_number, balance, patients ( full_name, khmer_name )")
     .is("deleted_at", null)
     .in("status", ["unpaid", "partially_paid"])
     .order("balance", { ascending: false });
@@ -313,10 +313,11 @@ export async function getOutstandingReport(): Promise<OutstandingReport> {
   const rows = ((data ?? []) as unknown as {
     invoice_number: string;
     balance: number;
-    patients: { full_name: string } | null;
+    patients: { full_name: string; khmer_name: string | null } | null;
   }[]).map((r) => ({
     invoice_number: r.invoice_number,
     patient: r.patients?.full_name ?? "—",
+    patientKhmer: r.patients?.khmer_name ?? null,
     balance: Number(r.balance),
   }));
 
