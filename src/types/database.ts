@@ -328,6 +328,7 @@ export interface Database {
           date_of_birth: string | null;
           phone: string | null;
           email: string | null;
+          telegram_chat_id: string | null;
           address: string | null;
           occupation: string | null;
           emergency_contact_name: string | null;
@@ -362,6 +363,7 @@ export interface Database {
           date_of_birth?: string | null;
           phone?: string | null;
           email?: string | null;
+          telegram_chat_id?: string | null;
           address?: string | null;
           occupation?: string | null;
           emergency_contact_name?: string | null;
@@ -1641,6 +1643,9 @@ export interface Database {
           appointment_id: string | null;
           invoice_id: string | null;
           sent_at: string | null;
+          scheduled_for: string | null;
+          attempts: number;
+          last_attempt_at: string | null;
           created_at: string;
           created_by: string | null;
         };
@@ -1658,10 +1663,73 @@ export interface Database {
           appointment_id?: string | null;
           invoice_id?: string | null;
           sent_at?: string | null;
+          scheduled_for?: string | null;
+          attempts?: number;
+          last_attempt_at?: string | null;
           created_at?: string;
           created_by?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>;
+        Relationships: [];
+      };
+      notification_settings: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          default_channel: NotificationChannel;
+          appointment_reminder_enabled: boolean;
+          appointment_lead_hours: number;
+          payment_reminder_enabled: boolean;
+          payment_overdue_days: number;
+          follow_up_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          default_channel?: NotificationChannel;
+          appointment_reminder_enabled?: boolean;
+          appointment_lead_hours?: number;
+          payment_reminder_enabled?: boolean;
+          payment_overdue_days?: number;
+          follow_up_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["notification_settings"]["Insert"]>;
+        Relationships: [];
+      };
+      notification_templates: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          type: NotificationType;
+          channel: NotificationChannel;
+          subject: string | null;
+          body: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          type: NotificationType;
+          channel?: NotificationChannel;
+          subject?: string | null;
+          body: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["notification_templates"]["Insert"]>;
         Relationships: [];
       };
       prescriptions: {

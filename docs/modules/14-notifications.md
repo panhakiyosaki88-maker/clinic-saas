@@ -16,6 +16,27 @@ Backlog item from the original spec, built after the 13 core modules.
 - **UI**: "Send reminder" on an appointment, "Payment reminder" on an unpaid invoice, a "Send
   follow-up" box on the patient profile, and a **/notifications** log page. Dashboard link.
 
+## Enhancement (`supabase/migrations/0050_notifications_enhance.sql`)
+Turns the passive log into an operational, automated channel.
+- **Patient Telegram** (`patients.telegram_chat_id`) + a field on the patient form. Sends now go
+  through **channel dispatch** (`src/lib/notifications/dispatch.ts`): pick the clinic's default
+  channel, falling back to whichever contact the patient actually has; the real channel is logged
+  (no more hardcoded `email`).
+- **Per-clinic settings** (`notification_settings`): default channel, per-type toggles, appointment
+  lead hours, payment-overdue days. **Message templates** (`notification_templates`) per
+  (type, channel) with `{{variable}}` placeholders — clinic overrides fall back to the built-in
+  defaults in `src/lib/notifications/templates.ts`. Edited at **/settings/notifications**.
+- **Scheduled auto-reminders**: `GET /api/cron/reminders` (Vercel Cron, hourly in `vercel.json`,
+  authenticated by `CRON_SECRET`) sweeps every clinic via the service-role client and sends due
+  appointment & payment reminders. The core is `processClinicReminders()`
+  (`src/lib/notifications/reminders.ts`) — **idempotent**, skips already-sent rows. The same
+  processor backs the manual **"Run due now"** button and the **"Remind tomorrow"** bulk button.
+- **Queue columns** on `notifications` (`scheduled_for`, `attempts`, `last_attempt_at`) + a partial
+  index on pending/due rows.
+- **Log overhaul** (`/notifications`): filter by type/status/channel/date + search, **patient
+  links**, **channel column**, per-row **Retry** (`retryNotification`), and a **detail view**
+  (`/notifications/[id]`) showing the full rendered message.
+
 ## Configure email (Resend) — for these in-app reminders
 1. Create an account at <https://resend.com>, verify a sending domain (or use the test sender).
 2. Create an API key.
@@ -23,7 +44,15 @@ Backlog item from the original spec, built after the 13 core modules.
    - `RESEND_API_KEY` = your key
    - `EMAIL_FROM` = `Your Clinic <noreply@yourdomain.com>`
 4. Redeploy. Reminders now actually send; until then they're logged as **skipped**.
-5. (Optional) `TELEGRAM_BOT_TOKEN` to enable Telegram sends.
+5. (Optional) `TELEGRAM_BOT_TOKEN` to enable Telegram sends (patients need a `telegram_chat_id`).
+
+## Enable scheduled reminders (Vercel Cron)
+1. In **Vercel → Settings → Environment Variables** add `CRON_SECRET` (any long random string).
+   Vercel automatically sends it as `Authorization: Bearer ${CRON_SECRET}` to the cron route.
+2. Redeploy. The cron in `vercel.json` (`/api/cron/reminders`, `0 * * * *`) then runs.
+   **Note:** Vercel **Hobby** executes crons only **once per day** regardless of schedule; **Pro**
+   honours hourly. Until then (or any time), staff can press **Run due now** / **Remind tomorrow**.
+3. Tune timing & toggles per clinic at **/settings/notifications**.
 
 ## Configure Auth emails (signup confirmation / password reset) — separate!
 Those are sent by **Supabase Auth**, not this module. To turn "Confirm email" back on:
@@ -48,6 +77,7 @@ New signups will then receive a real confirmation email (handled by `/auth/confi
 4. `/notifications` shows the full log; failures show the error.
 
 ## Follow-ups
-- Scheduled/automatic reminders (cron) instead of manual buttons.
-- Telegram chat-id capture per patient; SMS channel.
-- Retry failed sends from the log.
+- SMS channel (Twilio/local gateway) alongside email + Telegram.
+- Per-patient quiet hours / opt-out beyond the existing `do_not_contact` flag.
+- Move to a true durable queue (enqueue `pending` rows on appointment create) if reminder volume
+  outgrows the on-the-fly scan.

@@ -55,6 +55,7 @@ function toColumns(v: Partial<CreatePatientInput>): PatientWrite {
   if (v.dateOfBirth !== undefined) out.date_of_birth = orNull(v.dateOfBirth);
   if (v.phone !== undefined) out.phone = orNull(v.phone);
   if (v.email !== undefined) out.email = orNull(v.email);
+  if (v.telegramChatId !== undefined) out.telegram_chat_id = orNull(v.telegramChatId);
   if (v.address !== undefined) out.address = orNull(v.address);
   if (v.occupation !== undefined) out.occupation = orNull(v.occupation);
   if (v.emergencyContactName !== undefined) out.emergency_contact_name = orNull(v.emergencyContactName);

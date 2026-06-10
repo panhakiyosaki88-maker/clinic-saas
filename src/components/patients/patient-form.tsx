@@ -66,6 +66,7 @@ export function PatientForm({
       dateOfBirth: String(f.get("dateOfBirth") ?? ""),
       phone: String(f.get("phone") ?? ""),
       email: String(f.get("email") ?? ""),
+      telegramChatId: String(f.get("telegramChatId") ?? ""),
       address: String(f.get("address") ?? ""),
       occupation: String(f.get("occupation") ?? ""),
       emergencyContactName: String(f.get("emergencyContactName") ?? ""),
@@ -138,6 +139,9 @@ export function PatientForm({
           </Field>
           <Field label={t("email")} htmlFor="email" errors={fieldErrors.email}>
             <Input id="email" name="email" type="email" defaultValue={patient?.email ?? ""} />
+          </Field>
+          <Field label={t("telegram")} htmlFor="telegramChatId">
+            <Input id="telegramChatId" name="telegramChatId" defaultValue={patient?.telegram_chat_id ?? ""} placeholder={t("telegramHint")} />
           </Field>
           <Field label={t("bloodType")} htmlFor="bloodType">
             <select id="bloodType" name="bloodType" className={selectClass} defaultValue={patient?.blood_type ?? ""}>

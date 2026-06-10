@@ -177,11 +177,30 @@
     "allSettings": "All settings",
     "profileSubtitle": "Your clinic profile",
     "sections": {
-      "general": { "label": "General", "description": "Clinic name, contact details, timezone and currency" },
-      "branches": { "label": "Branches", "description": "Manage your clinic's physical locations" },
-      "billing": { "label": "Billing", "description": "Price catalog, procedures, memberships & payment settings" },
-      "staff": { "label": "Staff & roles", "description": "Invite team members and assign their roles" },
-      "subscription": { "label": "Subscription", "description": "Your plan, limits and usage" }
+      "general": {
+        "label": "General",
+        "description": "Clinic name, contact details, timezone and currency"
+      },
+      "branches": {
+        "label": "Branches",
+        "description": "Manage your clinic's physical locations"
+      },
+      "billing": {
+        "label": "Billing",
+        "description": "Price catalog, procedures, memberships & payment settings"
+      },
+      "staff": {
+        "label": "Staff & roles",
+        "description": "Invite team members and assign their roles"
+      },
+      "subscription": {
+        "label": "Subscription",
+        "description": "Your plan, limits and usage"
+      },
+      "notifications": {
+        "label": "Notifications",
+        "description": "Reminder channels, timing and message templates"
+      }
     },
     "branches": {
       "summary": "{count, plural, one {# location} other {# locations}}",
@@ -328,18 +347,54 @@
       "appointmentsCalendar": "Appointments Calendar"
     },
     "empty": {
-      "noAppointmentsToday": { "title": "No appointments today", "hint": "When patients are booked, they'll show up here in order." },
-      "noDoctors": { "title": "No doctors yet", "hint": "Add doctors and set their weekly hours to see who's in today." },
-      "queueClear": { "title": "Queue is clear", "hint": "Checked-in, in-consultation and completed patients show up here through the day." },
-      "noPatients": { "title": "No patients yet", "hint": "Register your first patient to start tracking your practice." },
-      "noRevenue": { "title": "No revenue this period", "hint": "Recorded payments will be summarized here." },
-      "allSettled": { "title": "All settled", "hint": "No unpaid invoices. Nice." },
-      "inventoryHealthy": { "title": "Inventory healthy", "hint": "No low-stock or expiring items right now." },
-      "noActivity": { "title": "No recent activity", "hint": "Actions across the clinic will appear here." },
-      "noAppointments": { "title": "No appointments yet", "hint": "Your booking trend will chart here." },
-      "noRevenueYet": { "title": "No revenue yet", "hint": "Monthly collected revenue will chart here." },
-      "noNewPatients": { "title": "No new patients yet", "hint": "New registrations over the last 30 days chart here." },
-      "noVisits": { "title": "No visits this month", "hint": "Visits recorded per doctor will chart here." }
+      "noAppointmentsToday": {
+        "title": "No appointments today",
+        "hint": "When patients are booked, they'll show up here in order."
+      },
+      "noDoctors": {
+        "title": "No doctors yet",
+        "hint": "Add doctors and set their weekly hours to see who's in today."
+      },
+      "queueClear": {
+        "title": "Queue is clear",
+        "hint": "Checked-in, in-consultation and completed patients show up here through the day."
+      },
+      "noPatients": {
+        "title": "No patients yet",
+        "hint": "Register your first patient to start tracking your practice."
+      },
+      "noRevenue": {
+        "title": "No revenue this period",
+        "hint": "Recorded payments will be summarized here."
+      },
+      "allSettled": {
+        "title": "All settled",
+        "hint": "No unpaid invoices. Nice."
+      },
+      "inventoryHealthy": {
+        "title": "Inventory healthy",
+        "hint": "No low-stock or expiring items right now."
+      },
+      "noActivity": {
+        "title": "No recent activity",
+        "hint": "Actions across the clinic will appear here."
+      },
+      "noAppointments": {
+        "title": "No appointments yet",
+        "hint": "Your booking trend will chart here."
+      },
+      "noRevenueYet": {
+        "title": "No revenue yet",
+        "hint": "Monthly collected revenue will chart here."
+      },
+      "noNewPatients": {
+        "title": "No new patients yet",
+        "hint": "New registrations over the last 30 days chart here."
+      },
+      "noVisits": {
+        "title": "No visits this month",
+        "hint": "Visits recorded per doctor will chart here."
+      }
     },
     "labels": {
       "unassigned": "Unassigned",
@@ -635,14 +690,31 @@
       "bloodType": "Blood type",
       "unknown": "Unknown",
       "maritalStatus": "Marital status",
-      "marital": { "single": "Single", "married": "Married", "divorced": "Divorced", "widowed": "Widowed", "other": "Other" },
+      "marital": {
+        "single": "Single",
+        "married": "Married",
+        "divorced": "Divorced",
+        "widowed": "Widowed",
+        "other": "Other"
+      },
       "idDocType": "ID document type",
-      "idType": { "national_id": "National ID", "passport": "Passport", "driver_license": "Driver license", "other": "Other" },
+      "idType": {
+        "national_id": "National ID",
+        "passport": "Passport",
+        "driver_license": "Driver license",
+        "other": "Other"
+      },
       "idDocNumber": "ID document number",
       "address": "Address",
       "preferredLanguage": "Preferred language",
       "preferredContactMethod": "Preferred contact method",
-      "contact": { "phone": "Phone", "sms": "SMS", "email": "Email", "telegram": "Telegram", "none": "Do not contact" },
+      "contact": {
+        "phone": "Phone",
+        "sms": "SMS",
+        "email": "Email",
+        "telegram": "Telegram",
+        "none": "Do not contact"
+      },
       "doNotContact": "Do not contact this patient",
       "emergencyName": "Emergency contact name",
       "emergencyPhone": "Emergency contact phone",
@@ -668,7 +740,9 @@
       "cancel": "Cancel",
       "deleting": "Deleting…",
       "confirm": "Delete permanently"
-    }
+    },
+    "telegram": "Telegram chat ID",
+    "telegramHint": "e.g. 123456789"
   },
   "appointments": {
     "title": "Appointments",
@@ -1393,7 +1467,11 @@
       "title": "Title",
       "fullName": "Full name",
       "gender": "Gender",
-      "genderOpt": { "male": "Male", "female": "Female", "other": "Other" },
+      "genderOpt": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
       "languages": "Languages",
       "phone": "Phone",
       "email": "Email",
@@ -1439,12 +1517,14 @@
       "when": "When",
       "type": "Type",
       "recipient": "Recipient",
-      "status": "Status"
+      "status": "Status",
+      "channel": "Channel"
     },
     "type": {
       "appointment_reminder": "Appointment reminder",
       "payment_reminder": "Payment reminder",
-      "follow_up": "Follow-up"
+      "follow_up": "Follow-up",
+      "custom": "Custom"
     },
     "status": {
       "sent": "Sent",
@@ -1455,6 +1535,69 @@
     "button": {
       "send": "Send reminder",
       "sending": "Sending…"
+    },
+    "filters": {
+      "search": "Search recipient or subject…",
+      "allTypes": "All types",
+      "allStatuses": "All statuses",
+      "allChannels": "All channels",
+      "from": "From",
+      "to": "To"
+    },
+    "actions": {
+      "retry": "Retry",
+      "retrying": "Retrying…",
+      "runDue": "Run due now",
+      "running": "Running…",
+      "ranDue": "Sent {appointment} appointment & {payment} payment reminders",
+      "remindTomorrow": "Remind tomorrow",
+      "remindingTomorrow": "Reminding…",
+      "remindedTomorrow": "Reminded {count} appointment(s) for tomorrow"
+    },
+    "detail": {
+      "back": "← Notifications",
+      "address": "Address",
+      "sentAt": "Sent at",
+      "attempts": "Attempts",
+      "error": "Error",
+      "subject": "Subject",
+      "message": "Message"
+    },
+    "settings": {
+      "pageTitle": "Notification settings",
+      "pageSubtitle": "Reminder channels, timing and message templates",
+      "title": "Reminders",
+      "defaultChannel": "Default channel",
+      "defaultChannelHint": "Used when a patient has both an email and a Telegram contact.",
+      "channel": {
+        "email": "Email",
+        "telegram": "Telegram"
+      },
+      "appointmentReminders": "Appointment reminders",
+      "leadHours": "Hours before",
+      "paymentReminders": "Payment reminders",
+      "overdueDays": "Days overdue",
+      "followUps": "Follow-up messages",
+      "save": "Save settings",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "templates": {
+        "title": "Message templates",
+        "intro": "Customize the subject and body for each reminder. Use {{variables}} that are replaced when the message is sent.",
+        "subject": "Subject",
+        "body": "Message body",
+        "variables": "Variables",
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Saved.",
+        "reset": "Reverted to default.",
+        "resetToDefault": "Reset to default",
+        "usingDefault": "Using the default template",
+        "channel": {
+          "email": "Email",
+          "telegram": "Telegram"
+        }
+      }
     }
   },
   "reports": {
@@ -1717,7 +1860,12 @@
       "addMedicine": "Add medicine",
       "medicine": "Medicine *",
       "dosage": "Dosage — amount per time of day",
-      "times": { "morning": "Morning", "afternoon": "Afternoon", "evening": "Evening", "night": "Night" },
+      "times": {
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening",
+        "night": "Night"
+      },
       "decreaseDose": "Decrease {time} dose",
       "increaseDose": "Increase {time} dose",
       "duration": "Duration",
@@ -2158,7 +2306,8 @@
       "notFound": "Patient not found."
     },
     "notification": {
-      "enterMessage": "Enter a message"
+      "enterMessage": "Enter a message",
+      "bodyRequired": "Enter a message body"
     },
     "invoice": {
       "descriptionRequired": "Description is required",
@@ -2209,6 +2358,7 @@
       "skuGenFailed": "Could not generate a unique SKU. Please try again.",
       "notFound": "Medicine not found.",
       "onlyInStock": "Only {count} in stock."
-    }
+    },
+    "notFound": "Not found."
   }
 }

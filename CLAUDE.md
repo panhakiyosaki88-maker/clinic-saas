@@ -66,5 +66,9 @@ docs/modules/             one doc per module
 - [x] **Module 11 — Laboratory** (categories, lab requests + status lifecycle, result upload/history)
 - [x] **Module 12 — Reports** (revenue/patients/appointments/doctors/inventory/outstanding, CSV/Excel/PDF export)
 - [x] **Module 13 — Subscriptions & Super Admin** (plans/limits/usage, plan switching, platform portal: clinics/users/audit/analytics)
-- [x] **Module 14 — Notifications** (email via Resend + Telegram, appointment/payment/follow-up reminders, logged)
-- [ ] Backlog — real billing (Stripe/KHQR QR), per-feature plan gating, scheduled/auto reminders
+- [x] **Module 14 — Notifications** (email via Resend + Telegram, appointment/payment/follow-up reminders, logged;
+  enriched 0050: per-patient Telegram + channel dispatch (clinic default, falls back to available contact),
+  editable per-clinic settings (toggles/lead times/default channel) + message templates with {{variables}},
+  scheduled auto-reminders via Vercel Cron (/api/cron/reminders, CRON_SECRET) + manual "Run due now",
+  log filters/search + patient links + channel column + per-row retry + detail view)
+- [ ] Backlog — real billing (Stripe/KHQR QR), per-feature plan gating

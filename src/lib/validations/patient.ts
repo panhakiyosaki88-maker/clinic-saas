@@ -23,6 +23,7 @@ export const createPatientSchema = z.object({
   dateOfBirth: dateString,
   phone: optionalShort,
   email: z.string().email("invalidEmail").optional().or(z.literal("")),
+  telegramChatId: optionalShort,
   address: optionalText,
   occupation: optionalShort,
   emergencyContactName: optionalShort,
