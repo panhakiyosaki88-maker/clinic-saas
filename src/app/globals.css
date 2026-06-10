@@ -151,3 +151,21 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Printing (prescriptions, invoices, receipts, etc.).
+   A zero page margin tells Chrome/Edge to drop their auto-injected header
+   (page title + date) and footer (URL + page number). We restore a real
+   paper margin via body padding so the document is not cut off. */
+@page {
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+  }
+  body {
+    padding: 14mm;
+  }
+}
