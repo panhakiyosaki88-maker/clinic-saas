@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { addLabResult } from "@/server/actions/lab";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -27,6 +28,7 @@ export function PatientLabUpload({
 }) {
   const router = useRouter();
   const t = useTranslations("lab.upload");
+  const tc = useTranslations("common");
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [done, setDone] = React.useState(false);
@@ -39,6 +41,10 @@ export function PatientLabUpload({
     const file = (new FormData(form).get("file") as File) || null;
     if (!file || file.size === 0) {
       setError(t("chooseFile"));
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(tc("fileTooLarge", { max: MAX_UPLOAD_MB }));
       return;
     }
     if (requestIds.length === 0) {

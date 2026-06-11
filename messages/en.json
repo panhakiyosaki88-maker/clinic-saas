@@ -2,7 +2,18 @@
   "common": {
     "save": "Save changes",
     "cancel": "Cancel",
-    "language": "Language"
+    "language": "Language",
+    "fileTooLarge": "File is too large. Maximum size is {max} MB."
+  },
+  "imageCropper": {
+    "title": "Edit image",
+    "hint": "Drag to reposition, scroll or use the slider to zoom.",
+    "zoom": "Zoom",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "applying": "Applying…",
+    "failed": "Could not process the image."
   },
   "patientPicker": {
     "queueToday": "In queue today ({count})",
@@ -116,7 +127,7 @@
       "changeLogo": "Change logo",
       "uploadLogo": "Upload logo",
       "remove": "Remove",
-      "hint": "PNG, JPG or SVG up to 2 MB. Appears in the side menu.",
+      "hint": "PNG or JPG up to 2 MB. Crop and zoom before uploading. Appears in the side menu.",
       "alt": "Clinic logo"
     },
     "qrUploader": {
@@ -1343,6 +1354,7 @@
       "confirm": "Confirm",
       "cancel": "Cancel",
       "changePhoto": "Change photo",
+      "chooseImage": "Please choose an image file.",
       "general": "General",
       "licPrefix": "Lic.",
       "active": "Active",

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { recordPatientDocument } from "@/server/actions/patients";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploads";
 import { Button } from "@/components/ui/button";
 
 /** Sanitizes a filename for use in a storage object key. */
@@ -23,6 +24,7 @@ export function DocumentUploader({
 }) {
   const router = useRouter();
   const t = useTranslations("patients.documentUploader");
+  const tc = useTranslations("common");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -31,8 +33,13 @@ export function DocumentUploader({
   async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setBusy(true);
     setError(null);
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(tc("fileTooLarge", { max: MAX_UPLOAD_MB }));
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    setBusy(true);
 
     try {
       const path = `${clinicId}/${patientId}/${crypto.randomUUID()}-${safeName(file.name)}`;

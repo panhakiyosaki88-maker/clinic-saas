@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_UPLOAD_BYTES } from "@/lib/uploads";
 
 const optionalShort = z.string().trim().max(255).optional().or(z.literal(""));
 const emptyToUndef = (v: unknown) => (v === "" || v === null ? undefined : v);
@@ -112,7 +113,7 @@ export const recordDoctorDocumentSchema = z.object({
   filePath: z.string().min(1),
   fileName: z.string().min(1).max(255),
   mimeType: z.string().max(255).optional(),
-  sizeBytes: z.number().int().nonnegative().optional(),
+  sizeBytes: z.number().int().nonnegative().max(MAX_UPLOAD_BYTES).optional(),
   category: doctorDocCategorySchema.optional().or(z.literal("")),
 });
 export type RecordDoctorDocumentInput = z.infer<typeof recordDoctorDocumentSchema>;

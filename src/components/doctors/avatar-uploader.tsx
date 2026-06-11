@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { setDoctorAvatar } from "@/server/actions/doctors";
-
-function safeName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
-}
+import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from "@/lib/uploads";
+import { ImageCropper } from "@/components/ui/image-cropper";
 
 /** Avatar bubble with an inline "change photo" upload (write-gated by caller). */
 export function AvatarUploader({
@@ -24,21 +22,39 @@ export function AvatarUploader({
 }) {
   const router = useRouter();
   const t = useTranslations("doctors.profile");
+  const tc = useTranslations("common");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [editSrc, setEditSrc] = React.useState<string | null>(null);
 
-  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    if (inputRef.current) inputRef.current.value = "";
     if (!file) return;
+    setError(null);
+    if (!file.type.startsWith("image/")) {
+      setError(t("chooseImage"));
+      return;
+    }
+    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+      setError(tc("fileTooLarge", { max: MAX_IMAGE_UPLOAD_MB }));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setEditSrc(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function onConfirm(blob: Blob) {
     setBusy(true);
     setError(null);
     try {
-      const path = `${clinicId}/${doctorId}/avatar-${crypto.randomUUID()}-${safeName(file.name)}`;
+      const path = `${clinicId}/${doctorId}/avatar-${crypto.randomUUID()}.png`;
       const supabase = createClient();
       const { error: upErr } = await supabase.storage
         .from("doctor-avatars")
-        .upload(path, file, { upsert: false, contentType: file.type || undefined });
+        .upload(path, blob, { upsert: false, contentType: "image/png" });
       if (upErr) {
         setError(upErr.message);
         return;
@@ -49,10 +65,10 @@ export function AvatarUploader({
         setError(res.error);
         return;
       }
+      setEditSrc(null);
       router.refresh();
     } finally {
       setBusy(false);
-      if (inputRef.current) inputRef.current.value = "";
     }
   }
 
@@ -66,7 +82,7 @@ export function AvatarUploader({
           fallback || "Dr"
         )}
       </div>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} disabled={busy} />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onPick} disabled={busy} />
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
@@ -77,6 +93,17 @@ export function AvatarUploader({
         {busy ? "…" : t("edit")}
       </button>
       {error && <p className="absolute left-0 top-16 w-40 text-xs text-[var(--destructive)]">{error}</p>}
+      {editSrc && (
+        <ImageCropper
+          src={editSrc}
+          aspect={1}
+          cropShape="round"
+          maxSize={512}
+          busy={busy}
+          onCancel={() => setEditSrc(null)}
+          onConfirm={onConfirm}
+        />
+      )}
     </div>
   );
 }

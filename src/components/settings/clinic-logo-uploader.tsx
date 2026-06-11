@@ -7,13 +7,9 @@ import { Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { setClinicLogo } from "@/server/actions/clinic";
 import { clinicLogoUrl } from "@/lib/clinic-logo";
+import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from "@/lib/uploads";
+import { ImageCropper } from "@/components/ui/image-cropper";
 import { Button } from "@/components/ui/button";
-
-function safeName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
-}
-
-const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 
 export function ClinicLogoUploader({
   clinicId,
@@ -24,14 +20,17 @@ export function ClinicLogoUploader({
 }) {
   const router = useRouter();
   const t = useTranslations("settings.logoUploader");
+  const tc = useTranslations("common");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [editSrc, setEditSrc] = React.useState<string | null>(null);
 
   const url = clinicLogoUrl(logoPath);
 
-  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    if (inputRef.current) inputRef.current.value = "";
     if (!file) return;
     setError(null);
 
@@ -39,18 +38,24 @@ export function ClinicLogoUploader({
       setError(t("chooseImage"));
       return;
     }
-    if (file.size > MAX_BYTES) {
-      setError(t("maxSize"));
+    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+      setError(tc("fileTooLarge", { max: MAX_IMAGE_UPLOAD_MB }));
       return;
     }
+    const reader = new FileReader();
+    reader.onload = () => setEditSrc(reader.result as string);
+    reader.readAsDataURL(file);
+  }
 
+  async function onConfirm(blob: Blob) {
     setBusy(true);
+    setError(null);
     try {
-      const path = `${clinicId}/${crypto.randomUUID()}-${safeName(file.name)}`;
+      const path = `${clinicId}/${crypto.randomUUID()}.png`;
       const supabase = createClient();
       const { error: upErr } = await supabase.storage
         .from("clinic-logos")
-        .upload(path, file, { upsert: false, contentType: file.type || undefined });
+        .upload(path, blob, { upsert: false, contentType: "image/png" });
       if (upErr) {
         setError(upErr.message);
         return;
@@ -61,10 +66,10 @@ export function ClinicLogoUploader({
         setError(result.error);
         return;
       }
+      setEditSrc(null);
       router.refresh();
     } finally {
       setBusy(false);
-      if (inputRef.current) inputRef.current.value = "";
     }
   }
 
@@ -101,7 +106,7 @@ export function ClinicLogoUploader({
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={onChange}
+            onChange={onPick}
             disabled={busy}
           />
           <Button size="sm" variant="outline" disabled={busy} onClick={() => inputRef.current?.click()}>
@@ -118,6 +123,18 @@ export function ClinicLogoUploader({
         </p>
         {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
       </div>
+
+      {editSrc && (
+        <ImageCropper
+          src={editSrc}
+          aspect={1}
+          cropShape="rect"
+          maxSize={512}
+          busy={busy}
+          onCancel={() => setEditSrc(null)}
+          onConfirm={onConfirm}
+        />
+      )}
     </div>
   );
 }

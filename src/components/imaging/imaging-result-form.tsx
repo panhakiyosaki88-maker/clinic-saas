@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { saveImagingResult, addImagingFile } from "@/server/actions/imaging";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploads";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ export function ImagingResultForm({
 }) {
   const router = useRouter();
   const t = useTranslations("imaging.result");
+  const tc = useTranslations("common");
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [done, setDone] = React.useState(false);
@@ -51,6 +53,10 @@ export function ImagingResultForm({
 
       const file = (f.get("file") as File) || null;
       if (file && file.size > 0) {
+        if (file.size > MAX_UPLOAD_BYTES) {
+          setError(tc("fileTooLarge", { max: MAX_UPLOAD_MB }));
+          return;
+        }
         const path = `${clinicId}/${requestId}/${crypto.randomUUID()}-${safeName(file.name)}`;
         const supabase = createClient();
         const { error: upErr } = await supabase.storage

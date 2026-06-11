@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_UPLOAD_BYTES } from "@/lib/uploads";
 
 const optionalText = z.string().trim().max(2000).optional().or(z.literal(""));
 const optionalShort = z.string().trim().max(255).optional().or(z.literal(""));
@@ -155,7 +156,7 @@ export const recordDocumentSchema = z.object({
   filePath: z.string().min(1),
   fileName: z.string().min(1).max(255),
   mimeType: z.string().max(255).optional(),
-  sizeBytes: z.number().int().nonnegative().optional(),
+  sizeBytes: z.number().int().nonnegative().max(MAX_UPLOAD_BYTES).optional(),
   category: documentCategorySchema.optional().or(z.literal("")),
 });
 export type RecordDocumentInput = z.infer<typeof recordDocumentSchema>;
