@@ -261,6 +261,9 @@ export default async function DashboardPage() {
           {canAppts && <TodaySchedule items={scheduleItems} title={scheduleTitle} canBook={quickFlags.appointment} />}
           {canAppts && (
             <MiniCalendar
+              // Remount when the active branch changes so the cached client-side
+              // month data resets to the newly-scoped server data.
+              key={activeId ?? "all"}
               initialYear={monthStart.getFullYear()}
               initialMonth={monthStart.getMonth()}
               initialDays={calDays}

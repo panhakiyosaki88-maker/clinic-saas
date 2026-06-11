@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/lib/auth/guard";
-import { branchIdForWrite } from "@/lib/branch/active-branch";
+import { branchIdForWrite, getActiveBranchContext } from "@/lib/branch/active-branch";
+import { applyBranchFilter } from "@/lib/branch/filter";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   createAppointmentSchema,
@@ -38,12 +39,19 @@ export async function getAppointmentCalendar(
 ): Promise<ActionResult<{ days: Record<string, CalendarDay> }>> {
   await requirePermission(PERMISSIONS.APPOINTMENTS_READ);
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("appointments")
-    .select("scheduled_at, doctors ( full_name, avatar_path )")
-    .is("deleted_at", null)
-    .gte("scheduled_at", fromISO)
-    .lt("scheduled_at", toISO);
+  // Scope month navigation to the active (top-bar) branch, matching the
+  // server-rendered first month on the dashboard.
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const { data, error } = await applyBranchFilter(
+    supabase
+      .from("appointments")
+      .select("scheduled_at, doctors ( full_name, avatar_path )")
+      .is("deleted_at", null)
+      .gte("scheduled_at", fromISO)
+      .lt("scheduled_at", toISO),
+    activeId,
+    primaryId
+  );
   if (error) return fail(error.message);
 
   const rows = (data ?? []) as unknown as {
