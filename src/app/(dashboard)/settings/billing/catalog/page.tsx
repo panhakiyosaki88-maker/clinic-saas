@@ -4,8 +4,8 @@ import { getCurrentClinic } from "@/lib/db/queries/clinic";
 import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listServicePrices, getServicePrice } from "@/lib/db/queries/service-prices";
 import { listLabCategories } from "@/lib/db/queries/lab";
-import { listImagingServices } from "@/lib/db/queries/imaging";
-import { listProcedures } from "@/lib/db/queries/procedures";
+import { listImagingServices, listImagingCategories } from "@/lib/db/queries/imaging";
+import { listProcedures, listProcedureCategories } from "@/lib/db/queries/procedures";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import { SERVICE_CATEGORIES } from "@/lib/validations/service-price";
@@ -37,38 +37,70 @@ export default async function CatalogPage({
   const sp = await searchParams;
   const showArchived = sp.archived === "1";
 
-  const [prices, { branches, activeId }, editing, labCats, imagingSvcs, procedures] = await Promise.all([
+  const [prices, { branches, activeId }, editing, labCats, imagingSvcs, imagingCats, procedures, procedureCats] = await Promise.all([
     listServicePrices(showArchived),
     getActiveBranchContext(),
     canWrite && sp.edit ? getServicePrice(sp.edit) : Promise.resolve(null),
     listLabCategories(),
     listImagingServices(),
+    listImagingCategories(),
     listProcedures(),
+    listProcedureCategories(),
   ]);
   const branchOpts = branches.map((b) => ({ id: b.id, name: b.name }));
 
-  // Prices defined inside the clinical modules (each keeps its own catalog).
-  // Surfaced here read-with-inline-edit so all prices live in one place.
-  const allModuleSections: { source: ModulePriceSource; title: string; rows: ModuleRow[] }[] = [
-    {
-      source: "lab",
-      title: t("moduleLab"),
-      rows: labCats.filter((c) => c.is_active).map((c) => ({ id: c.id, name: c.name, code: null, price: Number(c.default_price) })),
-    },
-    {
-      source: "imaging",
-      title: t("moduleImaging"),
-      rows: imagingSvcs.filter((s) => s.is_active).map((s) => ({ id: s.id, name: s.name, code: s.code, price: Number(s.default_price) })),
-    },
-    {
-      source: "procedure",
-      title: t("moduleProcedures"),
-      rows: procedures.filter((p) => p.is_active).map((p) => ({ id: p.id, name: p.name, code: p.code, price: Number(p.default_price) })),
-    },
-  ];
-  const moduleSections = allModuleSections.filter((s) => s.rows.length > 0);
+  // Prices defined inside the clinical modules (each keeps its own catalog),
+  // surfaced here read-with-inline-edit so all prices live in one place. Each
+  // module's items are grouped by the categories configured in that module:
+  // imaging/procedures by their category_id, lab by its parent category.
+  const otherTitle = t("moduleOther");
+  const imagingGroupSections = groupByCategory(
+    imagingSvcs.map((s) => ({ id: s.id, name: s.name, code: s.code, categoryId: s.category_id, price: Number(s.default_price), active: s.is_active })),
+    imagingCats,
+    "imaging",
+    otherTitle
+  );
+  const procedureGroupSections = groupByCategory(
+    procedures.map((p) => ({ id: p.id, name: p.name, code: p.code, categoryId: p.category_id, price: Number(p.default_price), active: p.is_active })),
+    procedureCats,
+    "procedure",
+    otherTitle
+  );
 
-  const hasAnything = prices.length > 0 || moduleSections.length > 0;
+  // Lab is a parent→child hierarchy: parent rows are the groups, child rows the
+  // priced tests. A leaf top-level category with no children is itself a test.
+  const labChildrenByParent = new Map<string, typeof labCats>();
+  for (const c of labCats) {
+    if (!c.parent_id) continue;
+    const arr = labChildrenByParent.get(c.parent_id) ?? [];
+    arr.push(c);
+    labChildrenByParent.set(c.parent_id, arr);
+  }
+  const labGroupSections: ModuleSection[] = [];
+  const labUngrouped: ModuleRow[] = [];
+  for (const top of labCats.filter((c) => !c.parent_id)) {
+    const kids = (labChildrenByParent.get(top.id) ?? []).filter((c) => c.is_active);
+    if (kids.length > 0) {
+      labGroupSections.push({
+        source: "lab",
+        title: top.name,
+        rows: kids.map((c) => ({ id: c.id, name: c.name, code: null, price: Number(c.default_price) })),
+      });
+    } else if (top.is_active) {
+      labUngrouped.push({ id: top.id, name: top.name, code: null, price: Number(top.default_price) });
+    }
+  }
+  if (labUngrouped.length > 0) {
+    labGroupSections.push({ source: "lab", title: otherTitle, rows: labUngrouped });
+  }
+
+  const moduleBlocks = [
+    { heading: t("moduleImaging"), sections: imagingGroupSections },
+    { heading: t("moduleProcedures"), sections: procedureGroupSections },
+    { heading: t("moduleLab"), sections: labGroupSections },
+  ].filter((b) => b.sections.length > 0);
+
+  const hasAnything = prices.length > 0 || moduleBlocks.length > 0;
 
   return (
     <>
@@ -150,18 +182,23 @@ export default async function CatalogPage({
         );
       })}
 
-      {moduleSections.length > 0 && (
+      {moduleBlocks.length > 0 && (
         <p className="px-1 pt-2 text-xs text-[var(--muted-foreground)]">{t("moduleHint")}</p>
       )}
-      {moduleSections.map((s) => (
-        <ModuleCatalogSection
-          key={s.source}
-          source={s.source}
-          title={s.title}
-          rows={s.rows}
-          canWrite={canWrite}
-          labels={{ name: t("name"), code: t("code"), price: t("price") }}
-        />
+      {moduleBlocks.map((block) => (
+        <div key={block.heading} className="space-y-3">
+          <h2 className="px-1 pt-2 text-sm font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">{block.heading}</h2>
+          {block.sections.map((s) => (
+            <ModuleCatalogSection
+              key={`${s.source}-${s.title}`}
+              source={s.source}
+              title={s.title}
+              rows={s.rows}
+              canWrite={canWrite}
+              labels={{ name: t("name"), code: t("code"), price: t("price") }}
+            />
+          ))}
+        </div>
       ))}
 
       {!hasAnything && (
@@ -176,6 +213,55 @@ interface ModuleRow {
   name: string;
   code: string | null;
   price: number;
+}
+
+interface ModuleSection {
+  source: ModulePriceSource;
+  title: string;
+  rows: ModuleRow[];
+}
+
+interface CatalogItem {
+  id: string;
+  name: string;
+  code: string | null;
+  categoryId: string | null;
+  price: number;
+  active: boolean;
+}
+
+/**
+ * Groups a module's priced items by category (one section per category that has
+ * items, in category order), with uncategorized items collected into a trailing
+ * "Other" section. Inactive items are dropped.
+ */
+function groupByCategory(
+  items: CatalogItem[],
+  cats: { id: string; name: string }[],
+  source: ModulePriceSource,
+  otherTitle: string
+): ModuleSection[] {
+  const byCat = new Map<string, ModuleRow[]>();
+  const other: ModuleRow[] = [];
+  const known = new Set(cats.map((c) => c.id));
+  for (const i of items) {
+    if (!i.active) continue;
+    const row: ModuleRow = { id: i.id, name: i.name, code: i.code, price: i.price };
+    if (i.categoryId && known.has(i.categoryId)) {
+      const arr = byCat.get(i.categoryId) ?? [];
+      arr.push(row);
+      byCat.set(i.categoryId, arr);
+    } else {
+      other.push(row);
+    }
+  }
+  const sections: ModuleSection[] = [];
+  for (const c of cats) {
+    const rows = byCat.get(c.id);
+    if (rows && rows.length > 0) sections.push({ source, title: c.name, rows });
+  }
+  if (other.length > 0) sections.push({ source, title: otherTitle, rows: other });
+  return sections;
 }
 
 /** A read + inline-price-edit table for one clinical module's catalog. */

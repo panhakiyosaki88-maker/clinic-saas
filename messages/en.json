@@ -893,6 +893,7 @@
       "moduleLab": "Laboratory tests",
       "moduleImaging": "Imaging services",
       "moduleProcedures": "Procedures",
+      "moduleOther": "Other",
       "editPriceHint": "Click to edit price",
       "save": "Save",
       "cancel": "Cancel"

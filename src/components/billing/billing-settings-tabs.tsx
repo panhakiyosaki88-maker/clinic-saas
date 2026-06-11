@@ -5,8 +5,9 @@ import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
 const TABS = [
+  // Procedure pricing now lives in the Price catalog; full procedure management
+  // (categories, add/delete) is in the Procedures module at /procedures/services.
   { href: "/settings/billing/catalog", key: "catalog" },
-  { href: "/settings/billing/procedures", key: "procedures" },
   { href: "/settings/billing/memberships", key: "memberships" },
   { href: "/settings/billing/payment", key: "payment" },
 ];

@@ -24,24 +24,9 @@ import { ok, fail, type ActionResult } from "./types";
 import { getErrorT, localizeFieldErrors } from "@/lib/i18n/action-errors";
 
 // ============================================================================
-// Catalog services (the `procedures` table). Editable from the Procedures module
-// (procedures.write) and the legacy billing settings screen (billing.write).
+// Catalog services (the `procedures` table). Managed from the Procedures module
+// at /procedures/services; prices are also editable from the Price catalog.
 // ============================================================================
-export async function createProcedure(input: ProcedureInput): Promise<ActionResult<{ id: string }>> {
-  const { clinicId, user } = await requirePermission(PERMISSIONS.BILLING_WRITE);
-  return insertProcedure(clinicId, user.id, input, "/settings/billing/procedures");
-}
-
-export async function updateProcedure(id: string, input: ProcedureInput): Promise<ActionResult> {
-  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
-  return mutateProcedure(clinicId, id, input, "/settings/billing/procedures");
-}
-
-export async function deleteProcedure(id: string): Promise<ActionResult> {
-  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
-  return softDeleteProcedure(clinicId, id, "/settings/billing/procedures");
-}
-
 // Procedures-module catalog actions (clinical roles via procedures.write).
 export async function createProcedureService(input: ProcedureInput): Promise<ActionResult<{ id: string }>> {
   const { clinicId, user } = await requirePermission(PERMISSIONS.PROCEDURES_WRITE);
