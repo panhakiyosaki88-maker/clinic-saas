@@ -82,10 +82,11 @@ export default async function DashboardPage() {
   const canBilling = has(PERMISSIONS.BILLING_READ);
   const canPharmacy = has(PERMISSIONS.PHARMACY_READ);
 
-  // Scope the appointment-driven widgets (today, queue, calendar) to the active
-  // branch. Financial/patient aggregate reports stay clinic-wide.
+  // Scope every branch-aware widget (appointments, revenue, patients, pharmacy,
+  // doctor activity) to the active branch. With "All branches" selected the
+  // scope is empty and the dashboard aggregates across the whole clinic.
   const { activeId, primaryId } = await getActiveBranchContext();
-  const apptScope = { activeId, primaryId };
+  const scope = { activeId, primaryId };
 
   const todayStart = startOfDay(new Date());
   const tomorrow = addDays(todayStart, 1);
@@ -123,28 +124,28 @@ export default async function DashboardPage() {
     monthAppts,
   ] = await Promise.all([
     safe("subscription", getCurrentSubscription(), null),
-    canAppts ? safe("todays", listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString(), apptScope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
-    canAppts ? safe("queue", listQueue(apptScope), []) : Promise.resolve([]),
-    canAppts ? safe("yesterdays", listAppointmentsInRange(yesterday.toISOString(), todayStart.toISOString(), apptScope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
-    canAppts ? safe("weekly", getWeeklyAppointmentCounts(7), []) : Promise.resolve([]),
-    canDoctors ? safe("availability", getDoctorAvailabilityToday(), []) : Promise.resolve([]),
-    canPatients ? safe("patientStats", getPatientStats(), null) : Promise.resolve(null),
-    canBilling ? safe("revToday", getRevenueReport(todayStart.toISOString(), tomorrow.toISOString()), null) : Promise.resolve(null),
-    canBilling ? safe("revWeek", getRevenueReport(weekStart.toISOString(), tomorrow.toISOString()), null) : Promise.resolve(null),
-    canBilling ? safe("revMonth", getRevenueReport(monthStart.toISOString(), tomorrow.toISOString()), null) : Promise.resolve(null),
-    canBilling ? safe("monthlyRev", getMonthlyRevenue(6), []) : Promise.resolve([]),
-    canBilling ? safe("billing", getBillingTotals(), null) : Promise.resolve(null),
-    canBilling ? safe("outstanding", getOutstandingReport(), null) : Promise.resolve(null),
-    canPharmacy ? safe("lowStock", lowStockMedicines(), []) : Promise.resolve([]),
-    canPharmacy ? safe("expiring", expiringSoon(), []) : Promise.resolve([]),
+    canAppts ? safe("todays", listAppointmentsInRange(todayStart.toISOString(), tomorrow.toISOString(), scope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
+    canAppts ? safe("queue", listQueue(scope), []) : Promise.resolve([]),
+    canAppts ? safe("yesterdays", listAppointmentsInRange(yesterday.toISOString(), todayStart.toISOString(), scope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
+    canAppts ? safe("weekly", getWeeklyAppointmentCounts(7, scope), []) : Promise.resolve([]),
+    canDoctors ? safe("availability", getDoctorAvailabilityToday(scope), []) : Promise.resolve([]),
+    canPatients ? safe("patientStats", getPatientStats(scope), null) : Promise.resolve(null),
+    canBilling ? safe("revToday", getRevenueReport(todayStart.toISOString(), tomorrow.toISOString(), scope), null) : Promise.resolve(null),
+    canBilling ? safe("revWeek", getRevenueReport(weekStart.toISOString(), tomorrow.toISOString(), scope), null) : Promise.resolve(null),
+    canBilling ? safe("revMonth", getRevenueReport(monthStart.toISOString(), tomorrow.toISOString(), scope), null) : Promise.resolve(null),
+    canBilling ? safe("monthlyRev", getMonthlyRevenue(6, scope), []) : Promise.resolve([]),
+    canBilling ? safe("billing", getBillingTotals(scope), null) : Promise.resolve(null),
+    canBilling ? safe("outstanding", getOutstandingReport(scope), null) : Promise.resolve(null),
+    canPharmacy ? safe("lowStock", lowStockMedicines(scope), []) : Promise.resolve([]),
+    canPharmacy ? safe("expiring", expiringSoon(60, scope), []) : Promise.resolve([]),
     safe("activity", getRecentActivity(8), []),
     role === "doctor" && canDoctors ? safe("myDoctors", listDoctors(), []) : Promise.resolve([]),
-    canPatients ? safe("newToday", getNewPatientsCount(todayStart.toISOString(), tomorrow.toISOString()), 0) : Promise.resolve(0),
-    canPatients ? safe("patientGrowth", getPatientGrowthDaily(30), []) : Promise.resolve([]),
-    canPatients ? safe("highRisk", getHighRiskPatients(), { count: 0, rows: [] }) : Promise.resolve({ count: 0, rows: [] }),
-    canAppts ? safe("followUps", getUpcomingFollowUps(7), []) : Promise.resolve([]),
-    canDoctors ? safe("doctorActivity", getDoctorActivity(monthStart.toISOString(), tomorrow.toISOString()), []) : Promise.resolve([]),
-    canAppts ? safe("monthAppts", listAppointmentsInRange(calStart.toISOString(), calEnd.toISOString(), apptScope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
+    canPatients ? safe("newToday", getNewPatientsCount(todayStart.toISOString(), tomorrow.toISOString(), scope), 0) : Promise.resolve(0),
+    canPatients ? safe("patientGrowth", getPatientGrowthDaily(30, scope), []) : Promise.resolve([]),
+    canPatients ? safe("highRisk", getHighRiskPatients(6, scope), { count: 0, rows: [] }) : Promise.resolve({ count: 0, rows: [] }),
+    canAppts ? safe("followUps", getUpcomingFollowUps(7, scope), []) : Promise.resolve([]),
+    canDoctors ? safe("doctorActivity", getDoctorActivity(monthStart.toISOString(), tomorrow.toISOString(), scope), []) : Promise.resolve([]),
+    canAppts ? safe("monthAppts", listAppointmentsInRange(calStart.toISOString(), calEnd.toISOString(), scope), [] as AppointmentWithNames[]) : Promise.resolve([] as AppointmentWithNames[]),
   ]);
 
   // Doctor view: their own appointments ("My Day").

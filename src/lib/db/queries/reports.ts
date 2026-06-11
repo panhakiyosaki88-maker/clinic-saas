@@ -49,7 +49,7 @@ export interface PatientStats {
 }
 
 /** Patient counts for the dashboard stats widget. */
-export async function getPatientStats(): Promise<PatientStats> {
+export async function getPatientStats(scope?: BranchScope): Promise<PatientStats> {
   const supabase = await createClient();
   const now = new Date();
   const weekStart = new Date(now);
@@ -57,7 +57,12 @@ export async function getPatientStats(): Promise<PatientStats> {
   weekStart.setHours(0, 0, 0, 0);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const base = () => supabase.from("patients").select("id", { count: "exact", head: true }).is("deleted_at", null);
+  const base = () =>
+    applyBranchFilter(
+      supabase.from("patients").select("id", { count: "exact", head: true }).is("deleted_at", null),
+      scope?.activeId ?? null,
+      scope?.primaryId ?? null
+    );
   const [total, week, month] = await Promise.all([
     base(),
     base().gte("created_at", weekStart.toISOString()),
@@ -77,17 +82,21 @@ export interface DaySeries {
 }
 
 /** New patients per day for the last `days` days (oldest → newest). */
-export async function getPatientGrowthDaily(days = 30): Promise<DaySeries[]> {
+export async function getPatientGrowthDaily(days = 30, scope?: BranchScope): Promise<DaySeries[]> {
   const supabase = await createClient();
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   start.setDate(start.getDate() - (days - 1));
 
-  const { data } = await supabase
-    .from("patients")
-    .select("created_at")
-    .is("deleted_at", null)
-    .gte("created_at", start.toISOString());
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("patients")
+      .select("created_at")
+      .is("deleted_at", null)
+      .gte("created_at", start.toISOString()),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const counts = new Map<string, number>();
   const buckets: DaySeries[] = [];
@@ -106,12 +115,16 @@ export async function getPatientGrowthDaily(days = 30): Promise<DaySeries[]> {
 }
 
 /** Collected revenue per calendar month for the last `months` months. */
-export async function getMonthlyRevenue(months = 6): Promise<DaySeries[]> {
+export async function getMonthlyRevenue(months = 6, scope?: BranchScope): Promise<DaySeries[]> {
   const supabase = await createClient();
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
-  const { data } = await supabase.from("payments").select("amount, paid_at").gte("paid_at", start.toISOString());
+  const { data } = await applyBranchFilter(
+    supabase.from("payments").select("amount, paid_at").gte("paid_at", start.toISOString()),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const sums = new Map<string, number>();
   const buckets: DaySeries[] = [];
@@ -137,13 +150,17 @@ export interface BillingTotals {
 }
 
 /** Lifetime collection metrics across all (non-deleted) invoices. */
-export async function getBillingTotals(): Promise<BillingTotals> {
+export async function getBillingTotals(scope?: BranchScope): Promise<BillingTotals> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("invoices")
-    .select("total, balance, patient_id")
-    .is("deleted_at", null)
-    .neq("status", "cancelled");
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("invoices")
+      .select("total, balance, patient_id")
+      .is("deleted_at", null)
+      .neq("status", "cancelled"),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const rows = data ?? [];
   let invoicedTotal = 0;
@@ -178,12 +195,16 @@ export interface HighRiskPatient {
 }
 
 /** Patients flagged high-risk from chronic conditions / allergies. */
-export async function getHighRiskPatients(limit = 6): Promise<{ count: number; rows: HighRiskPatient[] }> {
+export async function getHighRiskPatients(limit = 6, scope?: BranchScope): Promise<{ count: number; rows: HighRiskPatient[] }> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("patients")
-    .select("id, full_name, chronic_diseases, allergies")
-    .is("deleted_at", null);
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("patients")
+      .select("id, full_name, chronic_diseases, allergies")
+      .is("deleted_at", null),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const flagged: HighRiskPatient[] = [];
   for (const p of data ?? []) {

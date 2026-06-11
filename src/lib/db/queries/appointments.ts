@@ -129,17 +129,21 @@ export interface DayCount {
 }
 
 /** Appointment counts for the last `days` days (oldest → newest), for the trend chart. */
-export async function getWeeklyAppointmentCounts(days = 7): Promise<DayCount[]> {
+export async function getWeeklyAppointmentCounts(days = 7, scope?: BranchScope): Promise<DayCount[]> {
   const supabase = await createClient();
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   start.setDate(start.getDate() - (days - 1));
 
-  const { data, error } = await supabase
-    .from("appointments")
-    .select("scheduled_at")
-    .is("deleted_at", null)
-    .gte("scheduled_at", start.toISOString());
+  const { data, error } = await applyBranchFilter(
+    supabase
+      .from("appointments")
+      .select("scheduled_at")
+      .is("deleted_at", null)
+      .gte("scheduled_at", start.toISOString()),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
   if (error) throw error;
 
   const counts = new Map<string, number>();
@@ -166,18 +170,22 @@ export interface FollowUp {
 }
 
 /** Upcoming follow-up appointments (reason mentions "follow") within `days`. */
-export async function getUpcomingFollowUps(days = 7): Promise<FollowUp[]> {
+export async function getUpcomingFollowUps(days = 7, scope?: BranchScope): Promise<FollowUp[]> {
   const supabase = await createClient();
   const now = new Date().toISOString();
   const until = new Date(Date.now() + days * 86400000).toISOString();
-  const { data, error } = await supabase
-    .from("appointments")
-    .select("id, scheduled_at, patients ( full_name, khmer_name )")
-    .is("deleted_at", null)
-    .ilike("reason", "%follow%")
-    .gte("scheduled_at", now)
-    .lt("scheduled_at", until)
-    .in("status", ["scheduled", "waiting"])
+  const { data, error } = await applyBranchFilter(
+    supabase
+      .from("appointments")
+      .select("id, scheduled_at, patients ( full_name, khmer_name )")
+      .is("deleted_at", null)
+      .ilike("reason", "%follow%")
+      .gte("scheduled_at", now)
+      .lt("scheduled_at", until)
+      .in("status", ["scheduled", "waiting"]),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  )
     .order("scheduled_at", { ascending: true })
     .limit(10);
   if (error) throw error;
