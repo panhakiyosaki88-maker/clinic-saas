@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/lib/auth/guard";
+import { branchIdForWrite } from "@/lib/branch/active-branch";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   createDoctorSchema,
@@ -70,6 +71,7 @@ export async function createDoctor(
       clinic_id: clinicId,
       created_by: user.id,
       ...toColumns(parsed.data),
+      branch_id: await branchIdForWrite(parsed.data.branchId),
       full_name: toUpperName(parsed.data.fullName),
     })
     .select("id")

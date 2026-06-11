@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveOpenVisitId } from "@/lib/db/open-visit";
 import { requirePermission } from "@/lib/auth/guard";
+import { branchIdForWrite } from "@/lib/branch/active-branch";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   createPrescriptionSchema,
@@ -31,7 +32,7 @@ export async function createPrescription(
       clinic_id: clinicId,
       patient_id: v.patientId,
       doctor_id: v.doctorId || null,
-      branch_id: v.branchId || null,
+      branch_id: await branchIdForWrite(v.branchId),
       visit_id: visitId,
       medical_record_id: v.medicalRecordId || null,
       notes: v.notes || null,

@@ -38,7 +38,10 @@
     "account": "Account",
     "notifications": "Notifications",
     "searchPlaceholder": "Search patients, doctors, invoices…",
-    "allBranches": "All branches"
+    "allBranches": "All branches",
+    "chooseBranchTitle": "Choose your branch",
+    "chooseBranchSubtitle": "Select the branch you're working at. New records you create will be saved to it. You can switch any time from the top bar.",
+    "chooseBranchAllHint": "Work across all branches (new records use the main branch)"
   },
   "auth": {
     "login": {

@@ -26,7 +26,10 @@ export default async function DashboardLayout({
     redirect("/account-pending");
   }
   const clinic = await getCurrentClinic();
-  const { activeId: activeBranchId, branches } = await getActiveBranchContext();
+  const { activeId: activeBranchId, branches, hasSelection } = await getActiveBranchContext();
+  // Force a branch choice on entry when the clinic has several branches and the
+  // user hasn't picked one yet, so new records land on a deliberate branch.
+  const mustChooseBranch = !isSuperAdmin && branches.length > 1 && !hasSelection;
 
   // One query for the role's permissions. Super admins implicitly hold every
   // permission, so `can` short-circuits for them (matches the dashboard page).
@@ -52,6 +55,7 @@ export default async function DashboardLayout({
       isSuperAdmin={isSuperAdmin}
       branches={branches.map((b) => ({ id: b.id, name: b.name }))}
       activeBranchId={activeBranchId}
+      mustChooseBranch={mustChooseBranch}
     >
       {children}
     </DashboardShell>

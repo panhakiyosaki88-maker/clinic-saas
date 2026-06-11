@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveOpenVisitId } from "@/lib/db/open-visit";
 import { requirePermission } from "@/lib/auth/guard";
+import { branchIdForWrite } from "@/lib/branch/active-branch";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   createMedicalRecordSchema,
@@ -73,6 +74,7 @@ export async function createMedicalRecord(
       visit_id: visitId,
       created_by: user.id,
       ...toRecordColumns(fields),
+      branch_id: await branchIdForWrite(fields.branchId),
     })
     .select("id")
     .single();

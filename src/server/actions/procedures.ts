@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveOpenVisitId } from "@/lib/db/open-visit";
 import { requirePermission } from "@/lib/auth/guard";
+import { branchIdForWrite } from "@/lib/branch/active-branch";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   procedureSchema,
@@ -226,6 +227,7 @@ export async function createProcedureOrder(
   const svcByName = new Map((services ?? []).map((s) => [s.name, s]));
 
   const visitId = await resolveOpenVisitId(supabase, v.patientId);
+  const branchId = await branchIdForWrite(v.branchId);
   const { data, error } = await supabase
     .from("procedure_orders")
     .insert(
@@ -235,7 +237,7 @@ export async function createProcedureOrder(
           clinic_id: clinicId,
           patient_id: v.patientId,
           doctor_id: v.doctorId || null,
-          branch_id: v.branchId || null,
+          branch_id: branchId,
           visit_id: visitId,
           category_id: svc?.category_id ?? null,
           procedure_id: svc?.id ?? null,

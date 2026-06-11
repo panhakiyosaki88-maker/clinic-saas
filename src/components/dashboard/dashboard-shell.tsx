@@ -21,6 +21,7 @@ import { AccentToggle } from "@/components/accent-toggle";
 import { LanguageToggle } from "@/components/settings/language-toggle";
 import { NAV } from "@/components/dashboard/nav-config";
 import { BranchSwitcher, type BranchOption } from "@/components/dashboard/branch-switcher";
+import { BranchPicker } from "@/components/dashboard/branch-picker";
 
 export function DashboardShell({
   navKeys,
@@ -32,6 +33,7 @@ export function DashboardShell({
   isSuperAdmin,
   branches,
   activeBranchId,
+  mustChooseBranch,
   children,
 }: {
   navKeys: string[];
@@ -43,6 +45,7 @@ export function DashboardShell({
   isSuperAdmin: boolean;
   branches: BranchOption[];
   activeBranchId: string | null;
+  mustChooseBranch: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -73,6 +76,8 @@ export function DashboardShell({
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 print:min-h-0 print:bg-white">
+      {mustChooseBranch && <BranchPicker branches={branches} />}
+
       {/* Mobile overlay */}
       {mobileOpen && (
         <div

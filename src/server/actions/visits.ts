@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveOpenVisitId } from "@/lib/db/open-visit";
+import { branchIdForWrite } from "@/lib/branch/active-branch";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -32,7 +33,7 @@ export async function createVisit(input: CreateVisitInput): Promise<ActionResult
     .insert({
       clinic_id: clinicId,
       patient_id: v.patientId,
-      branch_id: v.branchId || null,
+      branch_id: await branchIdForWrite(v.branchId),
       doctor_id: v.doctorId || null,
       appointment_id: v.appointmentId || null,
       chief_complaint: v.chiefComplaint || null,
@@ -145,7 +146,7 @@ export async function recordDispense(input: DispenseInput): Promise<ActionResult
   const { error } = await supabase.from("inventory_transactions").insert({
     clinic_id: clinicId,
     medicine_id: v.medicineId,
-    branch_id: v.branchId || null,
+    branch_id: await branchIdForWrite(v.branchId),
     patient_id: v.patientId,
     visit_id: visitId,
     change: -v.quantity,

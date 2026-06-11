@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/lib/auth/guard";
+import { branchIdForWrite } from "@/lib/branch/active-branch";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
   createAppointmentSchema,
@@ -88,7 +89,7 @@ export async function createAppointment(
       clinic_id: clinicId,
       patient_id: v.patientId,
       doctor_id: v.doctorId || null,
-      branch_id: v.branchId || null,
+      branch_id: await branchIdForWrite(v.branchId),
       scheduled_at: scheduledAt,
       duration_minutes: v.durationMinutes,
       is_walk_in: isWalkIn,

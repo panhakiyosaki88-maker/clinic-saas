@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveVisitBranchId } from "@/lib/db/queries/visits";
+import { branchIdForWrite } from "@/lib/branch/active-branch";
 import { notifyClinicOwner } from "@/lib/notifications/staff-send";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -47,7 +48,7 @@ export async function createInvoice(
     .insert({
       clinic_id: clinicId,
       patient_id: v.patientId || null,
-      branch_id: v.branchId || null,
+      branch_id: await branchIdForWrite(v.branchId),
       doctor_id: v.doctorId || null,
       service_type: v.serviceType || null,
       due_date: v.dueDate || null,
