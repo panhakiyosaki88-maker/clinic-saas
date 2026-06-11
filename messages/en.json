@@ -888,7 +888,14 @@
       "actions": "Actions",
       "archived": "archived",
       "all": "All",
-      "empty": "No prices yet."
+      "empty": "No prices yet.",
+      "moduleHint": "Prices set in the Laboratory, Imaging and Procedures modules. Edit a price here; manage names in each module.",
+      "moduleLab": "Laboratory tests",
+      "moduleImaging": "Imaging services",
+      "moduleProcedures": "Procedures",
+      "editPriceHint": "Click to edit price",
+      "save": "Save",
+      "cancel": "Cancel"
     },
     "category": {
       "consultation": "Consultation fees",

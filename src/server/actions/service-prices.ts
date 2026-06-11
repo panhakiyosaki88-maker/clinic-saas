@@ -70,6 +70,45 @@ export async function setServicePriceArchived(id: string, archived: boolean): Pr
   return ok(undefined);
 }
 
+/** Module catalogs whose prices are also editable from the Price Catalog page.
+ *  Each owns its own table with a `default_price` column. */
+export type ModulePriceSource = "lab" | "imaging" | "procedure";
+
+const MODULE_REVALIDATE: Record<ModulePriceSource, string> = {
+  lab: "/lab",
+  imaging: "/imaging",
+  procedure: "/procedures",
+};
+
+/**
+ * Updates the price of a Laboratory test, Imaging service or Procedure from the
+ * unified Price Catalog. Only the price changes here; names/codes stay managed
+ * in each module. Gated by billing.write since this is the billing catalog.
+ */
+export async function updateModuleCatalogPrice(
+  source: ModulePriceSource,
+  id: string,
+  price: number
+): Promise<ActionResult> {
+  const { clinicId } = await requirePermission(PERMISSIONS.BILLING_WRITE);
+  const te = await getErrorT();
+  if (!Number.isFinite(price) || price < 0) return fail(te("fixFields"));
+
+  const patch = { default_price: price };
+  const supabase = await createClient();
+  const { error } =
+    source === "lab"
+      ? await supabase.from("lab_categories").update(patch).eq("id", id).eq("clinic_id", clinicId)
+      : source === "imaging"
+        ? await supabase.from("imaging_services").update(patch).eq("id", id).eq("clinic_id", clinicId)
+        : await supabase.from("procedures").update(patch).eq("id", id).eq("clinic_id", clinicId);
+  if (error) return fail(error.message);
+
+  revalidatePath("/settings/billing/catalog");
+  revalidatePath(MODULE_REVALIDATE[source]);
+  return ok(undefined);
+}
+
 /**
  * Permanently removes a catalog entry. Safe because invoices snapshot their own
  * amounts (no foreign key back to service_prices) — past bills are unaffected.
