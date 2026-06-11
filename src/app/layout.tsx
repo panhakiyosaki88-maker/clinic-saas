@@ -18,7 +18,7 @@ const khmer = Noto_Sans_Khmer({
 });
 
 export const metadata: Metadata = {
-  title: "Clinic SaaS — Practice Management",
+  title: "Happy Clinic System — Practice Management",
   description: "Multi-clinic management system for doctors and small clinics.",
 };
 
