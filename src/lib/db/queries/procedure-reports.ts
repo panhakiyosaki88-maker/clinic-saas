@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, applyInvoiceBranchFilter, type BranchScope } from "@/lib/branch/filter";
 
 export interface CountRow {
   [key: string]: string | number;
@@ -28,24 +29,34 @@ function rollup(map: Map<string, number>): CountRow[] {
  * category invoice lines on invoices issued in range), and breakdowns by
  * procedure type and ordering doctor. Kept entirely separate from imaging.
  */
-export async function getProcedureReport(fromISO: string, toISO: string): Promise<ProcedureReport> {
+export async function getProcedureReport(fromISO: string, toISO: string, scope?: BranchScope): Promise<ProcedureReport> {
   const supabase = await createClient();
+  const activeId = scope?.activeId ?? null;
+  const primaryId = scope?.primaryId ?? null;
 
   const [orderRes, revRes] = await Promise.all([
-    supabase
-      .from("procedure_orders")
-      .select("procedure_name, doctors ( full_name )")
-      .gte("ordered_at", fromISO)
-      .lt("ordered_at", toISO)
-      .neq("status", "cancelled")
-      .is("deleted_at", null),
-    supabase
-      .from("invoice_items")
-      .select("line_total, invoices!inner ( issued_at, status )")
-      .eq("category", "procedure")
-      .gte("invoices.issued_at", fromISO)
-      .lt("invoices.issued_at", toISO)
-      .neq("invoices.status", "cancelled"),
+    applyBranchFilter(
+      supabase
+        .from("procedure_orders")
+        .select("procedure_name, doctors ( full_name )")
+        .gte("ordered_at", fromISO)
+        .lt("ordered_at", toISO)
+        .neq("status", "cancelled")
+        .is("deleted_at", null),
+      activeId,
+      primaryId
+    ),
+    applyInvoiceBranchFilter(
+      supabase
+        .from("invoice_items")
+        .select("line_total, invoices!inner ( issued_at, status, branch_id )")
+        .eq("category", "procedure")
+        .gte("invoices.issued_at", fromISO)
+        .lt("invoices.issued_at", toISO)
+        .neq("invoices.status", "cancelled"),
+      activeId,
+      primaryId
+    ),
   ]);
 
   const rows = (orderRes.data ?? []) as unknown as { procedure_name: string; doctors: { full_name: string } | null }[];

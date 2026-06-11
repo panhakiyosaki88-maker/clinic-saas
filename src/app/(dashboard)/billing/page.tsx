@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { getBillingDashboard } from "@/lib/db/queries/billing-analytics";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext, formatIn } from "@/lib/billing/currency";
@@ -22,8 +23,9 @@ export default async function BillingDashboardPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
+  const { activeId, primaryId } = await getActiveBranchContext();
   const [d, settings, t] = await Promise.all([
-    getBillingDashboard(),
+    getBillingDashboard({ activeId, primaryId }),
     getBillingSettings(),
     getTranslations("billing"),
   ]);

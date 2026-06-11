@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { getDebtReport } from "@/lib/db/queries/billing-debt";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext, formatIn } from "@/lib/billing/currency";
@@ -22,7 +23,8 @@ export default async function DebtPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
-  const [d, settings, t] = await Promise.all([getDebtReport(), getBillingSettings(), getTranslations("billing.debt")]);
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const [d, settings, t] = await Promise.all([getDebtReport({ activeId, primaryId }), getBillingSettings(), getTranslations("billing.debt")]);
   const ctx = currencyContext(settings);
   const money = (n: number) => formatIn(n, ctx.primary, ctx.rate);
   const b = d.buckets;

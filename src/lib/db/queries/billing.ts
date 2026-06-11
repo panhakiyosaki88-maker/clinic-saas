@@ -106,14 +106,17 @@ export async function getVisitDraftInvoice(visitId: string): Promise<VisitDraftI
 }
 
 /** Outstanding (unpaid / partially paid) invoices for dashboards & reports. */
-export async function outstandingInvoices(): Promise<InvoiceWithPatient[]> {
+export async function outstandingInvoices(scope?: BranchScope): Promise<InvoiceWithPatient[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("invoices")
-    .select(LIST_SELECT)
-    .is("deleted_at", null)
-    .in("status", ["unpaid", "partially_paid"])
-    .order("issued_at", { ascending: false });
+  const { data, error } = await applyBranchFilter(
+    supabase
+      .from("invoices")
+      .select(LIST_SELECT)
+      .is("deleted_at", null)
+      .in("status", ["unpaid", "partially_paid"]),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  ).order("issued_at", { ascending: false });
   if (error) throw error;
   return mapList((data ?? []) as unknown as ListJoined[]);
 }
@@ -132,12 +135,16 @@ export interface PaymentRow {
   paid_at: string;
 }
 
-/** Clinic-wide payments + refunds ledger, newest first. */
-export async function listPayments(limit = 100): Promise<PaymentRow[]> {
+/** Payments + refunds ledger for the active branch (or clinic-wide), newest first. */
+export async function listPayments(limit = 100, scope?: BranchScope): Promise<PaymentRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("payments")
-    .select("id, receipt_number, invoice_id, amount, method, kind, reference, paid_at, invoices ( invoice_number, patients ( full_name, khmer_name ) )")
+  const { data, error } = await applyBranchFilter(
+    supabase
+      .from("payments")
+      .select("id, receipt_number, invoice_id, amount, method, kind, reference, paid_at, invoices ( invoice_number, patients ( full_name, khmer_name ) )"),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  )
     .order("paid_at", { ascending: false })
     .limit(limit);
   if (error) throw error;

@@ -500,7 +500,7 @@ export async function recordPayment(input: RecordPaymentInput): Promise<ActionRe
   const supabase = await createClient();
   const { data: invoice } = await supabase
     .from("invoices")
-    .select("balance, status")
+    .select("balance, status, branch_id")
     .eq("id", v.invoiceId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
@@ -514,6 +514,7 @@ export async function recordPayment(input: RecordPaymentInput): Promise<ActionRe
   const { error } = await supabase.from("payments").insert({
     clinic_id: clinicId,
     invoice_id: v.invoiceId,
+    branch_id: invoice.branch_id,
     amount: v.amount,
     method: v.method,
     reference: v.reference || null,
@@ -555,7 +556,7 @@ export async function refundPayment(input: RefundPaymentInput): Promise<ActionRe
   const supabase = await createClient();
   const { data: invoice } = await supabase
     .from("invoices")
-    .select("amount_paid, status")
+    .select("amount_paid, status, branch_id")
     .eq("id", v.invoiceId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
@@ -568,6 +569,7 @@ export async function refundPayment(input: RefundPaymentInput): Promise<ActionRe
   const { error } = await supabase.from("payments").insert({
     clinic_id: clinicId,
     invoice_id: v.invoiceId,
+    branch_id: invoice.branch_id,
     amount: v.amount,
     method: v.method,
     kind: "refund",

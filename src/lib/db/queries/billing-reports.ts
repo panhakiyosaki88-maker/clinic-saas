@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import { PAYMENT_METHOD_LABELS, SERVICE_CATEGORY_LABELS } from "@/lib/validations/invoice";
 import type { PaymentKind, PaymentMethod, ServiceCategory } from "@/types/database";
 
@@ -45,13 +46,21 @@ function rollup(map: Map<string, number>): BreakdownRow[] {
  * by doctor, branch, service type and payment method. Powers the billing
  * reports page and its CSV/Excel/PDF exports.
  */
-export async function getBillingBreakdowns(fromISO: string, toISO: string): Promise<BillingBreakdowns> {
+export async function getBillingBreakdowns(
+  fromISO: string,
+  toISO: string,
+  scope?: BranchScope
+): Promise<BillingBreakdowns> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("payments")
-    .select("amount, kind, method, invoices ( service_type, source, doctors ( full_name ), branches ( name ), invoice_items ( category, line_total ) )")
-    .gte("paid_at", fromISO)
-    .lt("paid_at", toISO);
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("payments")
+      .select("amount, kind, method, invoices ( service_type, source, doctors ( full_name ), branches ( name ), invoice_items ( category, line_total ) )")
+      .gte("paid_at", fromISO)
+      .lt("paid_at", toISO),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const rows = (data ?? []) as unknown as Row[];
   const doctor = new Map<string, number>();

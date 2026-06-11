@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listPayments } from "@/lib/db/queries/billing";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext, formatIn } from "@/lib/billing/currency";
@@ -22,8 +23,9 @@ export default async function PaymentsPage() {
   if (!clinic) redirect("/onboarding");
   if (!(await hasPermission(PERMISSIONS.BILLING_READ))) redirect("/dashboard");
 
+  const { activeId, primaryId } = await getActiveBranchContext();
   const [payments, settings, t, tm] = await Promise.all([
-    listPayments(),
+    listPayments(100, { activeId, primaryId }),
     getBillingSettings(),
     getTranslations("billing.payments"),
     getTranslations("billing.paymentMethods"),

@@ -1097,6 +1097,7 @@ export interface Database {
         Row: {
           id: string;
           clinic_id: string;
+          branch_id: string | null;
           name: string;
           generic_name: string | null;
           sku: string | null;
@@ -1116,6 +1117,7 @@ export interface Database {
         Insert: {
           id?: string;
           clinic_id: string;
+          branch_id?: string | null;
           name: string;
           generic_name?: string | null;
           sku?: string | null;
@@ -1272,6 +1274,7 @@ export interface Database {
           id: string;
           clinic_id: string;
           invoice_id: string;
+          branch_id: string | null;
           receipt_seq: number;
           receipt_number: string;
           amount: number;
@@ -1287,6 +1290,7 @@ export interface Database {
           id?: string;
           clinic_id: string;
           invoice_id: string;
+          branch_id?: string | null;
           receipt_seq?: number;
           receipt_number?: string;
           amount: number;

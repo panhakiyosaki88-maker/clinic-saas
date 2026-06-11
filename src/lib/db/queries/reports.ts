@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import { PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
 
 export interface RevenueReport {
@@ -8,13 +9,17 @@ export interface RevenueReport {
   byMethod: { method: string; amount: number }[];
 }
 
-export async function getRevenueReport(fromISO: string, toISO: string): Promise<RevenueReport> {
+export async function getRevenueReport(fromISO: string, toISO: string, scope?: BranchScope): Promise<RevenueReport> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("payments")
-    .select("amount, method, paid_at")
-    .gte("paid_at", fromISO)
-    .lt("paid_at", toISO);
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("payments")
+      .select("amount, method, paid_at")
+      .gte("paid_at", fromISO)
+      .lt("paid_at", toISO),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const rows = data ?? [];
   const byDayMap = new Map<string, number>();
@@ -189,28 +194,37 @@ export async function getHighRiskPatients(limit = 6): Promise<{ count: number; r
   return { count: flagged.length, rows: flagged.slice(0, limit) };
 }
 
-export async function getNewPatientsCount(fromISO: string, toISO: string): Promise<number> {
+export async function getNewPatientsCount(fromISO: string, toISO: string, scope?: BranchScope): Promise<number> {
   const supabase = await createClient();
-  const { count } = await supabase
-    .from("patients")
-    .select("id", { count: "exact", head: true })
-    .is("deleted_at", null)
-    .gte("created_at", fromISO)
-    .lt("created_at", toISO);
+  const { count } = await applyBranchFilter(
+    supabase
+      .from("patients")
+      .select("id", { count: "exact", head: true })
+      .is("deleted_at", null)
+      .gte("created_at", fromISO)
+      .lt("created_at", toISO),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
   return count ?? 0;
 }
 
 export async function getAppointmentsByStatus(
   fromISO: string,
-  toISO: string
+  toISO: string,
+  scope?: BranchScope
 ): Promise<{ status: string; count: number }[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("appointments")
-    .select("status")
-    .is("deleted_at", null)
-    .gte("scheduled_at", fromISO)
-    .lt("scheduled_at", toISO);
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("appointments")
+      .select("status")
+      .is("deleted_at", null)
+      .gte("scheduled_at", fromISO)
+      .lt("scheduled_at", toISO),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const map = new Map<string, number>();
   for (const a of data ?? []) map.set(a.status, (map.get(a.status) ?? 0) + 1);
@@ -219,17 +233,28 @@ export async function getAppointmentsByStatus(
 
 export async function getDoctorActivity(
   fromISO: string,
-  toISO: string
+  toISO: string,
+  scope?: BranchScope
 ): Promise<{ doctor: string; visits: number }[]> {
   const supabase = await createClient();
+  const activeId = scope?.activeId ?? null;
+  const primaryId = scope?.primaryId ?? null;
   const [{ data: doctors }, { data: visits }] = await Promise.all([
-    supabase.from("doctors").select("full_name, user_id").is("deleted_at", null),
-    supabase
-      .from("medical_records")
-      .select("provider_user_id")
-      .is("deleted_at", null)
-      .gte("visit_date", fromISO)
-      .lt("visit_date", toISO),
+    applyBranchFilter(
+      supabase.from("doctors").select("full_name, user_id").is("deleted_at", null),
+      activeId,
+      primaryId
+    ),
+    applyBranchFilter(
+      supabase
+        .from("medical_records")
+        .select("provider_user_id")
+        .is("deleted_at", null)
+        .gte("visit_date", fromISO)
+        .lt("visit_date", toISO),
+      activeId,
+      primaryId
+    ),
   ]);
 
   const counts = new Map<string, number>();
@@ -263,13 +288,16 @@ export interface InventoryReport {
   items: InventoryItem[];
 }
 
-export async function getInventoryReport(): Promise<InventoryReport> {
+export async function getInventoryReport(scope?: BranchScope): Promise<InventoryReport> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("medicines")
-    .select("name, sku, strength, category, stock_quantity, reorder_level, purchase_price, selling_price, is_active")
-    .is("deleted_at", null)
-    .order("name", { ascending: true });
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("medicines")
+      .select("name, sku, strength, category, stock_quantity, reorder_level, purchase_price, selling_price, is_active")
+      .is("deleted_at", null),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  ).order("name", { ascending: true });
 
   let stockValue = 0;
   let lowStockCount = 0;
@@ -301,14 +329,17 @@ export interface OutstandingReport {
   rows: { invoice_number: string; patient: string; patientKhmer: string | null; balance: number }[];
 }
 
-export async function getOutstandingReport(): Promise<OutstandingReport> {
+export async function getOutstandingReport(scope?: BranchScope): Promise<OutstandingReport> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("invoices")
-    .select("invoice_number, balance, patients ( full_name, khmer_name )")
-    .is("deleted_at", null)
-    .in("status", ["unpaid", "partially_paid"])
-    .order("balance", { ascending: false });
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("invoices")
+      .select("invoice_number, balance, patients ( full_name, khmer_name )")
+      .is("deleted_at", null)
+      .in("status", ["unpaid", "partially_paid"]),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  ).order("balance", { ascending: false });
 
   const rows = ((data ?? []) as unknown as {
     invoice_number: string;

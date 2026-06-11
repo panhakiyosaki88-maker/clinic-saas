@@ -1,14 +1,19 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import { sanitizeSearch } from "@/lib/validations/patient";
 import type { Database } from "@/types/database";
 
 export type Medicine = Database["public"]["Tables"]["medicines"]["Row"];
 export type InventoryTransaction = Database["public"]["Tables"]["inventory_transactions"]["Row"];
 
-export async function listMedicines(search?: string): Promise<Medicine[]> {
+export async function listMedicines(search?: string, scope?: BranchScope): Promise<Medicine[]> {
   const supabase = await createClient();
-  let query = supabase.from("medicines").select("*").is("deleted_at", null);
+  let query = applyBranchFilter(
+    supabase.from("medicines").select("*").is("deleted_at", null),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
   const s = sanitizeSearch(search);
   if (s) query = query.or(`name.ilike.%${s}%,generic_name.ilike.%${s}%,sku.ilike.%${s}%`);
   const { data, error } = await query.order("name", { ascending: true });
@@ -27,15 +32,18 @@ export interface MedicineSuggestion {
 /** Medicine name suggestions for the prescription form: the pharmacy catalog
  *  plus names previously prescribed, deduped (catalog entries win and keep
  *  their strength). */
-export async function listMedicineSuggestions(): Promise<MedicineSuggestion[]> {
+export async function listMedicineSuggestions(scope?: BranchScope): Promise<MedicineSuggestion[]> {
   const supabase = await createClient();
   const [catalog, history, dismissed] = await Promise.all([
-    supabase
-      .from("medicines")
-      .select("name, strength")
-      .is("deleted_at", null)
-      .eq("is_active", true)
-      .order("name", { ascending: true }),
+    applyBranchFilter(
+      supabase
+        .from("medicines")
+        .select("name, strength")
+        .is("deleted_at", null)
+        .eq("is_active", true),
+      scope?.activeId ?? null,
+      scope?.primaryId ?? null
+    ).order("name", { ascending: true }),
     supabase
       .from("prescription_items")
       .select("medicine_name")
@@ -76,14 +84,17 @@ export interface MedicineDispenseOption {
 }
 
 /** Active medicines for dispensing pickers: id, name, price and stock. */
-export async function listMedicineOptions(): Promise<MedicineDispenseOption[]> {
+export async function listMedicineOptions(scope?: BranchScope): Promise<MedicineDispenseOption[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("medicines")
-    .select("id, name, selling_price, stock_quantity")
-    .is("deleted_at", null)
-    .eq("is_active", true)
-    .order("name", { ascending: true });
+  const { data, error } = await applyBranchFilter(
+    supabase
+      .from("medicines")
+      .select("id, name, selling_price, stock_quantity")
+      .is("deleted_at", null)
+      .eq("is_active", true),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  ).order("name", { ascending: true });
   if (error) throw error;
   return (data ?? []).map((m) => ({
     id: m.id,
@@ -101,7 +112,10 @@ export async function listMedicineOptions(): Promise<MedicineDispenseOption[]> {
  * empty array when the visit has no prescription, so callers can fall back to the
  * full catalog.
  */
-export async function listPrescribedDispenseOptions(visitId: string): Promise<MedicineDispenseOption[]> {
+export async function listPrescribedDispenseOptions(
+  visitId: string,
+  scope?: BranchScope
+): Promise<MedicineDispenseOption[]> {
   const supabase = await createClient();
 
   const { data: rx, error: rxErr } = await supabase
@@ -129,11 +143,15 @@ export async function listPrescribedDispenseOptions(visitId: string): Promise<Me
   }
   if (prescribed.size === 0) return [];
 
-  const { data: meds, error: medErr } = await supabase
-    .from("medicines")
-    .select("id, name, selling_price, stock_quantity")
-    .is("deleted_at", null)
-    .eq("is_active", true);
+  const { data: meds, error: medErr } = await applyBranchFilter(
+    supabase
+      .from("medicines")
+      .select("id, name, selling_price, stock_quantity")
+      .is("deleted_at", null)
+      .eq("is_active", true),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
   if (medErr) throw medErr;
 
   const options: MedicineDispenseOption[] = [];
@@ -175,8 +193,8 @@ export async function listTransactions(medicineId: string): Promise<InventoryTra
 }
 
 /** Active medicines at or below their reorder level. */
-export async function lowStockMedicines(): Promise<Medicine[]> {
-  const all = await listMedicines();
+export async function lowStockMedicines(scope?: BranchScope): Promise<Medicine[]> {
+  const all = await listMedicines(undefined, scope);
   return all.filter((m) => m.is_active && m.stock_quantity <= m.reorder_level);
 }
 
@@ -189,19 +207,22 @@ export interface ExpiringBatch {
 }
 
 /** Purchase batches expiring within `days` (default 60), soonest first. */
-export async function expiringSoon(days = 60): Promise<ExpiringBatch[]> {
+export async function expiringSoon(days = 60, scope?: BranchScope): Promise<ExpiringBatch[]> {
   const supabase = await createClient();
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() + days);
   const cutoffYmd = cutoff.toISOString().slice(0, 10);
 
-  const { data, error } = await supabase
-    .from("inventory_transactions")
-    .select("id, medicine_id, batch_number, expiry_date, medicines ( name )")
-    .eq("reason", "purchase")
-    .not("expiry_date", "is", null)
-    .lte("expiry_date", cutoffYmd)
-    .order("expiry_date", { ascending: true });
+  const { data, error } = await applyBranchFilter(
+    supabase
+      .from("inventory_transactions")
+      .select("id, medicine_id, batch_number, expiry_date, medicines ( name )")
+      .eq("reason", "purchase")
+      .not("expiry_date", "is", null)
+      .lte("expiry_date", cutoffYmd),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  ).order("expiry_date", { ascending: true });
   if (error) throw error;
 
   return ((data ?? []) as unknown as {

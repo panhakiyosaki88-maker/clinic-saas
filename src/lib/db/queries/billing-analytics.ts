@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import { PAYMENT_METHOD_LABELS } from "@/lib/validations/invoice";
 import type { InvoiceStatus, PaymentKind, PaymentMethod } from "@/types/database";
 
@@ -79,8 +80,10 @@ const dayKey = (d: Date | string) => new Date(d).toISOString().slice(0, 10);
 const signed = (p: { kind: PaymentKind; amount: number }) =>
   p.kind === "refund" ? -Number(p.amount) : Number(p.amount);
 
-export async function getBillingDashboard(): Promise<BillingDashboard> {
+export async function getBillingDashboard(scope?: BranchScope): Promise<BillingDashboard> {
   const supabase = await createClient();
+  const activeId = scope?.activeId ?? null;
+  const primaryId = scope?.primaryId ?? null;
   const now = new Date();
   const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
   const weekStart = new Date(todayStart); weekStart.setDate(todayStart.getDate() - todayStart.getDay());
@@ -89,15 +92,22 @@ export async function getBillingDashboard(): Promise<BillingDashboard> {
   const yearStart = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
   const [{ data: payData }, { data: invData }] = await Promise.all([
-    supabase
-      .from("payments")
-      .select("id, amount, method, kind, paid_at, invoices ( patient_id, patients ( full_name, khmer_name ) )")
-      .gte("paid_at", yearStart.toISOString())
-      .order("paid_at", { ascending: false }),
-    supabase
-      .from("invoices")
-      .select("id, status, total, amount_paid, balance, service_type, source, patient_id, due_date, invoice_number, patients ( full_name, khmer_name )")
-      .is("deleted_at", null),
+    applyBranchFilter(
+      supabase
+        .from("payments")
+        .select("id, amount, method, kind, paid_at, invoices ( patient_id, patients ( full_name, khmer_name ) )")
+        .gte("paid_at", yearStart.toISOString()),
+      activeId,
+      primaryId
+    ).order("paid_at", { ascending: false }),
+    applyBranchFilter(
+      supabase
+        .from("invoices")
+        .select("id, status, total, amount_paid, balance, service_type, source, patient_id, due_date, invoice_number, patients ( full_name, khmer_name )")
+        .is("deleted_at", null),
+      activeId,
+      primaryId
+    ),
   ]);
 
   const payments = (payData ?? []) as unknown as PaymentJoined[];

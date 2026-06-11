@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { applyBranchFilter, type BranchScope } from "@/lib/branch/filter";
 import type { InvoiceStatus } from "@/types/database";
 
 export interface AgingBuckets {
@@ -42,14 +43,18 @@ const daysBetween = (from: Date, to: Date) => Math.floor((to.getTime() - from.ge
  * Accounts-receivable aging: outstanding balances bucketed by age (days since
  * the due date, or issue date when no due date), plus a per-patient summary.
  */
-export async function getDebtReport(): Promise<DebtReport> {
+export async function getDebtReport(scope?: BranchScope): Promise<DebtReport> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("invoices")
-    .select("patient_id, balance, status, issued_at, due_date, patients ( full_name, khmer_name )")
-    .is("deleted_at", null)
-    .neq("status", "cancelled")
-    .gt("balance", 0);
+  const { data } = await applyBranchFilter(
+    supabase
+      .from("invoices")
+      .select("patient_id, balance, status, issued_at, due_date, patients ( full_name, khmer_name )")
+      .is("deleted_at", null)
+      .neq("status", "cancelled")
+      .gt("balance", 0),
+    scope?.activeId ?? null,
+    scope?.primaryId ?? null
+  );
 
   const rows = (data ?? []) as unknown as Row[];
   const now = new Date();

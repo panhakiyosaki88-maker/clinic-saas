@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { getBillingBreakdowns, type BreakdownRow } from "@/lib/db/queries/billing-reports";
 import { getBillingSettings } from "@/lib/db/queries/billing-settings";
 import { currencyContext, formatIn } from "@/lib/billing/currency";
@@ -56,8 +57,9 @@ export default async function BillingReportsPage({
   const sp = await searchParams;
   const fromDate = sp.from ? parseYmd(sp.from) : startOfMonth(new Date());
   const toDate = sp.to ? addDays(parseYmd(sp.to), 1) : addDays(new Date(), 1);
+  const { activeId, primaryId } = await getActiveBranchContext();
   const [d, settings] = await Promise.all([
-    getBillingBreakdowns(fromDate.toISOString(), toDate.toISOString()),
+    getBillingBreakdowns(fromDate.toISOString(), toDate.toISOString(), { activeId, primaryId }),
     getBillingSettings(),
   ]);
   const ctx = currencyContext(settings);

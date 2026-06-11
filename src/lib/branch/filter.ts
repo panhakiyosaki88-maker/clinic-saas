@@ -25,3 +25,22 @@ export function applyBranchFilter<
   }
   return query.eq("branch_id", activeId);
 }
+
+/**
+ * Same branch logic, but filtered through an `!inner`-joined `invoices` embed —
+ * for queries that reach a branch only via the invoice (e.g. invoice_items
+ * revenue rollups). Requires the embedded relation to be aliased `invoices` and
+ * inner-joined so the filter restricts the parent rows.
+ */
+export function applyInvoiceBranchFilter<
+  Q extends {
+    eq(column: string, value: string): Q;
+    or(filters: string, options: { referencedTable: string }): Q;
+  }
+>(query: Q, activeId: string | null, primaryId: string | null): Q {
+  if (!activeId) return query;
+  if (primaryId && activeId === primaryId) {
+    return query.or(`branch_id.eq.${activeId},branch_id.is.null`, { referencedTable: "invoices" });
+  }
+  return query.eq("invoices.branch_id", activeId);
+}

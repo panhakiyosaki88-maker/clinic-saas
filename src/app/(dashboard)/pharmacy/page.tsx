@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { listMedicines, lowStockMedicines, expiringSoon } from "@/lib/db/queries/pharmacy";
 import { hasPermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
@@ -34,10 +35,12 @@ export default async function PharmacyPage({
 
   const { q } = await searchParams;
   const canWrite = await hasPermission(PERMISSIONS.PHARMACY_WRITE);
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const scope = { activeId, primaryId };
   const [medicines, lowStock, expiring] = await Promise.all([
-    listMedicines(q),
-    lowStockMedicines(),
-    expiringSoon(),
+    listMedicines(q, scope),
+    lowStockMedicines(scope),
+    expiringSoon(60, scope),
   ]);
 
   return (

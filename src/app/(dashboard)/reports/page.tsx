@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCurrentClinic } from "@/lib/db/queries/clinic";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import {
   getRevenueReport,
   getNewPatientsCount,
@@ -57,15 +58,17 @@ export default async function ReportsPage({
     hasPermission(PERMISSIONS.PROCEDURES_READ),
   ]);
 
+  const { activeId, primaryId } = await getActiveBranchContext();
+  const scope = { activeId, primaryId };
   const [revenue, newPatients, byStatus, doctorActivity, inventory, outstanding, imaging, procedures] = await Promise.all([
-    canBilling ? getRevenueReport(fromISO, toISO) : Promise.resolve(null),
-    getNewPatientsCount(fromISO, toISO),
-    canAppts ? getAppointmentsByStatus(fromISO, toISO) : Promise.resolve(null),
-    canEmr ? getDoctorActivity(fromISO, toISO) : Promise.resolve(null),
-    canPharmacy ? getInventoryReport() : Promise.resolve(null),
-    canBilling ? getOutstandingReport() : Promise.resolve(null),
-    canImaging ? getImagingReport(fromISO, toISO) : Promise.resolve(null),
-    canProcedures ? getProcedureReport(fromISO, toISO) : Promise.resolve(null),
+    canBilling ? getRevenueReport(fromISO, toISO, scope) : Promise.resolve(null),
+    getNewPatientsCount(fromISO, toISO, scope),
+    canAppts ? getAppointmentsByStatus(fromISO, toISO, scope) : Promise.resolve(null),
+    canEmr ? getDoctorActivity(fromISO, toISO, scope) : Promise.resolve(null),
+    canPharmacy ? getInventoryReport(scope) : Promise.resolve(null),
+    canBilling ? getOutstandingReport(scope) : Promise.resolve(null),
+    canImaging ? getImagingReport(fromISO, toISO, scope) : Promise.resolve(null),
+    canProcedures ? getProcedureReport(fromISO, toISO, scope) : Promise.resolve(null),
   ]);
 
   const money = (n: number) => Number(n).toFixed(2);

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveBranchContext } from "@/lib/branch/active-branch";
 import { requirePermission } from "@/lib/auth/guard";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 import {
@@ -91,6 +92,8 @@ export async function createMedicine(
   const supabase = await createClient();
   const manual = v.autoSku === false;
   const cols = toColumns(v);
+  // New medicines belong to the active branch's catalog (null = primary branch).
+  const { activeId: branchId } = await getActiveBranchContext();
 
   if (manual) {
     const sku = (v.sku ?? "").trim();
@@ -99,7 +102,7 @@ export async function createMedicine(
     }
     const { data, error } = await supabase
       .from("medicines")
-      .insert({ clinic_id: clinicId, created_by: user.id, ...cols, name: v.name, sku })
+      .insert({ clinic_id: clinicId, branch_id: branchId, created_by: user.id, ...cols, name: v.name, sku })
       .select("id")
       .single();
     if (error?.code === "23505") {
@@ -115,7 +118,7 @@ export async function createMedicine(
     const sku = await generateSku(supabase, clinicId, v.name, v.strength);
     const { data, error } = await supabase
       .from("medicines")
-      .insert({ clinic_id: clinicId, created_by: user.id, ...cols, name: v.name, sku })
+      .insert({ clinic_id: clinicId, branch_id: branchId, created_by: user.id, ...cols, name: v.name, sku })
       .select("id")
       .single();
     if (error?.code === "23505") continue;
