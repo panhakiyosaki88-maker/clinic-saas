@@ -992,6 +992,7 @@
     "serviceCategory": {
       "consultation": "ការពិគ្រោះ",
       "lab": "មន្ទីរពិសោធន៍",
+      "imaging": "រូបភាពវេជ្ជសាស្ត្រ",
       "pharmacy": "ឱសថស្ថាន",
       "procedure": "នីតិវិធី",
       "membership": "សមាជិកភាព",
@@ -1011,6 +1012,10 @@
       "unitPrice": "តម្លៃឯកតា",
       "amount": "ចំនួនទឹកប្រាក់",
       "descriptionPlaceholder": "ការពិពណ៌នា *",
+      "priceEach": "តម្លៃនីមួយៗ",
+      "priceOverall": "តម្លៃសរុប",
+      "overallLabPrice": "តម្លៃមន្ទីរពិសោធន៍សរុប",
+      "bundledNote": "{count, plural, other {គិតប្រាក់ជាបន្ទាត់តែមួយគ្របដណ្តប់តេស្ត #។}}",
       "addManualItem": "បន្ថែមធាតុដោយដៃ៖",
       "subtotal": "សរុបរង",
       "discount": "បញ្ចុះតម្លៃ",

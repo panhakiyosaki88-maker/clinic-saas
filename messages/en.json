@@ -992,6 +992,7 @@
     "serviceCategory": {
       "consultation": "Consultation",
       "lab": "Laboratory",
+      "imaging": "Imaging",
       "pharmacy": "Pharmacy",
       "procedure": "Procedures",
       "membership": "Membership",
@@ -1011,6 +1012,10 @@
       "unitPrice": "Unit price",
       "amount": "Amount",
       "descriptionPlaceholder": "Description *",
+      "priceEach": "Price each",
+      "priceOverall": "Price overall",
+      "overallLabPrice": "Overall laboratory price",
+      "bundledNote": "{count, plural, one {Billed as one line covering # test.} other {Billed as one line covering # tests.}}",
       "addManualItem": "Add manual item:",
       "subtotal": "Subtotal",
       "discount": "Discount",

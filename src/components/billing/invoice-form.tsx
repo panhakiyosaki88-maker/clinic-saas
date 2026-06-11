@@ -101,8 +101,26 @@ export function InvoiceForm({
   const [discount, setDiscount] = React.useState(String(invoice?.discount ?? "0"));
   const [tax, setTax] = React.useState(String(invoice?.tax ?? "0"));
 
+  // Laboratory pricing mode mirrors the Billing Workspace: "individual" prices
+  // each test; "overall" collapses every lab row into a single bundled
+  // "Laboratory Test" line at one price (on screen and on the saved invoice).
+  const initialLabItems = (invoice?.items ?? []).filter((it) => (it.category ?? "other") === "lab");
+  const initialLabTotal = initialLabItems.reduce((s, it) => s + it.quantity * it.unit_price, 0);
+  const [labMode, setLabMode] = React.useState<"individual" | "overall">("individual");
+  const [labOverall, setLabOverall] = React.useState(String(initialLabTotal));
+  const [labDescription, setLabDescription] = React.useState(
+    initialLabItems.length === 1 ? initialLabItems[0].description : "Laboratory Test"
+  );
+
   const num = (s: string) => (Number.isFinite(Number(s)) ? Number(s) : 0);
-  const subtotal = rows.reduce((sum, r) => sum + num(r.quantity) * num(r.unitPrice), 0);
+  const labRows = rows.filter((r) => r.category === "lab");
+  const overallLab = labMode === "overall" && labRows.length > 0;
+  // In overall mode the labs bill as one bundled line, so the individual lab
+  // rows don't count toward the subtotal.
+  const subtotal =
+    rows
+      .filter((r) => !(overallLab && r.category === "lab"))
+      .reduce((sum, r) => sum + num(r.quantity) * num(r.unitPrice), 0) + (overallLab ? num(labOverall) : 0);
   const total = subtotal - num(discount) + num(tax);
 
   function update(key: number, field: "description" | "quantity" | "unitPrice", value: string) {
@@ -132,7 +150,14 @@ export function InvoiceForm({
       discount: num(discount),
       tax: num(tax),
       notes: String(f.get("notes") ?? ""),
-      items: rows.map((r) => ({ description: r.description, quantity: num(r.quantity), unitPrice: num(r.unitPrice), category: r.category })),
+      items: overallLab
+        ? [
+            ...rows
+              .filter((r) => r.category !== "lab")
+              .map((r) => ({ description: r.description, quantity: num(r.quantity), unitPrice: num(r.unitPrice), category: r.category })),
+            { description: labDescription.trim() || "Laboratory Test", quantity: 1, unitPrice: num(labOverall), category: "lab" as ServiceCategoryValue },
+          ]
+        : rows.map((r) => ({ description: r.description, quantity: num(r.quantity), unitPrice: num(r.unitPrice), category: r.category })),
     };
     startTransition(async () => {
       const result = isEdit
@@ -187,11 +212,29 @@ export function InvoiceForm({
           {SERVICE_CATEGORIES.map((cat) => {
             const group = rows.filter((r) => r.category === cat);
             if (group.length === 0) return null;
+            const isLab = cat === "lab";
+            const labOverallMode = isLab && overallLab;
             return (
               <section key={cat} className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                  {tc(cat)}
-                </h3>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                    {tc(cat)}
+                  </h3>
+                  {isLab && (
+                    <div className="inline-flex overflow-hidden rounded-md border border-[var(--border)] text-xs">
+                      {(["individual", "overall"] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setLabMode(m)}
+                          className={`px-2.5 py-1 ${labMode === m ? "bg-brand-600 text-white" : "text-[var(--muted-foreground)]"}`}
+                        >
+                          {m === "individual" ? t("priceEach") : t("priceOverall")}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="space-y-2">
                   <div className="hidden grid-cols-[1fr_5rem_7rem_5rem_2.5rem] gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] sm:grid">
                     <span>{t("description")}</span>
@@ -200,24 +243,37 @@ export function InvoiceForm({
                     <span className="text-right">{t("amount")}</span>
                     <span aria-hidden />
                   </div>
-                  {group.map((r) => (
-                    <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1fr_5rem_7rem_5rem_2.5rem]">
-                      {cat === "pharmacy" ? (
-                        <MedicinePicker
-                          value={r.description}
-                          medicines={medicines}
-                          onType={(v) => update(r.key, "description", v)}
-                          onPick={(m) => pickMedicine(r.key, m)}
-                        />
-                      ) : (
-                        <Input placeholder={t("descriptionPlaceholder")} value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
-                      )}
-                      <Input type="number" step="0.01" placeholder="Quantity" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} title="Quantity" />
-                      <Input type="number" step="0.01" placeholder="Unit price" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} title="Unit price" />
-                      <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>
-                      <Button type="button" variant="ghost" size="sm" className="w-full px-0" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>✕</Button>
-                    </div>
-                  ))}
+                  {labOverallMode ? (
+                    <>
+                      <div className="grid items-center gap-2 sm:grid-cols-[1fr_5rem_7rem_5rem_2.5rem]">
+                        <Input value={labDescription} placeholder="Laboratory Test" onChange={(e) => setLabDescription(e.target.value)} />
+                        <Input type="number" value="1" disabled title={t("quantity")} />
+                        <Input type="number" step="0.01" value={labOverall} onChange={(e) => setLabOverall(e.target.value)} title={t("overallLabPrice")} />
+                        <span className="text-right text-sm tabular-nums">{num(labOverall).toFixed(2)}</span>
+                        <span aria-hidden />
+                      </div>
+                      <p className="text-xs text-[var(--muted-foreground)]">{t("bundledNote", { count: group.length })}</p>
+                    </>
+                  ) : (
+                    group.map((r) => (
+                      <div key={r.key} className="grid items-center gap-2 sm:grid-cols-[1fr_5rem_7rem_5rem_2.5rem]">
+                        {cat === "pharmacy" ? (
+                          <MedicinePicker
+                            value={r.description}
+                            medicines={medicines}
+                            onType={(v) => update(r.key, "description", v)}
+                            onPick={(m) => pickMedicine(r.key, m)}
+                          />
+                        ) : (
+                          <Input placeholder={t("descriptionPlaceholder")} value={r.description} onChange={(e) => update(r.key, "description", e.target.value)} required />
+                        )}
+                        <Input type="number" step="0.01" placeholder="Quantity" value={r.quantity} onChange={(e) => update(r.key, "quantity", e.target.value)} title="Quantity" />
+                        <Input type="number" step="0.01" placeholder="Unit price" value={r.unitPrice} onChange={(e) => update(r.key, "unitPrice", e.target.value)} title="Unit price" />
+                        <span className="text-right text-sm tabular-nums">{(num(r.quantity) * num(r.unitPrice)).toFixed(2)}</span>
+                        <Button type="button" variant="ghost" size="sm" className="w-full px-0" onClick={() => removeRow(r.key)} disabled={rows.length === 1}>✕</Button>
+                      </div>
+                    ))
+                  )}
                 </div>
               </section>
             );
