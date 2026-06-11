@@ -1,10 +1,19 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { ACTIVE_BRANCH_COOKIE } from "@/lib/branch/active-branch";
 import { signInSchema, signUpSchema, type SignInInput, type SignUpInput } from "@/lib/validations/auth";
 import { ok, fail, type ActionResult } from "./types";
+
+/** Clears the active-branch choice so the next dashboard entry re-prompts the
+ *  user to pick the branch they're working at (see the BranchPicker). */
+async function clearActiveBranch(): Promise<void> {
+  const store = await cookies();
+  store.delete(ACTIVE_BRANCH_COOKIE);
+}
 
 /**
  * Registers a new user. With email confirmations enabled (production), the
@@ -50,6 +59,8 @@ export async function signIn(input: SignInInput): Promise<ActionResult> {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return fail("Invalid email or password.");
 
+  // Fresh login → forget any prior branch choice so the picker shows again.
+  await clearActiveBranch();
   revalidatePath("/", "layout");
   return ok(undefined);
 }
@@ -58,6 +69,7 @@ export async function signIn(input: SignInInput): Promise<ActionResult> {
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  await clearActiveBranch();
   revalidatePath("/", "layout");
   redirect("/login");
 }
